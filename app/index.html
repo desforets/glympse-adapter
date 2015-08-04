@@ -1,0 +1,55 @@
+<!doctype html>
+
+<html>
+	<head>
+		<style type="text/css">
+			iframe { border: 1px solid #cdcdcd; }
+			body { font-family: sans-serif; font-size: 14px; line-height: 20px; }
+			#output { border: 1px solid #cdcdcd; width: 580px; padding: 10px; overflow: auto; }
+			input[type="button"] { font-size: 16px; }
+		</style>
+
+		<!-- process:remove:dev -->
+		<script type="text/javascript" src="src/GlympseAdapter.js"></script>
+		<!-- /process -->
+
+        <!-- process:remove:dist -->
+        <script type="text/javascript" src="lib/requirejs/require.js" data-main="src/requireConfig"></script>
+        <!-- /process -->
+
+		<script type="text/javascript">
+			var urlParams = {}; (function () { var e, a = /\+/g, r = /([^&=]+)=?([^&]*)/g, d = function (s) { return decodeURIComponent(s.replace(a, " ")); }, q = window.location.search.substring(1); while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]); })();
+
+			window.cfgApp =
+			{
+				  app: { }
+				, viewer: {
+					  t: urlParams.t || null
+					, pg: urlParams.pg || null
+					, g: urlParams.g || null
+					, twt: urlParams.twt || null
+					, onlyCss: urlParams.onlyCss
+					, onlyCanvas: urlParams.onlyCanvas
+					//, extCfg: "UvoM1hkDMkGonTTTxk4e6Q"
+				}
+				, adapter: {
+					  hideEvents: false
+					, hideUpdates: false
+					, viewerPollInterval: 5000
+				}
+			};
+		</script>
+	</head>
+	<body>
+		<div>
+			<div id="divLoading" class="defText">
+				<div id="divStatusInfo" class="defText">
+					[ Loading ]
+				</div>
+			</div>
+			<div>
+				<div id="glympser"></div>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,173 @@
+define(function(require, exports, module)
+{
+    'use strict';
+
+	var lib = require('glympse-adapter/lib/utils');
+	var Member = require('glympse-adapter/adapter/models/Member');
+
+
+	// Exported class
+	function Card(controller, idCard, token, cfg)
+	{
+		// state
+		var attempts = 0;
+		var data;
+		var members;
+		var that = this;
+
+		// consts
+		var dbg = lib.dbg('Card', cfg.dbg);
+		var svr = (cfg.svcCards || '//api.cards.sandbox.glympse.com/api/v1/');
+		var cardUrl = (svr + 'cards/invites/' + idCard);
+		var cardParams = { members: false };
+		var cMaxAttempts = 3;
+
+		// TODO: Just map data props directly??
+		//	---> Only want immediate non-Objects/Arrays
+		var props = [ 'name'
+					, 'type_id'
+					, 'last_modified'
+					, 'created_time'
+					, 'id'
+					];
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		// PROPERTIES
+		///////////////////////////////////////////////////////////////////////////////
+
+		// NOTE: some properties created via lib.mapProps
+
+		this.getMembers = function()
+		{
+			return members;
+		};
+
+		this.getMetaData = function()
+		{
+			return data.metadata;
+		};
+
+		this.getData = function()
+		{
+			return data;
+		};
+
+		this.setData = function(val)
+		{
+			data = val;
+			lib.mapProps(this, props, data);
+
+			var mems = data.members;
+			members = [];
+			for (var i = 0, len = ((mems && mems.length) || 0); i < len; i++)
+			{
+				members.push(new Member(mems[i], cfg));
+			}
+
+			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
+		};
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		// PUBLICS
+		///////////////////////////////////////////////////////////////////////////////
+
+		this.init = function()
+		{
+			if (!idCard || !token)
+			{
+				return false;
+			}
+
+			// Kick off card load
+			attempts = 0;
+			loadCard();
+
+			return true;
+		};
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		// UTILITY
+		///////////////////////////////////////////////////////////////////////////////
+
+		function loadCard()
+		{
+			$.ajax(
+			{
+				type: 'GET',
+				dataType: 'JSON',
+				beforeSend: function(request)
+				{
+					request.setRequestHeader('Authorization', 'Bearer ' + token);
+				},
+				url: cardUrl,
+				data: cardParams,
+				processData: true
+			})
+			//$.getJSON(cardUrl, cardParams)
+			.done(function(data)
+			{
+				processCardData(data);
+			})
+			.fail(function(xOptions, status)
+			{
+				processCardData(null);
+			});
+		}
+
+		function processCardData(resp)
+		{
+			var result = { status: false };
+
+			attempts++;
+
+			try
+			{
+				if (resp && resp.body && resp.result === 'ok')
+				{
+					//dbg('Got card data', resp);
+					that.setData(resp.body);
+
+//					result.status = true;
+//					result.token = token;
+
+//					controller.notify(Account.InitComplete, result);
+					return;
+				}
+			}
+			catch (e)
+			{
+				dbg('Error parsing card', e);
+			}
+
+			//dbg('attempt: ' + attempts + ', last data', data);
+
+			if (attempts < cMaxAttempts)
+			{
+				setTimeout(function()
+				{
+					loadCard();
+				}, attempts * (500 + Math.round(1000 * Math.random()))	// Incremental + random offset delay between retry in case of short availability outage
+				);
+
+				return;
+			}
+
+			dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
+			//result.info = { status: 'max_attempts', lastResult: (data && data.result) };
+			//controller.notify(Account.InitComplete, result);
+		}
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		// CTOR
+		///////////////////////////////////////////////////////////////////////////////
+	}
+
+	// Card defines
+
+
+	module.exports = Card;
+});

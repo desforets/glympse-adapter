@@ -1,0 +1,47 @@
+{
+  "name": "glympse-client-adapter",
+  "description": "Shim providing Card API support and viewer instantiation and references, exporting the Glympse Viewer API and customer interfaces via an iframe interface for hosted environments",
+  "version": "1.0.0",
+  "homepage": "https://github.com/Glympse/glympse-client-adapter",
+  "authors": [
+    {
+      "name": "Glympse Inc.",
+      "homepage": "http://github.com/Glympse/"
+    }
+  ],
+  "main": "app/src/",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "Glympse",
+    "iframe",
+    "oasis",
+    "viewer",
+    "adapter"
+  ],
+  "license": "MPLv2",
+  "ignore": [
+    "**/.*",
+    "*.html",
+    "node_modules",
+    "app/css",
+    "app/lib",
+	"app/src/requireConfig*",
+	"app/src/test",
+    "test",
+    "tests",
+    "frag.*",
+    "grunt",
+    "Gruntfile.js",
+	"package.json"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.11",
+    "almond": "~0.3.0",
+    "MessageChannel.js": "~0.1.5",
+    "UUID.js": "https://github.com/LiosK/UUID.js.git#2fe182e3166f9a279738568a75177011f26aa008",
+    "kamino.js": "~0.0.2"
+  },
+  "devDependencies": {}
+}
