@@ -21,18 +21,24 @@ define(function(require, exports, module)
 		var dbg = lib.dbg('CardsController', cfg.dbg);
 
 		// state
+		var that = this;
 		var account = new Account(this, cfg);
-		var idCards;
+		var cardInvites;
 		var cards;
+		var cardsReady = 0;
 
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.init = function(cards)
+		this.init = function(cardsInvitesToLoad)
 		{
-			idCards = cards;
+			cards = [];
+			cardInvites = cardsInvitesToLoad;
+
+			cardsReady = (cardInvites) ? cardInvites.length : 0;
+			controller.notify(m.CardsInitStart, cardInvites);
 
 			if (account.init())
 			{
@@ -48,6 +54,21 @@ define(function(require, exports, module)
 				case Account.InitComplete:
 				{
 					accountInitComplete(args.status, args);
+					break;
+				}
+
+				case m.CardInit:
+				case m.CardReady:
+				{
+					controller.notify(msg, args);
+					if (msg === m.CardReady)
+					{
+						if (--cardsReady === 0)
+						{
+							controller.notify(m.CardsInitEnd, cards);
+						}
+					}
+
 					break;
 				}
 
@@ -75,15 +96,19 @@ define(function(require, exports, module)
 			}
 
 			//dbg('Auth token: ' + account.getToken() + ' -- ' + (info && info.token));
-			dbg('Authenticated. Loading ' + idCards.length + ' cards...');
+			dbg('Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
-			for (var i = 0, len = idCards.length; i < len; i++)
+			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				var card = new Card(this, idCards[i], account.getToken(), cfg);
+				var card = new Card(that, cardInvites[i], account.getToken(), cfg);
 				if (!card.init())
 				{
-					dbg('Error starting card: ' + idCards[i]);
+					dbg('Error starting card: ' + cardInvites[i]);
+				}
+				else
+				{
+					cards.push(card);
 				}
 			}
 		}

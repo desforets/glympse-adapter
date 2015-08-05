@@ -45,6 +45,10 @@ define(function(require, exports, module)
 			, StateUpdate: 'StateUpdate'
 			, ViewerInit: 'ViewerInit'
 			, ViewerReady: 'ViewerReady'
+			, CardsInitStart: 'CardsInitStart'
+			, CardInit: 'CardInit'
+			, CardReady: 'CardReady'
+			, CardsInitEnd: 'CardsInitEnd'
 		}
 
 

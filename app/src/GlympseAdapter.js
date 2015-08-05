@@ -148,10 +148,14 @@ define(function(require, exports, module)
 				case m.DataUpdate:
 				case m.ViewerInit:
 				case m.ViewerReady:
+				case m.CardsInitStart:
+				case m.CardInit:
+				case m.CardReady:
+				case m.CardsInitEnd:
 				{
 					//dbg('VIEWER -- ' + msg + ' -- ' + this.getMap);
 					//dbg('event: ' + msg + ' -- hide: ' + cfgAdapter.hideEvents);
-					sendOasisMessage(msg, true);
+					sendOasisMessage(msg, args);
 					notifyController(msg, args, true);
 					break;
 				}

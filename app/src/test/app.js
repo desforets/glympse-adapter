@@ -26,6 +26,13 @@ define(function(require, exports, module)
 					console.log('MAP = ' + adapter.getMap());
 					return;
 				}
+
+				case AdapterDefines.MSG.CardsInitEnd:
+				{
+					console.log('FINISHED CARDS LOAD! ' + args.length + ' total cards');
+					//console.log('--> ' + JSON.stringify(args));
+					break;
+				}
 			}
 		}
 	};

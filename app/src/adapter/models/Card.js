@@ -4,6 +4,8 @@ define(function(require, exports, module)
 
 	var lib = require('glympse-adapter/lib/utils');
 	var Member = require('glympse-adapter/adapter/models/Member');
+	var Defines = require('glympse-adapter/GlympseAdapterDefines');
+	var m = Defines.MSG;
 
 
 	// Exported class
@@ -87,6 +89,11 @@ define(function(require, exports, module)
 			return true;
 		};
 
+		this.toJSON = function()
+		{
+			return data;
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
@@ -94,6 +101,8 @@ define(function(require, exports, module)
 
 		function loadCard()
 		{
+			controller.notify(m.CardInit, idCard);
+
 			$.ajax(
 			{
 				type: 'GET',
@@ -129,6 +138,7 @@ define(function(require, exports, module)
 				{
 					//dbg('Got card data', resp);
 					that.setData(resp.body);
+					controller.notify(m.CardReady, idCard);
 
 //					result.status = true;
 //					result.token = token;
@@ -158,6 +168,7 @@ define(function(require, exports, module)
 			dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
 			//result.info = { status: 'max_attempts', lastResult: (data && data.result) };
 			//controller.notify(Account.InitComplete, result);
+			controller.notify(m.CardReady, idCard);
 		}
 
 
