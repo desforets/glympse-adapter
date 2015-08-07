@@ -3,9 +3,11 @@ define(function(require, exports, module)
     'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');
+	var cApiKey = 'api_key';
+	var cMaxAttempts = 3;
+	var cPassword = 'p0';
 	var cTokenName = 'access_token';
 	var cUserName = 'n0';
-	var cPassword = 'p0';
 
 
 	// Exported class
@@ -18,13 +20,13 @@ define(function(require, exports, module)
 		// consts
 		var dbg = lib.dbg('Account', cfg.dbg);
 		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
+		var account = { username: 'viewer', password: 'password' };
 		//var apiKey = (cfg.sandbox) ? 'nXQ44D38OdVzEC34' : 'nXQ44D38OdVzEC34';
 		var apiKey = (cfg.sandbox) ? 'eHXSnRf0slRRxGpC' : 'TDuy3X0PfQAyYjTt';
-		var create = { username: 'viewer', password: 'password', api_key: apiKey };
-		var login = { username: 'viewer', password: 'password', api_key: apiKey };
 		var urlCreate = (svr + 'account/create');
 		var urlLogin = (svr + 'account/login');
-		var cMaxAttempts = 3;
+
+		account[cApiKey] = apiKey;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -71,8 +73,8 @@ define(function(require, exports, module)
 					return false;
 				}
 
-				login.username = u;
-				login.password = p;
+				account.username = u;
+				account.password = p;
 			}
 
 			getNewToken();
@@ -87,7 +89,7 @@ define(function(require, exports, module)
 
 		function getNewToken()
 		{
-			$.getJSON(urlLogin, login)
+			$.getJSON(urlLogin, account)
 			.done(function(data)
 			{
 				processLogin(data);
@@ -145,7 +147,7 @@ define(function(require, exports, module)
 
 		function createAccount()
 		{
-			$.getJSON(urlCreate, create)
+			$.getJSON(urlCreate, account)
 			.done(function(data)
 			{
 				processCreateAccount(data);
@@ -170,8 +172,8 @@ define(function(require, exports, module)
 					var id = resp.id;
 					var pw = resp.password;
 
-					login.username = id;
-					login.password = pw;
+					account.username = id;
+					account.password = pw;
 					lib.setCfgVal(cUserName, id);
 					lib.setCfgVal(cPassword, pw);
 					dbg('>> new account: ' + id + ' / ' + pw);

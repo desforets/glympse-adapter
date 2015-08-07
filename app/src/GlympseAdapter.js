@@ -9,6 +9,7 @@ define(function(require, exports, module)
 	require('MessageChannel');
 
 	// imports
+	var lib = require('glympse-adapter/lib/utils');
 	var Oasis = require('oasis');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var ViewerMonitor = require('glympse-adapter/adapter/ViewerMonitor');
@@ -47,6 +48,15 @@ define(function(require, exports, module)
 
 
 		///////////////////////////////////////////////////////////////////////////////
+		// API endpoint namespace (filled by run())
+		///////////////////////////////////////////////////////////////////////////////
+
+		this.map = {};
+		this.cards = {};
+		this.ext = {};
+
+
+		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
@@ -55,68 +65,90 @@ define(function(require, exports, module)
 			oasisLocal.autoInitializeSandbox();	// Found in minified source
 			//oasisLocal.configure('allowSameOrigin', true);
 
-			var id;
+			cfgMonitor.viewer = newViewer[0];
+			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
+			cardsController = new CardsController(this, cfgAdapter);
+
+			var id, action;
 			var cfgClient = { consumers: { } };
 			var events = { setUserInfo: setUserInfo };
-			var requests = { getValue: getValue };
+			var intInterfaces = { map: { getValue: getValue }
+								, cards: {}
+								};
 
-			// Defines.REQUESTS specifies the endpoints to expose
-			// to the host, along with default ones like getValue
-			for (id in Defines.REQUESTS)
+
+			var connectSettings = { invite: ((cfgViewer.t) ? cfgViewer.t.split(',')[0] : '???')
+								 // apiMap: [ idApi0, idApi1, ... ]
+								 // apiCards: [ idApi0, idApi1, ... ]
+								 // apiExternal: [ idApi0, ... ]
+								  };
+
+			// API namespaced endpoints
+			var svcs = [ { id: 'MAP', targ: viewerMonitor },//, action: generateMapAction, request: processMap },
+						 { id: 'CARDS', targ: cardsController}//, action: generateCardsAction, request: processCards }
+					   ];
+
+			var requests = { ext: processExternal };
+
+			// Defines.*.REQUESTS specifies the various API endpoints
+			// to expose to both local and host consumers
+			for (var i = 0, len = svcs.length; i < len; i++)
 			{
-				requests[id] = generateAction(id);
+				var aid = svcs[i];
+				var idApi = aid.id.toLowerCase();
+				var listApis = [];
+
+				requests[idApi] = generateRequestAction(aid.targ);//aid.request;
+
+				// Static internal available APIs
+				var targ = intInterfaces[idApi];
+				for (id in targ)
+				{
+					this[idApi][id] = targ[id];
+					listApis.push(id);
+				}
+
+				// Generic "action" APIs to pass along to hosted object
+				targ = Defines[aid.id].REQUESTS;
+				for (id in targ)
+				{
+					action = generateTargAction(aid.targ, id);//aid.action(id);
+					this[idApi][id] = action;
+					listApis.push(id);
+				}
+
+				// Add local-only requests, err, locally
+				targ = Defines[aid.id].REQUESTS_LOCAL;
+				for (id in targ)
+				{
+					action = generateTargAction(aid.targ, id);//aid.action(id);
+					this[idApi][id] = action;
+				}
+
+				connectSettings[idApi] = listApis;
 			}
 
 			// Add user-defined interfaces, if specified
-			var connectSettings = { invite: ((cfgViewer.t) ? cfgViewer.t.split(',')[0] : '???') };
 			var customInterfaces = cfgAdapter.interfaces;
 			if (customInterfaces)
 			{
-				var interfaces = [];
+				var extInterfaces = [];
 				for (id in customInterfaces)
 				{
-					// Keep default reference available if overriding
-					if (requests[id])
-					{
-						requests['base_' + id] = requests[id];
-					}
-					else
-					{
-						interfaces.push(id);	// Only advertise unique custom interfaces
-					}
-
-					requests[id] = customInterfaces[id];
+					extInterfaces.push(id);
+					this.ext[id] = customInterfaces[id];
 				}
 
-				connectSettings.interfaces = interfaces;
+				connectSettings.ext = extInterfaces;
 			}
 
 			connectQueue.push({ id: 'Connected', val: connectSettings });
 
-			// Add local-only requests, err, locally
-			for (id in Defines.REQUEST_LOCAL)
-			{
-				this[id] = generateAction(id);
-			}
-
-			// Make the interfaces also available locally, if not already available
-			for (id in requests)
-			{
-				if (!this[id])
-				{
-					this[id] = requests[id];
-				}
-				else
-				{
-					console.log(id + ' already defined! Not adding locally...');
-				}
-			}
-
 			// DEBUG
-			//for (id in this)
-			//{
-			//	console.log('Available public interface: ' + id);
-			//}
+			for (id in this.map)
+			{
+				console.log('Available public interface: ' + id);
+			}
 
 			cfgClient.consumers[idOasisPort] = Oasis.Consumer.extend(
 			{
@@ -130,16 +162,29 @@ define(function(require, exports, module)
 			// Set up for app
 			window.appGlympseAdapter = this;
 
-			cardsController = new CardsController(this, cfgAdapter);
-			cardsController.init(['3DNH-3793']);
+			var card = cfgAdapter.card;
+			if (card)
+			{
+				cardsController.init([ card ]);
+			}
+			else if (cfgAdapter.t || cfgAdapter.pg || cfgAdapter.g || cfgAdapter.twt)
+			{
+				cfgViewer.t = cfgAdapter.t;
+				cfgViewer.pg = cfgAdapter.pg;
+				cfgViewer.twt = cfgAdapter.twt;
+				cfgViewer.g = cfgAdapter.g;
 
-			// Kick off viewer monitor
-/*			cfgMonitor.viewer = newViewer[0];
-			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
+				this.loadViewer(cfgViewer);
+			}
+		};
+
+		this.loadViewer = function(cfgNew)
+		{
+			console.log('cfg.viewer=' + cfgMonitor.viewer);
+			$.extend(cfgViewer, cfgNew);
 			viewerMonitor.run();
-
-			newViewer.glympser(cfgViewer);
-*/		};
+			$(cfgMonitor.viewer).glympser(cfgViewer);
+		};
 
 		this.notify = function(msg, args)
 		{
@@ -153,8 +198,6 @@ define(function(require, exports, module)
 				case m.CardReady:
 				case m.CardsInitEnd:
 				{
-					//dbg('VIEWER -- ' + msg + ' -- ' + this.getMap);
-					//dbg('event: ' + msg + ' -- hide: ' + cfgAdapter.hideEvents);
 					sendOasisMessage(msg, args);
 					notifyController(msg, args, true);
 					break;
@@ -208,12 +251,25 @@ define(function(require, exports, module)
 			console.log('[GlympseAdapter] ' + msg + ((args) ? (': ' + JSON.stringify(args)) : ''));
 		}
 
-		function generateAction(id)
+		function generateTargAction(targ, id)
 		{
 			return function(data)
 			{
-				return (viewerMonitor.cmd(id, data) || true);
+				return (targ.cmd(id, data) || true);
 			};
+		}
+
+		function generateRequestAction(targ)
+		{
+			return function(data)
+			{
+				return (targ.cmd(data.id, data.args) || true);
+			};
+		}
+
+		function processExternal(args)
+		{
+			console.log('processExternal: ' + JSON.stringify(args));
 		}
 
 		function updateArrived(eta)
@@ -224,12 +280,7 @@ define(function(require, exports, module)
 			{
 				hasArrived = (phase === 'arrived');
 			}
-			//else if (eta != null)
-			//{
-			//	hasArrived = (eta <= 70);
-			//}
 
-			//dbg('old=' + oldArrived + ', has=' + hasArrived);
 			if (oldArrived !== hasArrived)
 			{
 				var val = { id: s.Arrived, val: { hasArrived: hasArrived, t: Date.now() }};
@@ -297,7 +348,7 @@ define(function(require, exports, module)
 
 
 		///////////////////////////////////////////////////////////////////////////////
-		// HOST REQUEST HANDLERS
+		// HOST REQUEST HANDLERS (MAP)
 		///////////////////////////////////////////////////////////////////////////////
 
 		function getValue(id)

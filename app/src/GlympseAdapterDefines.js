@@ -5,34 +5,60 @@ define(function(require, exports, module)
 
 	var Defines =
 	{
-		/////////////////////////////////////////
-		// API Endpoints - host and client
-		/////////////////////////////////////////
+		MAP: {
 
-		REQUESTS: {
-			  addInvites: 'addInvites'
-			, addGroups: 'addGroups'
-			, addMarkers: 'addMarkers'
-			, addTwitterTopics: 'addTwitterTopics'
-			, addTwitterUsers: 'addTwitterUsers'
-			, generateRoute: 'generateRoute'
-			, ignoreDestinations: 'ignoreDestinations'
-			, refreshView: 'refreshView'
-			, removeInvites: 'removeInvites'
-			, setApiServices: 'setApiServices'
-			, setPadding: 'setPadding'
-			, setUserInfo: 'setUserInfo'	// Send-only... break it out?
-			, updateSetting: 'updateSetting'
+			/////////////////////////////////////////
+			// API Endpoints - host and client
+			/////////////////////////////////////////
+
+			REQUESTS: {
+				  addInvites: 'addInvites'
+				, addGroups: 'addGroups'
+				, addMarkers: 'addMarkers'
+				, addTwitterTopics: 'addTwitterTopics'
+				, addTwitterUsers: 'addTwitterUsers'
+				, generateRoute: 'generateRoute'
+				, ignoreDestinations: 'ignoreDestinations'
+				, refreshView: 'refreshView'
+				, removeInvites: 'removeInvites'
+				, setApiServices: 'setApiServices'
+				, setPadding: 'setPadding'
+				, setUserInfo: 'setUserInfo'	// Send-only... break it out?
+				, updateSetting: 'updateSetting'
+			}
+
+
+			/////////////////////////////////////////
+			// API Endpoints: client-only
+			/////////////////////////////////////////
+
+			, REQUESTS_LOCAL: {
+				  getInvites: 'getInvites'
+				, getMap: 'getMap'
+			}
 		}
 
+		, CARDS: {
 
-		/////////////////////////////////////////
-		// API Endpoints: client-only
-		/////////////////////////////////////////
+			/////////////////////////////////////////
+			// API Endpoints - host and client
+			/////////////////////////////////////////
 
-		, REQUEST_LOCAL: {
-			  getInvites: 'getInvites'
-			, getMap: 'getMap'
+			REQUESTS: {
+				  addInvites: 'addInvites'
+				, getInvites: 'getInvites'
+				, removeInvites: 'removeInvites'
+				, setServices: 'setServices'
+				, updateSetting: 'updateSetting'
+			}
+
+
+			/////////////////////////////////////////
+			// API Endpoints: client-only
+			/////////////////////////////////////////
+
+			, REQUESTS_LOCAL: {
+			}
 		}
 
 

@@ -6,7 +6,7 @@ define(function(require, exports, module)
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var m = Defines.MSG;
 	var s = Defines.STATE;
-	var r = Defines.REQUESTS;
+	var r = Defines.MAP.REQUESTS;
 
 
 	// Exported class
