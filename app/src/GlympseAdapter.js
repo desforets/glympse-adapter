@@ -37,9 +37,6 @@ define(function(require, exports, module)
 		var cardsController;
 		var oasisLocal = new Oasis();	// Found in minified source
 
-		var hasArrived = false;
-		var isAbandoned = false;
-		var phase = null;
 		var connectedOasis = false;
 		var connectQueue = [];
 
@@ -219,29 +216,9 @@ define(function(require, exports, module)
 		this.infoUpdate = function(id, val)
 		{
 			//console.log('>>>>>> id=' + id);
-			if (id === s.Phase)
-			{
-				phase = val;
-				updateArrived();
-
-				isAbandoned = false;
-				if (val === 'abandoned')
-				{
-					isAbandoned = true;
-					notifyController(mStateUpdate, { id: s.NoInvites, val: true }, false);
-				}
-			}
-			else if (id === s.Eta)
-			{
-				updateArrived(val);
-			}
-
-			if (!isAbandoned || id === s.Phase)
-			{
-				var args = { id: id, val: val };
-				notifyController(mStateUpdate, args, false);
-				sendOasisMessage(mStateUpdate, args);
-			}
+			var args = { id: id, val: val };
+			notifyController(mStateUpdate, args, false);
+			sendOasisMessage(mStateUpdate, args);
 		};
 
 
@@ -273,23 +250,6 @@ define(function(require, exports, module)
 		function processExternal(args)
 		{
 			console.log('processExternal: ' + JSON.stringify(args));
-		}
-
-		function updateArrived(eta)
-		{
-			var oldArrived = hasArrived;
-
-			if (phase)
-			{
-				hasArrived = (phase === 'arrived');
-			}
-
-			if (oldArrived !== hasArrived)
-			{
-				var val = { id: s.Arrived, val: { hasArrived: hasArrived, t: Date.now() }};
-				notifyController(mStateUpdate, val, false);
-				sendOasisMessage(mStateUpdate, val);
-			}
 		}
 
 		function notifyController(msg, args, evtMsg)
@@ -359,11 +319,6 @@ define(function(require, exports, module)
 			if (!viewerMonitor)
 			{
 				return 'NOT_INITIALIZED';
-			}
-
-			if (id === s.Arrived)
-			{
-				return hasArrived;
 			}
 
 			return viewerMonitor.getCurrentValue(id);

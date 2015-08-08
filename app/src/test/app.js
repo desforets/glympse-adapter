@@ -12,16 +12,19 @@ define(function(require, exports, module)
 	var Defines = require('test/Defines');
 
 	var adapter, cfg, viewManager;
+
+	// cards/invites collection/state
+	var cards, invites;
+
 	var stubViewer =
 	{
 		notify: function(msg, args)
 		{
-			console.log('StubViewer.notify(): ' + msg + ' -- ' + JSON.stringify(args));
-
 			switch (msg)
 			{
 				case AdapterDefines.MSG.ViewerReady:
 				{
+					console.log('--> VIEWER READY');
 					viewManager.cmd(Defines.CMD.InitUi, true);
 					//console.log('MAP = ' + adapter.map.getMap());
 					return;
@@ -29,11 +32,13 @@ define(function(require, exports, module)
 
 				case AdapterDefines.MSG.CardsInitEnd:
 				{
-					console.log('FINISHED CARDS LOAD! ' + args.length + ' total cards');
-					var invites = [];
-					for (var i = 0, len = args.length; i < len; i++)
+					cards = args;
+					invites = [];
+					console.log('--> FINISHED CARDS LOAD! ' + cards.length + ' total cards');
+
+					for (var i = 0, len = cards.length; i < len; i++)
 					{
-						var card = args[i];
+						var card = cards[i];
 						var members = card.getMembers();
 						//console.log('[' + i + ']: ' + card.getName() + ' with ' + members.length + ' members');
 						for (var j = 0, mlen = members.length; j < mlen; j++)
@@ -50,12 +55,17 @@ define(function(require, exports, module)
 
 					if (invites.length > 0)
 					{
-						//console.log('Loading invites: ' + invites);
+						console.log('---> Loading invites: ' + invites);
 						cfg.viewer.t = invites.join(';');
 						adapter.loadViewer(cfg.cfgViewer);
 					}
 					//console.log('--> ' + JSON.stringify(args));
 					break;
+				}
+
+				default:
+				{
+					console.log('[OTHER] StubViewer.notify(): [' + msg + '] -- ' + JSON.stringify(args));
 				}
 			}
 		}

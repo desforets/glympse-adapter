@@ -17,27 +17,12 @@ define(function(require, exports, module)
 
 		// state
 		var app;
-//		var interval = cfg.autoUpdateInterval;
-		var queryTimer;
-		var etaTimer;
+		var timerEnd;
 		var viewer;
 
 		var that = this;
-		var lastActive;
-		var etaCount = -1;
-		var etaStart = -1;
-		var etaTarg = null;
-		var isViewerReady = false;
 		var cmdQueue = [];
-
-		var idEta = s.Eta;
-
 		var props = { };
-		props[s.Avatar] = null;
-		props[s.Expired] = false;
-		props[s.Name] = null;
-		props[s.Phase] = null;
-		props[idEta] = -1;			// Special handling
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -71,7 +56,6 @@ define(function(require, exports, module)
 			viewer.removeEventListener(glyEvents.DATA, viewerData, false);
 			viewer.removeEventListener(glyEvents.PROPERTIES, viewerData, false);
 			viewer.removeEventListener(glyEvents.ETA, viewerEta, false);
-			schedule(false);
 		};
 
 		this.getCurrentValue = function(id)
@@ -96,31 +80,27 @@ define(function(require, exports, module)
 			{
 				case r.setPadding:
 				{
-					// For now, we only allow for left padding
-					var padding = args;
 					if (!(args instanceof Array))
 					{
 						if (typeof args === 'number')
 						{
 							// Replicate old paddingLeft semantics for now
-							padding = [null,null,null,args[3]];
+							args = [ null, null, null, args ];
 						}
 						else
 						{
 							return 'Invalid paddingArray type!';
 						}
 					}
-
-					return app.setPadding(padding);
 				}
 
 				default:
 				{
-					return app[cmd](args);
+					break;
 				}
 			}
 
-			return null;
+			return app[cmd](args);
 		};
 
 
@@ -142,8 +122,6 @@ define(function(require, exports, module)
 			viewer.removeEventListener(glyEvents.READY, viewerReady, false);
 
 			app = e.detail.app;
-			isViewerReady = true;
-
 			if (!app)
 			{
 				dbg('Error getting viewer. Aborting!');
@@ -157,38 +135,74 @@ define(function(require, exports, module)
 				that.cmd(o.cmd, o.args);
 			}
 
-			//dbg('**** VIEWER READY **** - app=' + app);
-			checkViewerStatus();
 			controller.notify(m.ViewerReady, app);
+
+			// Notify if no invites found
+			var invites = app.getInvites();
+			if (!invites || invites.length === 0)
+			{
+				controller.infoUpdate(s.NoInvites, null);
+			}
 		}
 
 		function viewerData(e)
 		{
-			//dbg('** GOT DATA: ** ' + e.detail.id + ' -- ' + JSON.stringify(e.detail.data));
-			// FIXME: Remove this timeout once viewer raises DATA/PROPERTIES event
-			// when invite data is properly updated with new property data
-			setTimeout(function()
+			var detail = e.detail;
+			var idInvite = detail.id;
+			var data = detail.data;
+
+			var unknowns = [];	// Unknown properties that are passed along
+			var maps = [ s.Avatar, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
+
+			//console.log('DATA: ' + JSON.stringify(detail, null, '  '));
+
+			for (var i = 0, len = data.length; i < len; i++)
 			{
-				if (isViewerReady)
+				var val = data[i];
+				var v = val.v;
+				var n = val.n;
+				var t = val.t;
+				var found = false;
+
+				for (var j = 0, jlen = maps.length; j < jlen; j++)
 				{
-					checkViewerStatus();
+					var id = maps[j];
+					if (n === id)
+					{
+						found = true;
+						if (props[id] !== v)
+						{
+							props[id] = v;
+							controller.infoUpdate(id, { id: idInvite, val: v, t: t });
+							break;
+						}
+					}
 				}
 
-				// Format of e.detail:
-				// { id: "invite_code"
-				// , data: [ invite_property_update0,
-				//			 invite_property_update1,
-				//			 ...
-				//			 invite_property_updateN
-				//		   ]
-				// }
-				controller.notify(m.DataUpdate, e.detail);
-			}, 100);
+				// Check for additional processing
+				if (n === s.EndTime)
+				{
+					notifyExpired(idInvite);
+				}
+
+				if (!found)
+				{
+					unknowns.push(val);
+				}
+			}
+
+			if (unknowns.length > 0)
+			{
+				detail.data = unknowns;
+				controller.notify(m.DataUpdate, detail);
+			}
 		}
 
 		function viewerEta(e)
 		{
-			dbg('** GOT ETA: ** ' + e.detail.id + ' -- ' + JSON.stringify(e.detail.data));
+			var etaCount = e.detail.data;
+			//dbg('** GOT ETA: ** ' + e.detail.id + ' -- ' + JSON.stringify(etaCount));
+			controller.infoUpdate(s.Eta, (etaCount > 0) ? etaCount : 0);
 		}
 
 
@@ -201,138 +215,23 @@ define(function(require, exports, module)
 			console.log('[ViewerMonitor] ' + msg + ((args) ? (': ' + JSON.stringify(args)) : ''));
 		}
 
-		function schedule(run)
+		function notifyExpired(idInvite)
 		{
-			if (run && !etaTimer)
+			if (timerEnd)
 			{
-				etaTimer = setInterval(updateEta, 1000);
-			}
-			else if (!run && etaTimer)
-			{
-				clearInterval(etaTimer);
-				etaTimer = null;
-			}
-		}
-
-		function updateEta()
-		{
-			if (etaTarg !== null)
-			{
-				etaCount = (etaTarg - new Date().getTime()) / 1000;
-				controller.infoUpdate(idEta, (etaCount > 0) ? etaCount : 0);
-			}
-		}
-
-		function checkViewerStatus()
-		{
-			var invites = app.getInvites();
-
-			//console.log('**** invites: ' + invites);
-
-			// Notify if no invites found
-			if (!invites || invites.length === 0)
-			{
-				etaTarg = null;
-				controller.infoUpdate(s.NoInvites, null);
-				return;
+				clearTimeout(timerEnd);
+				timerEnd = 0;
 			}
 
-			// Re-query the invites list in case the first invite has changed
-			// as could happen in the case of groups, where a user sends a new
-			// invite to the group (which replaces the old one).
-			var invFull, inv = null;
-			for (var i = 0, len = invites.length; i < len; i++)
+			// One last check
+			var t = new Date().getTime();
+			var eTime = props[s.EndTime];
+			if (eTime > t)
 			{
-				invFull = invites[i];
-				inv = (invFull && invFull.getInvite());
-
-				if (!inv)
-				{
-					continue;
-				}
-
-				//console.log('Invite[' + i + ']: ' + inv
-				//	+ '\nName: ' + inv.name
-				//	+ '\nAvatar: ' + inv.avatarUrl
-				//	+ '\nDest: ' + JSON.stringify(inv.destination)
-				//	+ '\nDestLatLng: ' + inv.destinationLatLng.lat + ',' + inv.destinationLatLng.lng
-				//	+ '\nPosition: ' + inv.locationLatLng.lat + ',' + inv.locationLatLng.lng
-				//	+ '\nETA: ' + inv.eta + ' / ' + inv.etaStart
-				//);
-
-				// FUTURE: Check destination distance?
-
-				// See if we can find an active user in the group
-				if (!inv.isActive)
-				{
-					if (lastActive && inv != lastActive)
-					{
-						inv = lastActive;
-					}
-
-					continue;
-				}
-
-				break;
+				timerEnd = setTimeout(notifyExpired, (eTime - t));
 			}
 
-			lastActive = inv;
-
-			if (!inv)
-			{
-				etaTarg = null;
-			}
-			else
-			{
-				//console.log('location: ' + JSON.stringify(inv.location));
-				var id = s.Expired;
-				var val = inv.isActive;
-				if (val != (!props[id]))
-				{
-					props[id] = !val;
-					controller.infoUpdate(id, !val);
-				}
-
-				id = s.Name;
-				val = inv.name;
-				if (val !== props[id])
-				{
-					props[id] = val;
-					controller.infoUpdate(id, val);
-				}
-
-				id = s.Phase;
-				val = inv.phase;
-				if (val !== props[id])
-				{
-					props[id] = val;
-					controller.infoUpdate(id, val);
-				}
-
-				id = s.Avatar;
-				val = inv.avatarUrl;
-				if (val !== props[id])
-				{
-					props[id] = val;
-					controller.infoUpdate(id, val);
-				}
-
-				//console.log("inv.IsActive:" + inv.isActive + " -- " + inv.eta + ' -- ' + inv.etaStart);
-				//console.log("etaStatus:" + invFull.getEtaStatus());
-				id = s.Eta;
-				val = inv.eta;
-				if (inv.isActive && val && (val != props[id] || inv.etaStart / 1000 != etaStart))
-				{
-					//console.log("START eta=" + inv.eta);
-					schedule(true);
-					props[id] = val;
-					etaStart = inv.etaStart / 1000;
-					etaCount = props[id] - etaStart;
-					etaTarg = new Date().getTime() + etaCount * 1000;
-
-					controller.infoUpdate(id, etaCount);
-				}
-			}
+			controller.infoUpdate(s.Expired, { id: idInvite, val: eTime <= t });
 		}
 	}
 

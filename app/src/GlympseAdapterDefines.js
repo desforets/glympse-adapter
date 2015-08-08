@@ -45,11 +45,11 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			REQUESTS: {
-				  addInvites: 'addInvites'
-				, getInvites: 'getInvites'
-				, removeInvites: 'removeInvites'
-				, setServices: 'setServices'
-				, updateSetting: 'updateSetting'
+				//  addInvites: 'addInvites'
+				//, getInvites: 'getInvites'
+				//, removeInvites: 'removeInvites'
+				//, setServices: 'setServices'
+				//, updateSetting: 'updateSetting'
 			}
 
 
@@ -83,13 +83,18 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////
 
 		, STATE: {
-			  Arrived: 'Arrived'
-			, Avatar: 'Avatar'
-			, Eta: 'Eta'
+			// Known data stream properties
+			  Avatar: 'avatar'
+			, EndTime: 'end_time'
+			, Eta: 'eta'
+			, Message: 'message'
+			, Name: 'name'
+			, Phase: 'phase'
+
+			// Additional meta-data state
+			, Arrived: 'Arrived'	// needed?
 			, Expired: 'Expired'
-			, Name: 'Name'
 			, NoInvites: 'NoInvites'
-			, Phase: 'Phase'
 		}
 	};
 
