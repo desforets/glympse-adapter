@@ -76,6 +76,9 @@ define(function(require, exports, module)
 								, cards: {}
 								};
 
+			// Link viewer to card data center
+			cfgViewer.services = cfgAdapter.svcGlympse;
+			//console.log('adapter svcs: ' + cfgAdapter.svcGlympse);
 
 			var connectSettings = { invite: ((cfgViewer.t) ? cfgViewer.t.split(',')[0] : '???')
 								 // apiMap: [ idApi0, idApi1, ... ]
@@ -145,10 +148,10 @@ define(function(require, exports, module)
 			connectQueue.push({ id: 'Connected', val: connectSettings });
 
 			// DEBUG
-			for (id in this.map)
-			{
-				console.log('Available public interface: ' + id);
-			}
+			//for (id in this.map)
+			//{
+			//	console.log('Available public interface: ' + id);
+			//}
 
 			cfgClient.consumers[idOasisPort] = Oasis.Consumer.extend(
 			{
@@ -180,7 +183,7 @@ define(function(require, exports, module)
 
 		this.loadViewer = function(cfgNew)
 		{
-			console.log('cfg.viewer=' + cfgMonitor.viewer);
+			//console.log('cfg.viewer=' + cfgMonitor.viewer);
 			$.extend(cfgViewer, cfgNew);
 			viewerMonitor.run();
 			$(cfgMonitor.viewer).glympser(cfgViewer);

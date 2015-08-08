@@ -96,7 +96,7 @@ define(function(require, exports, module)
 			}
 
 			//dbg('Auth token: ' + account.getToken() + ' -- ' + (info && info.token));
-			dbg('Authenticated. Loading ' + cardInvites.length + ' cards...');
+			dbg('[' + ((cfg.anon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
 			for (var i = 0, len = cardInvites.length; i < len; i++)

@@ -23,7 +23,7 @@ define(function(require, exports, module)
 				case AdapterDefines.MSG.ViewerReady:
 				{
 					viewManager.cmd(Defines.CMD.InitUi, true);
-					console.log('MAP = ' + adapter.map.getMap());
+					//console.log('MAP = ' + adapter.map.getMap());
 					return;
 				}
 
@@ -35,12 +35,12 @@ define(function(require, exports, module)
 					{
 						var card = args[i];
 						var members = card.getMembers();
-						console.log('[' + i + ']: ' + card.getName() + ' with ' + members.length + ' members');
+						//console.log('[' + i + ']: ' + card.getName() + ' with ' + members.length + ' members');
 						for (var j = 0, mlen = members.length; j < mlen; j++)
 						{
 							var member = members[j];
 							var invite = member.getTicket().getInviteCode();
-							console.log('  [' + j + ']: ' + invite);
+							//console.log('  [' + j + ']: ' + invite);
 							if (invite)
 							{
 								invites.push(invite);
@@ -50,7 +50,7 @@ define(function(require, exports, module)
 
 					if (invites.length > 0)
 					{
-						console.log('Loading invites: ' + invites);
+						//console.log('Loading invites: ' + invites);
 						cfg.viewer.t = invites.join(';');
 						adapter.loadViewer(cfg.cfgViewer);
 					}

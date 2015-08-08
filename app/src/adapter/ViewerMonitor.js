@@ -63,12 +63,14 @@ define(function(require, exports, module)
 			viewer.addEventListener(glyEvents.READY, viewerReady, false);
 			viewer.addEventListener(glyEvents.DATA, viewerData, false);
 			viewer.addEventListener(glyEvents.PROPERTIES, viewerData, false);
+			viewer.addEventListener(glyEvents.ETA, viewerEta, false);
 		};
 
 		this.shutdown = function()
 		{
 			viewer.removeEventListener(glyEvents.DATA, viewerData, false);
 			viewer.removeEventListener(glyEvents.PROPERTIES, viewerData, false);
+			viewer.removeEventListener(glyEvents.ETA, viewerEta, false);
 			schedule(false);
 		};
 
@@ -182,6 +184,11 @@ define(function(require, exports, module)
 				// }
 				controller.notify(m.DataUpdate, e.detail);
 			}, 100);
+		}
+
+		function viewerEta(e)
+		{
+			dbg('** GOT ETA: ** ' + e.detail.id + ' -- ' + JSON.stringify(e.detail.data));
 		}
 
 

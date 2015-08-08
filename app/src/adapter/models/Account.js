@@ -3,6 +3,7 @@ define(function(require, exports, module)
     'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');
+	var cAcctTokenName = 't0';
 	var cApiKey = 'api_key';
 	var cMaxAttempts = 3;
 	var cPassword = 'p0';
@@ -15,6 +16,7 @@ define(function(require, exports, module)
 	{
 		// state
 		var attempts = 0;
+		var isAnon = cfg.anon;
 		var token;
 
 		// consts
@@ -45,7 +47,7 @@ define(function(require, exports, module)
 
 		this.init = function()
 		{
-			token = lib.getCfgVal(cTokenName);
+			token = lib.getCfgVal(cAcctTokenName);
 			if (token)
 			{
 				return true;
@@ -53,8 +55,14 @@ define(function(require, exports, module)
 
 			attempts = 0;
 
-			if (cfg.anon)
+			if (isAnon)
 			{
+				token = lib.getCfgVal(cTokenName);
+				if (token)
+				{
+					return true;
+				}
+
 				token = lib.getCookie(cTokenName);
 				if (token)
 				{
@@ -111,9 +119,14 @@ define(function(require, exports, module)
 				if (data && data.response && data.result === 'ok')
 				{
 					token = data.response.access_token;
+
+					lib.setCfgVal((isAnon) ? cTokenName : cAcctTokenName, token);
+					if (cfg.anon)
+					{
+						lib.setCookie(cTokenName, token, 365);
+					}
+
 					//dbg('>> new token: ' + token);
-					lib.setCfgVal(cTokenName, token);
-					lib.setCookie(cTokenName, token, 365);
 
 					result.status = true;
 					result.token = token;
@@ -176,7 +189,7 @@ define(function(require, exports, module)
 					account.password = pw;
 					lib.setCfgVal(cUserName, id);
 					lib.setCfgVal(cPassword, pw);
-					dbg('>> new account: ' + id + ' / ' + pw);
+					//dbg('>> new account: ' + id + ' / ' + pw);
 
 					// Now, log in
 					attempts = 0;
