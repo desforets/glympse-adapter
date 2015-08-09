@@ -14,6 +14,7 @@ define(function(require, exports, module)
 		// state
 		var attempts = 0;
 		var data;
+		var loaded = false;
 		var members;
 		var that = this;
 
@@ -48,6 +49,16 @@ define(function(require, exports, module)
 		this.getMetaData = function()
 		{
 			return data.metadata;
+		};
+
+		this.isLoaded = function()
+		{
+			return loaded;
+		};
+
+		this.getIdCard = function()
+		{
+			return idCard;
 		};
 
 		this.getData = function()
@@ -137,6 +148,7 @@ define(function(require, exports, module)
 				if (resp && resp.body && resp.result === 'ok')
 				{
 					//dbg('Got card data', resp);
+					loaded = true;
 					that.setData(resp.body);
 					controller.notify(m.CardReady, idCard);
 

@@ -47,10 +47,13 @@ define(function(require, exports, module)
 
 		this.init = function()
 		{
-			token = lib.getCfgVal(cAcctTokenName);
-			if (token)
+			if (!isAnon)
 			{
-				return true;
+				token = lib.getCfgVal(cAcctTokenName);
+				if (token)
+				{
+					return true;
+				}
 			}
 
 			attempts = 0;

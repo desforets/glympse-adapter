@@ -85,6 +85,7 @@ define(function(require, exports, module)
 		, STATE: {
 			// Known data stream properties
 			  Avatar: 'avatar'
+			, Destination: 'destination'
 			, EndTime: 'end_time'
 			, Eta: 'eta'
 			, Message: 'message'

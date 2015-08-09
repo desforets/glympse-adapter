@@ -152,7 +152,15 @@ define(function(require, exports, module)
 			var data = detail.data;
 
 			var unknowns = [];	// Unknown properties that are passed along
-			var maps = [ s.Avatar, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
+			var maps = [ s.Avatar, s.Destination, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
+
+			if (!props[idInvite])
+			{
+				props[idInvite] = { };
+				console.log('New props for ' + idInvite);
+			}
+
+			var prop = props[idInvite];
 
 			//console.log('DATA: ' + JSON.stringify(detail, null, '  '));
 
@@ -170,9 +178,9 @@ define(function(require, exports, module)
 					if (n === id)
 					{
 						found = true;
-						if (props[id] !== v)
+						if (prop[id] !== v)
 						{
-							props[id] = v;
+							prop[id] = v;
 							controller.infoUpdate(id, { id: idInvite, val: v, t: t });
 							break;
 						}
