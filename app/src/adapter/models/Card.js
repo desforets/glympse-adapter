@@ -22,7 +22,7 @@ define(function(require, exports, module)
 		var dbg = lib.dbg('Card', cfg.dbg);
 		var svr = (cfg.svcCards || '//api.cards.sandbox.glympse.com/api/v1/');
 		var cardUrl = (svr + 'cards/invites/' + idCard);
-		var cardParams = { members: false };
+		var cardParams = { members: true };
 		var cMaxAttempts = 3;
 
 		// TODO: Just map data props directly??
@@ -143,8 +143,8 @@ define(function(require, exports, module)
 
 			attempts++;
 
-			try
-			{
+//			try
+//			{
 				if (resp && resp.body && resp.result === 'ok')
 				{
 					//dbg('Got card data', resp);
@@ -158,11 +158,11 @@ define(function(require, exports, module)
 //					controller.notify(Account.InitComplete, result);
 					return;
 				}
-			}
-			catch (e)
-			{
-				dbg('Error parsing card', e);
-			}
+//			}
+//			catch (e)
+//			{
+//				dbg('Error parsing card', e);
+//			}
 
 			//dbg('attempt: ' + attempts + ', last data', data);
 

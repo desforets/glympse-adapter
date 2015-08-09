@@ -7,18 +7,10 @@ define(function(require, exports, module)
 	var Main = require('Main');
 	var ViewManager = require('ViewManager');
 
-	var cfg;
-	var main;
-	var vm;
-
-
-	$(document).ready(function()
+	function GlympseInvite(cfg)
 	{
-		cfg = window.cfgApp;
+	}
 
-		cfg.adapter.element = $('#glympser');
 
-		vm = new ViewManager(cfg.app);
-		main = new Main(vm, cfg);
-	});
+	module.exports = GlympseInvite;
 });

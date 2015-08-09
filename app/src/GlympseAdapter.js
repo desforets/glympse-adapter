@@ -33,6 +33,7 @@ define(function(require, exports, module)
 		var cfgAdapter = cfg.adapter;
 		var cfgViewer = cfg.viewer;
 
+		var initialized = false;
 		var viewerMonitor;
 		var cardsController;
 		var oasisLocal = new Oasis();	// Found in minified source
@@ -54,11 +55,27 @@ define(function(require, exports, module)
 
 
 		///////////////////////////////////////////////////////////////////////////////
+		// PROPERTIES
+		///////////////////////////////////////////////////////////////////////////////
+
+		this.getViewer = function()
+		{
+			return (viewerMonitor && viewerMonitor.getViewer());
+		};
+
+
+		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
 		this.run = function(newViewer)
 		{
+			if (initialized)
+			{
+				return;
+			}
+
+			initialized = true;
 			oasisLocal.autoInitializeSandbox();	// Found in minified source
 			//oasisLocal.configure('allowSameOrigin', true);
 
@@ -160,7 +177,7 @@ define(function(require, exports, module)
 			oasisLocal.connect(cfgClient);
 
 			// Set up for app
-			window.appGlympseAdapter = this;
+			//window.appGlympseAdapter = this;
 
 			var card = cfgAdapter.card;
 			if (card)

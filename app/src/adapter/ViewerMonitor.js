@@ -16,9 +16,9 @@ define(function(require, exports, module)
 		var glyEvents = window.glympse.events;
 
 		// state
-		var app;
 		var timerEnd;
-		var viewer;
+		var viewerApp;
+		var viewerElement;
 
 		var that = this;
 		var cmdQueue = [];
@@ -28,6 +28,11 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////////////////////////////////
 		// PROPERTIES
 		///////////////////////////////////////////////////////////////////////////////
+
+		this.getViewer = function()
+		{
+			return viewerApp;
+		};
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -43,19 +48,19 @@ define(function(require, exports, module)
 			}
 
 			// Set up handlers
-			viewer = cfg.viewer;
-			viewer.addEventListener(glyEvents.INIT, viewerInit, false);
-			viewer.addEventListener(glyEvents.READY, viewerReady, false);
-			viewer.addEventListener(glyEvents.DATA, viewerData, false);
-			viewer.addEventListener(glyEvents.PROPERTIES, viewerData, false);
-			viewer.addEventListener(glyEvents.ETA, viewerEta, false);
+			viewerElement = cfg.viewer;
+			viewerElement.addEventListener(glyEvents.INIT, viewerInit, false);
+			viewerElement.addEventListener(glyEvents.READY, viewerReady, false);
+			viewerElement.addEventListener(glyEvents.DATA, viewerData, false);
+			viewerElement.addEventListener(glyEvents.PROPERTIES, viewerData, false);
+			viewerElement.addEventListener(glyEvents.ETA, viewerEta, false);
 		};
 
 		this.shutdown = function()
 		{
-			viewer.removeEventListener(glyEvents.DATA, viewerData, false);
-			viewer.removeEventListener(glyEvents.PROPERTIES, viewerData, false);
-			viewer.removeEventListener(glyEvents.ETA, viewerEta, false);
+			viewerElement.removeEventListener(glyEvents.DATA, viewerData, false);
+			viewerElement.removeEventListener(glyEvents.PROPERTIES, viewerData, false);
+			viewerElement.removeEventListener(glyEvents.ETA, viewerEta, false);
 		};
 
 		this.getCurrentValue = function(id)
@@ -70,7 +75,7 @@ define(function(require, exports, module)
 
 		this.cmd = function(cmd, args)
 		{
-			if (!app)
+			if (!viewerApp)
 			{
 				cmdQueue.push({ cmd: cmd, args: args });
 				return null;
@@ -100,7 +105,7 @@ define(function(require, exports, module)
 				}
 			}
 
-			return app[cmd](args);
+			return viewerApp[cmd](args);
 		};
 
 
@@ -111,18 +116,18 @@ define(function(require, exports, module)
 
 		function viewerInit(e)
 		{
-			//dbg('**** VIEWER INIT **** - app=' + e.detail.app);
-			viewer.removeEventListener(glyEvents.INIT, viewerInit, false);
+			//dbg('**** VIEWER INIT **** - viewerApp=' + e.detail.app);
+			viewerElement.removeEventListener(glyEvents.INIT, viewerInit, false);
 			controller.notify(m.ViewerInit, true);
 		}
 
 		function viewerReady(e)
 		{
 			//dbg('!!!!!!!! READY !!!!!!!!');
-			viewer.removeEventListener(glyEvents.READY, viewerReady, false);
+			viewerElement.removeEventListener(glyEvents.READY, viewerReady, false);
 
-			app = e.detail.app;
-			if (!app)
+			viewerApp = e.detail.app;
+			if (!viewerApp)
 			{
 				dbg('Error getting viewer. Aborting!');
 				return;
@@ -135,10 +140,10 @@ define(function(require, exports, module)
 				that.cmd(o.cmd, o.args);
 			}
 
-			controller.notify(m.ViewerReady, app);
+			controller.notify(m.ViewerReady, viewerApp);
 
 			// Notify if no invites found
-			var invites = app.getInvites();
+			var invites = viewerApp.getInvites();
 			if (!invites || invites.length === 0)
 			{
 				controller.infoUpdate(s.NoInvites, null);
@@ -181,6 +186,7 @@ define(function(require, exports, module)
 						if (prop[id] !== v)
 						{
 							prop[id] = v;
+							//dbg('v', v);
 							controller.infoUpdate(id, { id: idInvite, val: v, t: t });
 							break;
 						}
@@ -208,9 +214,12 @@ define(function(require, exports, module)
 
 		function viewerEta(e)
 		{
-			var etaCount = e.detail.data;
 			//dbg('** GOT ETA: ** ' + e.detail.id + ' -- ' + JSON.stringify(etaCount));
-			controller.infoUpdate(s.Eta, (etaCount > 0) ? etaCount : 0);
+			var d = e.detail;
+			d.t = new Date().getTime();
+			d.val = { eta: d.data * 1000, eta_ts: d.t };
+			d.data = undefined;
+			controller.infoUpdate(s.Eta, e.detail);//(etaCount > 0) ? etaCount : 0);
 		}
 
 
