@@ -67,9 +67,12 @@ define(function(require, exports, module)
 			data = val;
 			lib.mapProps(this, props, data);
 
-			invite = (data.invite) ? new MemberInvite(data.invite, cfg) : {};
-			ticket = (data.ticket) ? new MemberTicket(data.ticket, cfg) : {};
-			permissions = (data.permissions) ? new MemberPermissions(data.permissions, cfg) : {};
+			//invite = (data.invite) ? new MemberInvite(data.invite, cfg) : {};
+			//ticket = (data.ticket) ? new MemberTicket(data.ticket, cfg) : {};
+			//permissions = (data.permissions) ? new MemberPermissions(data.permissions, cfg) : {};
+			invite = new MemberInvite(data.invite, cfg);
+			ticket = new MemberTicket(data.ticket, cfg);
+			permissions = new MemberPermissions(data.permissions, cfg);
 		};
 
 

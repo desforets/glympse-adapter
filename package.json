@@ -1,8 +1,8 @@
 {
-  "name": "glympse-client-adapter",
-  "description": "Shim providing Card API support and viewer instantiation and references, exporting the Glympse Viewer API and customer interfaces via an iframe interface for hosted environments",
-  "version": "1.0.0",
-  "homepage": "https://github.com/Glympse/glympse-client-adapter",
+  "name": "glympse-adapter",
+  "description": "Web-based adapter for handling Glympse invites, Glympse cards, creating/extending Glympse-based and custom API across iframe boundaries, and instantiating the Glympse viewer. Works in host or client mode as well.",
+  "version": "1.0.1",
+  "homepage": "https://github.com/Glympse/glympse-adapter",
   "authors": [
     {
       "name": "Glympse Inc.",
@@ -12,16 +12,15 @@
   "keywords": [
     "Glympse",
     "iframe",
-    "oasis",
     "viewer",
     "adapter"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/Glympse/glympse-client-adapter.git"
+    "url": "git://github.com/Glympse/glympse-adapter.git"
   },
   "bugs": {
-    "url": "https://github.com/Glympse/glympse-client-adapter/issues"
+    "url": "https://github.com/Glympse/glympse-adapter/issues"
   },
   "engines": {
     "node": ">= 0.10.0"

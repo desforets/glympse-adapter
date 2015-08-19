@@ -176,9 +176,7 @@ define(function(require, exports, module)
 
 			oasisLocal.connect(cfgClient);
 
-			// Set up for app
-			//window.appGlympseAdapter = this;
-
+			// Card vs Glympse Invite loading
 			var card = cfgAdapter.card;
 			if (card)
 			{

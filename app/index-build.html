@@ -1,0 +1,149 @@
+<!doctype html>
+
+<html>
+	<head>
+		<style type="text/css">
+			body { font-family: sans-serif; font-size: 14px; line-height: 20px; margin: 0; padding: 0; border: 0; overflow:hidden; }
+		</style>
+
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type=text/javascript src="//dev.glympse.com/js/loader/latest/jquery.glympser.min.js"></script>
+		<script type="text/javascript" src="../dist/GlympseAdapter-1.0.1.min.js"></script>
+
+		<script type="text/javascript">
+			var urlParams = {}; (function () { var e, a = /\+/g, r = /([^&=]+)=?([^&]*)/g, d = function (s) { return decodeURIComponent(s.replace(a, " ")); }, q = window.location.search.substring(1); while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]); })();
+
+			window.cfgApp =
+			{
+				  app: { }
+				, viewer: {
+					  onlyCss: urlParams.onlyCss
+					, onlyCanvas: urlParams.onlyCanvas
+					//, extCfg: "UvoM1hkDMkGonTTTxk4e6Q"
+				}
+				, adapter: {
+					  card: urlParams.card || '3DNH-3793'
+					, t: urlParams.t || 'demobot0'
+					, pg: urlParams.pg
+					, g: urlParams.g
+					, twt: urlParams.twt
+					, hideEvents: false
+					, hideUpdates: false
+					, viewerPollInterval: 5000
+					, anon: false		// Account.js
+					, sandbox: true		// Account.js
+					, svcGlympse: '//api.sandbox.glympse.com/v2/'
+					//, svcGlympse: '//api.glympse.com/v2/'
+					, svcCards: '//api.cards.sandbox.glympse.com/api/v1/'				}
+			};
+
+			var AdapterDefines = window.glympse.GlympseAdapterDefines;
+
+			var stubViewer =
+			{
+				notify: function(msg, args)
+				{
+					switch (msg)
+					{
+						case AdapterDefines.MSG.ViewerReady:
+						{
+							console.log('--> VIEWER READY');
+							$('#divLoading').hide();
+							return;
+						}
+
+						case AdapterDefines.MSG.CardsInitEnd:
+						{
+							cards = args;
+							invites = [];
+							console.log('--> FINISHED CARDS LOAD! ' + cards.length + ' total cards');
+
+							for (var i = 0, len = cards.length; i < len; i++)
+							{
+								var card = cards[i];
+
+								if (!card.isLoaded())
+								{
+									console.log('Error loading card "' + card.getIdCard() + '"');
+									continue;
+								}
+
+								var members = card.getMembers();
+								for (var j = 0, mlen = members.length; j < mlen; j++)
+								{
+									var member = members[j];
+									var invite = member.getTicket().getInviteCode();
+									if (invite)
+									{
+										invites.push(invite);
+									}
+								}
+							}
+
+							if (invites.length > 0)
+							{
+								console.log('---> Loading invites: ' + invites);
+								cfg.viewer.t = invites.join(';');
+								adapter.loadViewer(cfg.cfgViewer);
+							}
+
+							break;
+						}
+
+						default:
+						{
+							console.log('[OTHER] StubViewer.notify(): [' + msg + '] -- ' + JSON.stringify(args));
+						}
+					}
+				}
+			};
+
+			$(document).ready(function()
+			{
+				cfg = window.cfgApp;
+
+				cfg.adapter.element = $('#glympser');
+
+				doResize();
+				$(window).resize(doResize);
+
+				// Add initial init delay to allow viewport to settle down
+				setTimeout(init, 100);
+			});
+
+
+			function init()
+			{
+				if (!cfg)
+				{
+					console.error('No config defined');
+					return;
+				}
+
+				adapter = new window.glympse.GlympseAdapter(stubViewer, cfg);
+				adapter.run($('#glympser'));
+
+				setTimeout(doResize, 250);
+			}
+
+			function doResize(forced)
+			{
+				var h = $(window).height();
+				$('#divLoading').css({ height: $(window).height() + 0*1 });
+				$('#glympser').css({ height: h });
+			}
+		</script>
+	</head>
+	<body>
+		<div>
+			<div id="divLoading" class="defText">
+				<div id="divStatusInfo" class="defText">
+					[ Loading ]
+				</div>
+			</div>
+			<div>
+				<div id="glympser"></div>
+			</div>
+		</div>
+	</body>
+</html>

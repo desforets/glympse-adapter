@@ -95,7 +95,7 @@ define(function(require, exports, module)
 			{
 				return function()
 				{
-					return data[propId];
+					return (data && data[propId]);
 				};
 			}
 
