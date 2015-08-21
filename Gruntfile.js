@@ -17,7 +17,7 @@ module.exports = function(grunt) {
 		distExports: 'dist',
 		moduleOut: 'GlympseAdapter',
 		moduleIn: 'GlympseAdapter',
-		moduleVersion: '1.0.1'
+		moduleVersion: '1.0.2'
       }
     }
   });

@@ -75,6 +75,8 @@ define(function(require, exports, module)
 			, CardInit: 'CardInit'
 			, CardReady: 'CardReady'
 			, CardsInitEnd: 'CardsInitEnd'
+			, AdapterInit: 'AdapterInit'
+			, Progress: 'Progress'
 		}
 
 

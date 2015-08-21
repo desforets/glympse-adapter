@@ -43,6 +43,8 @@ define(function(require, exports, module)
 
 		// data
 		var cfgMonitor = { };
+		var progressCurrent = 0;
+		var progressTotal = 0;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -176,8 +178,14 @@ define(function(require, exports, module)
 
 			oasisLocal.connect(cfgClient);
 
-			// Card vs Glympse Invite loading
 			var card = cfgAdapter.card;
+
+			progressCurrent = 0;
+			progressTotal = (card) ? (5 + 1 * 2) : 3;
+			notifyController(m.AdapterInit, { isCard: (card != null) }, true);
+			updateProgress();
+
+			// Card vs Glympse Invite loading
 			if (card)
 			{
 				cardsController.init([ card ]);
@@ -205,7 +213,6 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
-				case m.DataUpdate:
 				case m.ViewerInit:
 				case m.ViewerReady:
 				case m.CardsInitStart:
@@ -213,8 +220,14 @@ define(function(require, exports, module)
 				case m.CardReady:
 				case m.CardsInitEnd:
 				{
-					sendOasisMessage(msg, args);
-					notifyController(msg, args, true);
+					updateProgress();
+					sendEvent(msg, args);
+					break;
+				}
+
+				case m.DataUpdate:
+				{
+					sendEvent(msg, args);
 					break;
 				}
 
@@ -275,6 +288,19 @@ define(function(require, exports, module)
 			}
 
 			controller.notify(msg, args);
+		}
+
+		function updateProgress()
+		{
+			sendEvent(m.Progress, { curr: Math.min(++progressCurrent, progressTotal)
+								  , total: progressTotal
+								  });
+		}
+
+		function sendEvent(msg, args)
+		{
+			sendOasisMessage(msg, args);
+			notifyController(msg, args, true);
 		}
 
 
