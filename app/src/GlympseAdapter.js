@@ -290,6 +290,7 @@ define(function(require, exports, module)
 
 		function cleanInvites(invitesList)
 		{
+			invitesList = invitesList || [];
 			for (var i = 0, len = invitesList.length; i < len; i++)
 			{
 				var invite = invitesList[i].toUpperCase();
