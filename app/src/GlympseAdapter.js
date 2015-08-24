@@ -41,6 +41,9 @@ define(function(require, exports, module)
 		var connectedOasis = false;
 		var connectQueue = [];
 
+		var invitesCard = [];
+		var invitesGlympse = [];
+
 		// data
 		var cfgMonitor = { };
 		var progressCurrent = 0;
@@ -179,23 +182,36 @@ define(function(require, exports, module)
 			oasisLocal.connect(cfgClient);
 
 			var card = cfgAdapter.card;
+			var t = cfgAdapter.t;
+			var pg = cfgAdapter.pg;
+			var twt = cfgAdapter.twt;
+			var g = cfgAdapter.g;
+
+			invitesCard = (card) ? cleanInvites([ card ]) : [];
+			invitesGlympse = cleanInvites(splitMulti(t));
+			t = invitesGlympse.join(';');
 
 			progressCurrent = 0;
 			progressTotal = (card) ? (5 + 1 * 2) : 3;
-			notifyController(m.AdapterInit, { isCard: (card != null) }, true);
+			notifyController(m.AdapterInit, { isCard: (card != null)
+											, t: invitesGlympse
+											, pg: splitMulti(pg)
+											, twt: splitMulti(twt)
+											, g: splitMulti(g)
+											}, true);
 			updateProgress();
 
 			// Card vs Glympse Invite loading
 			if (card)
 			{
-				cardsController.init([ card ]);
+				cardsController.init(invitesCard);
 			}
-			else if (cfgAdapter.t || cfgAdapter.pg || cfgAdapter.g || cfgAdapter.twt)
+			else if (t || pg || g || twt)
 			{
-				cfgViewer.t = cfgAdapter.t;
-				cfgViewer.pg = cfgAdapter.pg;
-				cfgViewer.twt = cfgAdapter.twt;
-				cfgViewer.g = cfgAdapter.g;
+				cfgViewer.t = t;
+				cfgViewer.pg = pg;
+				cfgViewer.twt = twt;
+				cfgViewer.g = g;
 
 				this.loadViewer(cfgViewer);
 			}
@@ -227,6 +243,19 @@ define(function(require, exports, module)
 
 				case m.DataUpdate:
 				{
+					var idCard = args.ref;
+					if (idCard)
+					{
+						if (invitesCard.indexOf(idCard) < 0)
+						{
+							progressTotal += (5 + 1 * 2) - 2;
+							invitesCard.push(idCard);
+							notifyController(m.AdapterInit, { isCard: true });
+							updateProgress();
+							cardsController.init(invitesCard);
+						}
+					}
+
 					sendEvent(msg, args);
 					break;
 				}
@@ -253,6 +282,30 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////////////////////////////////
 		// INTERNAL
 		///////////////////////////////////////////////////////////////////////////////
+
+		function splitMulti(val)
+		{
+			return (val && val.split(';'));
+		}
+
+		function cleanInvites(invitesList)
+		{
+			for (var i = 0, len = invitesList.length; i < len; i++)
+			{
+				var invite = invitesList[i].toUpperCase();
+				var ilen = invite.length;
+				var ilen2 = ilen / 2;
+
+				if (ilen === 6 || ilen === 8)
+				{
+					invite = invite.substr(0, ilen2) + '-' + invite.substr(ilen2, ilen2);
+				}
+				//console.log('- ' + invitesList[i] + ' --> ' + invite);
+				invitesList[i] = invite;
+			}
+
+			return invitesList;
+		}
 
 		function dbg(msg, args)
 		{

@@ -162,7 +162,7 @@ define(function(require, exports, module)
 			if (!props[idInvite])
 			{
 				props[idInvite] = { };
-				console.log('New props for ' + idInvite);
+				//console.log('New props for ' + idInvite);
 			}
 
 			var prop = props[idInvite];
