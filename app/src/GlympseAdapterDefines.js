@@ -92,6 +92,7 @@ define(function(require, exports, module)
 			, Eta: 'eta'
 			, Message: 'message'
 			, Name: 'name'
+			, Owner: 'owner'
 			, Phase: 'phase'
 
 			// Additional meta-data state

@@ -243,7 +243,10 @@ define(function(require, exports, module)
 
 				case m.DataUpdate:
 				{
+					sendEvent(msg, args);
+
 					var idCard = args.ref;
+
 					if (idCard)
 					{
 						if (invitesCard.indexOf(idCard) < 0)
@@ -256,7 +259,6 @@ define(function(require, exports, module)
 						}
 					}
 
-					sendEvent(msg, args);
 					break;
 				}
 

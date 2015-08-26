@@ -27,6 +27,7 @@ define(function(require, exports, module)
 					, 'last_modified'
 					, 'created_time'
 					, 'id'
+					, 'user_id'
 					];
 
 

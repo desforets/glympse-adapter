@@ -157,7 +157,7 @@ define(function(require, exports, module)
 			var data = detail.data;
 
 			var unknowns = [];	// Unknown properties that are passed along
-			var maps = [ s.Avatar, s.Destination, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
+			var maps = [ s.Owner, s.Avatar, s.Destination, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
 
 			if (!props[idInvite])
 			{
@@ -169,17 +169,18 @@ define(function(require, exports, module)
 
 			//console.log('DATA: ' + JSON.stringify(detail, null, '  '));
 
-			for (var i = 0, len = data.length; i < len; i++)
+			for (var i = 0, ilen = maps.length; i < ilen; i++)
 			{
-				var val = data[i];
-				var v = val.v;
-				var n = val.n;
-				var t = val.t;
-				var found = false;
+				var id = maps[i];
 
-				for (var j = 0, jlen = maps.length; j < jlen; j++)
+				for (var j = 0, jlen = data.length; j < jlen; j++)
 				{
-					var id = maps[j];
+					var val = data[j];
+					var v = val.v;
+					var n = val.n;
+					var t = val.t;
+					var found = false;
+
 					if (n === id)
 					{
 						found = true;
