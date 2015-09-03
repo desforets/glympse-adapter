@@ -8,6 +8,91 @@
 
 
 
+##Adapter Messages
+
+The following is a description of the various notification messages that are sent by the adapter (defined in
+the `GlympseAdapterDefines.MSG` object):
+- `AdapterInit` / `{ isCard: bool, t: string }`: Indicates the adapter is beginning
+its loading sequence with the passed card invite or the specified Glympse invite
+(indicated via the `t` parameter)
+- `AdapterReady` / `{ cards:[ invites ], glympses: [ invites ]}`: Specifies the
+adapter has resolved all Card and Glympse invites and will begin the process
+of loading the specified Glympse invites. It should be noted that the adapter
+may return a card that was not specified in the `AdapterInit` phase, and may
+have changed the initial Glympse invite code, or included additional Glympse
+invites. This is due to the adapter detecting a Card invite reference in the
+initial Glympse invite code, and aligning the viewer to the Card reference and
+it's child Glympse invites.
+- `CardInit` / `card_invite`: Fired just before an attempt is made to load the
+Card invite.
+- `CardReady` / `card_invite`: Fired once the given Card invite has completed
+loading, regardless of success. Check the passed card's instance given upon
+the `CardsInitEnd` event.
+- `CardsInitEnd` / `[ card_instance0, ..., card_instanceN ]`: Sent once all
+cards have been loaded. The passed array are a set of Card.js class instances
+that can be check for various properties/state. Please reference the `Card.js`
+Data Model section for available APIs.
+-`CardsInitStart` / `[ card_invite0, ..., card_inviteN ]`: Notification sent
+just before Card data is loaded. The passed array is a list of the Card invite
+codes that will be loaded.
+- `DataUpdate` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id, data: [ property_0, ..., propertyM ] }`:
+Event passed from the Glympse API for a given Glympse invite code, for unknown/custom
+properties found in the Glympse's data stream. The format of property elements
+in the array are the same format as specified in the Glympse Data stream model:
+  - `t`: Time property was generated
+  - `n`: Property id
+  - `v`: Property value (may be default type, or a custom Object with additional members)
+- `InviteAdded` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id }`:
+Sent from the Glympse viewer whenever a Glympse invite has been successfully
+loaded and added to the map.
+- `InviteInit` / `glympse_invite_id`: Notification sent when a Glympse invite is to
+be loaded by the adapter to check for Card linkage. Note that is only seen during the
+initial start-up sequence of the adapter.
+- `InviteReady` / `GlympseInvite.js instance`: Notification sent once a Glympse invite
+has been loaded. The `GlympseInvite.js` instance is a class that can be referenced for
+additional info on the status of the invite (i.e. if it was successfully loaded and has
+a Card reference). This is generally only needed by the adapter itself to determine if
+a card + additional Glympse invites need to be loaded. However, it will have possibly
+interesting information for the adapter host. Additional API information on the
+`GlympseInvite.js` class is found elsewhere in this documentation.
+- `InviteRemoved` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id }`:
+Sent from the Glympse viewer whenever a Glympse invite has been removed from the map.
+No further updates will be seen from the Glympse invite via the adapter.
+- `Progress` / `{ curr: int, total: int }`: Seen during the initial loading phases of
+the adapter, and stops once the final `ViewerReady` message is generated.
+- `StateUpdate` / `{ id: property_id, invite: glympse_invite_id, owner: glympse_account_id, card: card_id, t: timestamp, val: property_value }`:
+Updates generated when known properties are changed in the Glympse invite. Below is the
+list on known properties that can be seen via the `StateUpdate` message. These are enumerated
+in the `GlympseAdapterDefines.STATE` object
+  - `avatar`
+  - `destination`
+  - `end_time`
+  - `eta`
+  - `message`
+  - `name`
+  - `phase`
+  - `Arrived`
+  - `Expired`
+  - `NoInvites` (seen if no Glympse invites are successfully loaded in the map)
+- `ViewerInit` / `true`: Sent when the Glympse map viewer is beginning its initialization process
+- `ViewerReady` / `Glympse_viewer_instance`: Generated once the Glympse map control is
+fully loaded and ready for presentation/interaction. The provided instance reference allows
+for direct access to the Glympse viewer application API and all of its components.
+
+##Message flow
+
+* params = card_invite, no glympse_invites
+
+    	AdapterInit -> P -> CardsInitStart -> P -> CardInit -> P -> CardReady -> P -> CardsInitEnd -> P -> AdapterReady -> ViewerInit -> P -> ViewerReady -> P [Complete]
+
+* params = no card_invite, glympse_invite (not tied to a card)
+
+		AdapterInit -> P -> InviteInit -> P -> InviteReady -> P -> AdapterReady -> ViewerInit -> P -> ViewerReady -> P [Complete]
+
+* params = no card_invite, glympse_invite (tied to a card)
+
+		AdapterInit -> P -> InviteInit -> P -> InviteReady -> (move to card_invite/no glympse_invites flow)
+
 
 ===========================================
 ===========================================

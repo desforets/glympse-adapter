@@ -14,14 +14,29 @@ define(function(require, exports, module)
 	var adapter, cfg, viewManager;
 
 	// cards/invites collection/state
-	var cards, invites;
+	var cards;
+	var invitesCard;
+	var invitesGlympse;
 
 	var stubViewer =
 	{
 		notify: function(msg, args)
 		{
+//			if (msg !== AdapterDefines.MSG.StateUpdate)
+//			{
+//				console.log('[Stub] StubViewer.notify(): [' + msg + '] -- ' + JSON.stringify(args));
+//			}
+
 			switch (msg)
 			{
+				case AdapterDefines.MSG.AdapterReady:
+				{
+					invitesCard = args.cards;
+					invitesGlympse = args.glympses;
+					console.log('--> ADAPTER READY', args);
+					return;
+				}
+
 				case AdapterDefines.MSG.ViewerReady:
 				{
 					console.log('--> VIEWER READY');
@@ -33,46 +48,14 @@ define(function(require, exports, module)
 				case AdapterDefines.MSG.CardsInitEnd:
 				{
 					cards = args;
-					invites = [];
 					console.log('--> FINISHED CARDS LOAD! ' + cards.length + ' total cards');
-
-					for (var i = 0, len = cards.length; i < len; i++)
-					{
-						var card = cards[i];
-
-						if (!card.isLoaded())
-						{
-							console.log('Error loading card "' + card.getIdCard() + '"');
-							continue;
-						}
-
-						var members = card.getMembers();
-						//console.log('[' + i + ']: ' + card.getName() + ' with ' + members.length + ' members');
-						for (var j = 0, mlen = members.length; j < mlen; j++)
-						{
-							var member = members[j];
-							var invite = member.getTicket().getInviteCode();
-							//console.log('  [' + j + ']: ' + invite);
-							if (invite)
-							{
-								invites.push(invite);
-							}
-						}
-					}
-
-					if (invites.length > 0)
-					{
-						console.log('---> Loading invites: ' + invites);
-						cfg.viewer.t = invites.join(';');
-						adapter.loadViewer(cfg.cfgViewer);
-					}
-					//console.log('--> ' + JSON.stringify(args));
+					console.log('---> First card: "' + cards[0].getIdCard() + '" (' + cards[0].getId() + '), type=' + cards[0].getTypeId());
 					break;
 				}
 
 				default:
 				{
-					console.log('[OTHER] StubViewer.notify(): [' + msg + '] -- ' + JSON.stringify(args));
+					break;
 				}
 			}
 		}

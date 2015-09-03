@@ -54,6 +54,8 @@ define(function(require, exports, module)
 			viewerElement.addEventListener(glyEvents.DATA, viewerData, false);
 			viewerElement.addEventListener(glyEvents.PROPERTIES, viewerData, false);
 			viewerElement.addEventListener(glyEvents.ETA, viewerEta, false);
+			viewerElement.addEventListener(glyEvents.INVITE_ADDED, viewerInviteAdded, false);
+			viewerElement.addEventListener(glyEvents.INVITE_REMOVED, viewerInviteRemoved, false);
 		};
 
 		this.shutdown = function()
@@ -146,7 +148,7 @@ define(function(require, exports, module)
 			var invites = viewerApp.getInvites();
 			if (!invites || invites.length === 0)
 			{
-				controller.infoUpdate(s.NoInvites, null);
+				controller.infoUpdate(s.NoInvites, null, null, new Date().getTime(), true);
 			}
 		}
 
@@ -155,9 +157,10 @@ define(function(require, exports, module)
 			var detail = e.detail;
 			var idInvite = detail.id;
 			var data = detail.data;
+			var owner = detail.owner;
 
 			var unknowns = [];	// Unknown properties that are passed along
-			var maps = [ s.Owner, s.Avatar, s.Destination, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
+			var maps = [ s.Avatar, s.Destination, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
 
 			if (!props[idInvite])
 			{
@@ -169,26 +172,27 @@ define(function(require, exports, module)
 
 			//console.log('DATA: ' + JSON.stringify(detail, null, '  '));
 
-			for (var i = 0, ilen = maps.length; i < ilen; i++)
+			for (var i = 0, ilen = data.length; i < ilen; i++)
 			{
-				var id = maps[i];
+				var val = data[i];
+				var v = val.v;
+				var n = val.n;
+				var t = val.t;
+				var found = false;
 
-				for (var j = 0, jlen = data.length; j < jlen; j++)
+				for (var j = 0, jlen = maps.length; j < jlen; j++)
 				{
-					var val = data[j];
-					var v = val.v;
-					var n = val.n;
-					var t = val.t;
-					var found = false;
+					var id = maps[j];
 
+					//console.log('n=' + n + ', id=' + id);
 					if (n === id)
 					{
 						found = true;
 						if (prop[id] !== v)
 						{
 							prop[id] = v;
-							//dbg('v', v);
-							controller.infoUpdate(id, { id: idInvite, val: v, t: t });
+							//dbg('id=' + id + ', v', v);
+							controller.infoUpdate(id, idInvite, owner, t, v);
 							break;
 						}
 					}
@@ -197,11 +201,12 @@ define(function(require, exports, module)
 				// Check for additional processing
 				if (n === s.EndTime)
 				{
-					notifyExpired(idInvite);
+					notifyExpired(idInvite, owner);
 				}
 
 				if (!found)
 				{
+					//dbg('unknown', val)
 					unknowns.push(val);
 				}
 			}
@@ -215,12 +220,23 @@ define(function(require, exports, module)
 
 		function viewerEta(e)
 		{
-			//dbg('** GOT ETA: ** ' + e.detail.id + ' -- ' + JSON.stringify(etaCount));
 			var d = e.detail;
-			d.t = new Date().getTime();
-			d.val = { eta: d.data * 1000, eta_ts: d.t };
-			d.data = undefined;
-			controller.infoUpdate(s.Eta, e.detail);//(etaCount > 0) ? etaCount : 0);
+			var t = new Date().getTime();
+			controller.infoUpdate(s.Eta, d.id, d.owner, t, { 'eta': d.data * 1000, 'eta_ts': t });
+		}
+
+		function viewerInviteAdded(e)
+		{
+			//dbg('InviteAdded', e.detail);
+			e.detail.data = undefined;
+			controller.notify(m.InviteAdded, e.detail);
+		}
+
+		function viewerInviteRemoved(e)
+		{
+			//dbg('InviteRemoved', e.detail);
+			e.detail.data = undefined;
+			controller.notify(m.InviteRemoved, e.detail);
 		}
 
 
@@ -233,7 +249,7 @@ define(function(require, exports, module)
 			console.log('[ViewerMonitor] ' + msg + ((args) ? (': ' + JSON.stringify(args)) : ''));
 		}
 
-		function notifyExpired(idInvite)
+		function notifyExpired(idInvite, owner)
 		{
 			if (timerEnd)
 			{
@@ -249,7 +265,7 @@ define(function(require, exports, module)
 				timerEnd = setTimeout(notifyExpired, (eTime - t));
 			}
 
-			controller.infoUpdate(s.Expired, { id: idInvite, val: eTime <= t });
+			controller.infoUpdate(s.Expired, idInvite, owner, t, (eTime <= t));
 		}
 	}
 

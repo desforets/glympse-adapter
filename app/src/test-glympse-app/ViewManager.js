@@ -57,13 +57,14 @@ define(function(require, exports, module)
 				case appMSG.StateUpdate:
 				{
 					//dbg('args', args);
-					dbg('[' + args.val.id + '] ' + args.id + ' - ', args.val.val);
+					dbg('[' + args.invite + '/' + args.card + '] "' + args.id + '"', args.val);
 					break;
 				}
 
 				case appMSG.DataUpdate:
 				{
-					dbg('[' + args.id + '] DATA', args.data);
+					//dbg('args', args);
+					dbg('[' + args.id + '/' + args.card + '] DATA', args.data);
 					break;
 				}
 

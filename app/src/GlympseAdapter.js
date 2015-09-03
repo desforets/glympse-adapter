@@ -14,6 +14,7 @@ define(function(require, exports, module)
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var ViewerMonitor = require('glympse-adapter/adapter/ViewerMonitor');
 	var CardsController = require('glympse-adapter/adapter/CardsController');
+	var GlympseLoader = require('glympse-adapter/adapter/GlympseLoader');
 
 	// consts
 	var idOasisPort = 'glympse';
@@ -36,6 +37,7 @@ define(function(require, exports, module)
 		var initialized = false;
 		var viewerMonitor;
 		var cardsController;
+		var glympseLoader;
 		var oasisLocal = new Oasis();	// Found in minified source
 
 		var connectedOasis = false;
@@ -48,6 +50,7 @@ define(function(require, exports, module)
 		var cfgMonitor = { };
 		var progressCurrent = 0;
 		var progressTotal = 0;
+		var mapCardInvites = { };
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -193,12 +196,12 @@ define(function(require, exports, module)
 
 			progressCurrent = 0;
 			progressTotal = (card) ? (5 + 1 * 2) : 3;
-			notifyController(m.AdapterInit, { isCard: (card != null)
+			sendEvent(m.AdapterInit, { isCard: (card != null)
 											, t: invitesGlympse
 											, pg: splitMulti(pg)
 											, twt: splitMulti(twt)
 											, g: splitMulti(g)
-											}, true);
+											});
 			updateProgress();
 
 			// Card vs Glympse Invite loading
@@ -206,8 +209,14 @@ define(function(require, exports, module)
 			{
 				cardsController.init(invitesCard);
 			}
+			else if (t && t.toLowerCase().split('-').join('').indexOf('demobot') < 0)
+			{
+				glympseLoader = new GlympseLoader(this, cfg);
+				glympseLoader.init(t);	// FIXME: Assumes only one invite code!
+			}
 			else if (t || pg || g || twt)
 			{
+				// Straight glympse invites/references to load
 				cfgViewer.t = t;
 				cfgViewer.pg = pg;
 				cfgViewer.twt = twt;
@@ -219,6 +228,11 @@ define(function(require, exports, module)
 
 		this.loadViewer = function(cfgNew)
 		{
+			// Signal the cards/invites to load
+			sendEvent(m.AdapterReady, { cards: invitesCard
+									  , glympses: invitesGlympse
+									  });
+
 			//console.log('cfg.viewer=' + cfgMonitor.viewer);
 			$.extend(cfgViewer, cfgNew);
 			viewerMonitor.run();
@@ -227,38 +241,109 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
+			var idCard;
+
 			switch (msg)
 			{
-				case m.ViewerInit:
-				case m.ViewerReady:
-				case m.CardsInitStart:
 				case m.CardInit:
 				case m.CardReady:
-				case m.CardsInitEnd:
+				case m.CardsInitStart:
+				case m.InviteInit:
+				case m.ViewerInit:
+				case m.ViewerReady:
 				{
 					updateProgress();
 					sendEvent(msg, args);
 					break;
 				}
 
-				case m.DataUpdate:
+				case m.CardsInitEnd:
 				{
 					sendEvent(msg, args);
+					invitesGlympse = [];
 
-					var idCard = args.ref;
+					for (var i = 0, cards = args, len = cards.length; i < len; i++)
+					{
+						var card = cards[i];
+						idCard = card.getIdCard();
 
+						if (!card.isLoaded())
+						{
+							console.log('Error loading card "' + idCard + '"');
+							continue;
+						}
+
+						var members = card.getMembers();
+						//console.log('[' + i + ']: ' + card.getName() + ' with ' + members.length + ' members');
+						for (var j = 0, mlen = members.length; j < mlen; j++)
+						{
+							var member = members[j];
+							var invite = member.getTicket().getInviteCode();
+							//console.log('  [' + j + ']: ' + invite);
+							if (invite)
+							{
+								invitesGlympse.push(invite);
+								mapCardInvites[invite] = idCard;
+							}
+						}
+					}
+
+					//dbg('Card map', mapCardInvites);
+
+					// Real cards/invites to be loaded
+					if (invitesGlympse.length > 0)
+					{
+						//console.log('---> Loading invites: ' + invitesGlympse);
+						cfgViewer.t = invitesGlympse.join(';');
+						this.loadViewer(cfgViewer);
+					}
+
+					break;
+				}
+
+				case m.InviteReady:
+				{
+					//dbg('InviteReady: ' + args.getIdInvite() + ' -- isLoaded=' + args.isLoaded());
+					sendEvent(msg, args);
+					if (!args.isLoaded())
+					{
+						dbg('Invite error state', args.getError());
+						return null;
+					}
+
+					idCard = args.getReference();
+					//dbg('Has reference: "' + idCard + '"');
 					if (idCard)
 					{
 						if (invitesCard.indexOf(idCard) < 0)
 						{
 							progressTotal += (5 + 1 * 2) - 2;
 							invitesCard.push(idCard);
-							notifyController(m.AdapterInit, { isCard: true });
+							sendEvent(m.AdapterInit, { isCard: true });
 							updateProgress();
 							cardsController.init(invitesCard);
 						}
 					}
+					else
+					{
+						// Use the original invite list
+						progressTotal += (3 - 1);
+						updateProgress();
+						cfgViewer.t = args.getIdInvite();	// FIXME: Breaks for multiple initial invites
 
+						this.loadViewer(cfgViewer);
+					}
+
+					break;
+				}
+
+				case m.DataUpdate:
+				case m.InviteAdded:
+				case m.InviteRemoved:
+				{
+					//dbg(msg, args);
+					args.card = mapCardInvites[args.id];
+					sendEvent(msg, args);
 					break;
 				}
 
@@ -272,10 +357,11 @@ define(function(require, exports, module)
 			return null;
 		};
 
-		this.infoUpdate = function(id, val)
+		this.infoUpdate = function(id, invite, owner, t, val)
 		{
-			//console.log('>>>>>> id=' + id);
-			var args = { id: id, val: val };
+			var args = { id: id, invite: invite, owner: owner, card: mapCardInvites[invite], t: t, val: val };
+
+			//dbg('>>>>>> infoUpdate', id);
 			notifyController(mStateUpdate, args, false);
 			sendOasisMessage(mStateUpdate, args);
 		};

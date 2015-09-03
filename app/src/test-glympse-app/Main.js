@@ -23,7 +23,8 @@ define(function(require, exports, module)
 		var adapter;
 		var viewManager = vm;
 		var cards;
-		var invites;
+		var invitesCard;
+		var invitesGlympse;
 		var that = this;
 
 		var dbg = lib.dbg(_id, cfg.dbg);
@@ -37,10 +38,21 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
+				case m.AdapterReady:
+				{
+					invitesCard = args.cards;
+					invitesGlympse = args.glympses;
+					dbg('--> ADAPTER READY', args);
+					break;
+				}
+
 				case m.ViewerReady:
 				{
 					dbg('----> VIEWER READY');
-					viewManager.cmd(Defines.CMD.InitUi, { cards: cards, invites: invites });
+					viewManager.cmd(Defines.CMD.InitUi, { invitesCard: invitesCard
+														, invitesGlympse: invitesGlympse
+														, cards: cards
+														});
 					//dbg('MAP = ' + adapter.map.getMap());
 					break;
 				}
@@ -48,41 +60,8 @@ define(function(require, exports, module)
 				case m.CardsInitEnd:
 				{
 					cards = args;
-					invites = [];
 					dbg('--> FINISHED CARDS LOAD! ' + cards.length + ' total cards');
-
-					for (var i = 0, len = cards.length; i < len; i++)
-					{
-						var card = cards[i];
-
-						if (!card.isLoaded())
-						{
-							dbg('Error loading card "' + card.getIdCard() + '"');
-							dbg('Members: ' + card.getMembers());
-							continue;
-						}
-
-						var members = card.getMembers();
-						//dbg('[' + i + ']: ' + card.getName() + ' with ' + members.length + ' members');
-						for (var j = 0, mlen = members.length; j < mlen; j++)
-						{
-							var member = members[j];
-							var invite = member.getTicket().getInviteCode();
-							//dbg('  [' + j + ']: ' + invite);
-							if (invite)
-							{
-								invites.push(invite);
-							}
-						}
-					}
-
-					if (invites.length > 0)
-					{
-						dbg('---> Loading invites: ' + invites);
-						cfgCore.viewer.t = invites.join(';');
-						adapter.loadViewer(cfg.cfgViewer);
-					}
-					//dbg('--> ' + JSON.stringify(args));
+					dbg('---> First card: "' + cards[0].getIdCard() + '" (' + cards[0].getId() + '), type=' + cards[0].getTypeId());
 					break;
 				}
 

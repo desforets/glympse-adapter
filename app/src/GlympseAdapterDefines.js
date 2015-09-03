@@ -67,16 +67,21 @@ define(function(require, exports, module)
 		/////////////////////////////////////////
 
 		, MSG: {
-			  DataUpdate: 'DataUpdate'
-			, StateUpdate: 'StateUpdate'
-			, ViewerInit: 'ViewerInit'
-			, ViewerReady: 'ViewerReady'
-			, CardsInitStart: 'CardsInitStart'
+			  AdapterInit: 'AdapterInit'
+			, AdapterReady: 'AdapterReady'
 			, CardInit: 'CardInit'
 			, CardReady: 'CardReady'
 			, CardsInitEnd: 'CardsInitEnd'
-			, AdapterInit: 'AdapterInit'
+			, CardsInitStart: 'CardsInitStart'
+			, DataUpdate: 'DataUpdate'
+			, InviteAdded: 'InviteAdded'
+			, InviteInit: 'InviteInit'
+			, InviteReady: 'InviteReady'
+			, InviteRemoved: 'InviteRemoved'
 			, Progress: 'Progress'
+			, StateUpdate: 'StateUpdate'
+			, ViewerInit: 'ViewerInit'
+			, ViewerReady: 'ViewerReady'
 		}
 
 
