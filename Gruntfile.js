@@ -13,11 +13,12 @@ module.exports = function(grunt) {
       config: {
         // Configurable paths
         app: 'app',
+		builds: 'builds',
         dist: 'dist',
 		distExports: 'dist',
-		moduleOut: 'GlympseAdapter',
+		moduleOut: 'glympse-adapter',
 		moduleIn: 'GlympseAdapter',
-		moduleVersion: '1.2.0'
+		moduleVersion: '1.2.1'
       }
     }
   });

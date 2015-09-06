@@ -7,11 +7,21 @@
 
 
 
+##Available modules
+- `glympse-adapter/GlympseAdapter`: Main module to initialize the Glympse adapter/viewer
+  components. See test/app.js or test-glympse-app/Main.js for reference usage.
+- `glympse-adapter/GlympseAdapterDefines`: Plain Javascript Object that contains the
+  reference to all enums used by the GlympseAdapter. Strongly recommended to be used
+  in conjunction with the GlympseAdapter module.
+- `glympse-adapter/VersionInfo`: Plain Javascript Object with build/version
+  information of the GlympseAdapter.
+- `glympse-adapter/lib/utils`: Static library containing utility functions useful
+  for interacting with the GlympseAdapter module. [TODO: list available methods]
 
 ##Adapter Messages
 
-The following is a description of the various notification messages that are sent by the adapter (defined in
-the `GlympseAdapterDefines.MSG` object):
+The following is a description of the various notification messages that are sent
+by the adapter (defined in the `GlympseAdapterDefines.MSG` object):
 - `AdapterInit` / `{ isCard: bool, t: string }`: Indicates the adapter is beginning
 its loading sequence with the passed card invite or the specified Glympse invite
 (indicated via the `t` parameter)
@@ -103,7 +113,7 @@ ABANDON ALL HOPE, YE WHO ENTER
 
 The Glympse Viewer Client Adapter (GVCA) is a shim to be included with any web app wanting to directly host the Glympse viewer for
 direct interaction with it, and to provide its public APIs over an iframe boundary when it is intended to be used in
-conjunction with the [Glympse Viewer Host Adapater (GVHA)](https://github.com/Glympse/glympse-viewer-host-adapter) shim. 
+conjunction with the [Glympse Viewer Host Adapater (GVHA)](https://github.com/Glympse/glympse-viewer-host-adapter) shim.
 
 In addition, the API bridge provided by the GVCA maintains a mostly equivalent adaption of the Glympse viewer API, save for some
 differences in event handler registration and callback signatures. These (and all, really) will be described in detail. By default,
@@ -129,7 +139,7 @@ the page onLoad event has fired:
 		...
 
 		// Set up the adapter
-		
+
 		/* Global namespace */
 		var adapter = new glympse.ViewClientAdapter(viewer_handler_instance, cfg);
 		adapter.run($('#div_viewer_container'));   // Note jQuery object reference

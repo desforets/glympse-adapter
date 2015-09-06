@@ -6,15 +6,17 @@ module.exports = {
       dot: true,
       cwd: '<%= config.app %>',
       dest: '<%= config.distExports %>',
-	  //flatten: true,
       src: [
-        //'content/**/**.*',
-        '.htaccess',
-        //'images/{,*/}*.webp',
-        // '{,*/}*.html',
-		'js/{,*/}*.*',
-        'styles/fonts/{,*/}*.*'
+		'js/{,*/}*.*'
       ]
+    }]
+  },
+  build: {
+	files: [{
+      expand: true,
+      cwd: '<%= config.distExports %>',
+      dest: '<%= config.builds %>',
+      src: [ '*.min.*' ]
     }]
   }
 };

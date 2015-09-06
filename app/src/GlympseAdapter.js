@@ -12,6 +12,7 @@ define(function(require, exports, module)
 	var lib = require('glympse-adapter/lib/utils');
 	var Oasis = require('oasis');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
+	var VersionInfo = require('glympse-adapter/VersionInfo');
 	var ViewerMonitor = require('glympse-adapter/adapter/ViewerMonitor');
 	var CardsController = require('glympse-adapter/adapter/CardsController');
 	var GlympseLoader = require('glympse-adapter/adapter/GlympseLoader');
@@ -29,8 +30,11 @@ define(function(require, exports, module)
 		window.Oasis = Oasis;			// Needed for some Oasis modules
 	}
 
+
 	function GlympseAdapter(controller, cfg)
 	{
+		var dbg = lib.dbg('GlympseAdapter', cfg.dbg);
+
 		var cfgAdapter = cfg.adapter;
 		var cfgViewer = cfg.viewer;
 
@@ -51,6 +55,7 @@ define(function(require, exports, module)
 		var progressCurrent = 0;
 		var progressTotal = 0;
 		var mapCardInvites = { };
+
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -189,6 +194,7 @@ define(function(require, exports, module)
 			var pg = cfgAdapter.pg;
 			var twt = cfgAdapter.twt;
 			var g = cfgAdapter.g;
+			var cleanInvites = lib.cleanInvites;
 
 			invitesCard = (card) ? cleanInvites([ card ]) : [];
 			invitesGlympse = cleanInvites(splitMulti(t));
@@ -209,7 +215,7 @@ define(function(require, exports, module)
 			{
 				cardsController.init(invitesCard);
 			}
-			else if (t && t.toLowerCase().split('-').join('').indexOf('demobot') < 0)
+			else if (lib.simplifyInvite(t).indexOf('demobot') < 0)
 			{
 				glympseLoader = new GlympseLoader(this, cfg);
 				glympseLoader.init(t);	// FIXME: Assumes only one invite code!
@@ -341,9 +347,9 @@ define(function(require, exports, module)
 				case m.InviteAdded:
 				case m.InviteRemoved:
 				{
-					//dbg(msg, args);
 					args.card = mapCardInvites[args.id];
 					sendEvent(msg, args);
+					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
 					break;
 				}
 
@@ -374,31 +380,6 @@ define(function(require, exports, module)
 		function splitMulti(val)
 		{
 			return (val && val.split(';'));
-		}
-
-		function cleanInvites(invitesList)
-		{
-			invitesList = invitesList || [];
-			for (var i = 0, len = invitesList.length; i < len; i++)
-			{
-				var invite = invitesList[i].toUpperCase();
-				var ilen = invite.length;
-				var ilen2 = ilen / 2;
-
-				if (ilen === 6 || ilen === 8)
-				{
-					invite = invite.substr(0, ilen2) + '-' + invite.substr(ilen2, ilen2);
-				}
-				//console.log('- ' + invitesList[i] + ' --> ' + invite);
-				invitesList[i] = invite;
-			}
-
-			return invitesList;
-		}
-
-		function dbg(msg, args)
-		{
-			console.log('[GlympseAdapter] ' + msg + ((args) ? (': ' + JSON.stringify(args)) : ''));
 		}
 
 		function generateTargAction(targ, id)

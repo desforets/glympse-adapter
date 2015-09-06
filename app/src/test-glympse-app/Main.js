@@ -6,6 +6,7 @@ define(function(require, exports, module)
     // import dependencies
 	var GlympseAdapter = require('glympse-adapter/GlympseAdapter');
 	var AdapterDefines = require('glympse-adapter/GlympseAdapterDefines');
+	var VersionInfo = require('glympse-adapter/VersionInfo');
 	var lib = require('glympse-adapter/lib/utils');
 
 	// Test app-specific
@@ -14,6 +15,9 @@ define(function(require, exports, module)
 
 	var m = AdapterDefines.MSG;
 	var _id = 'GlympseCards';
+
+	console.log(VersionInfo.id + ' v(' + VersionInfo.version + ')');
+
 
 	function Main(vm, cfgCore)
 	{

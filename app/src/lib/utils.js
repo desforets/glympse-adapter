@@ -19,7 +19,7 @@ define(function(require, exports, module)
 				if (!minLevel || (minLevel >= 0 && level >= minLevel))
 				{
 					console.log('[' + id + '] ' + info
-							 + (((arguments.length > 1) && (': ' + JSON.stringify(data, null, '  '))) || ''));
+							 + (((data !== undefined) && (': ' + JSON.stringify(data, null, '  '))) || ''));
 				}
 			};
 		}
@@ -104,6 +104,39 @@ define(function(require, exports, module)
 				var prop = props[i];
 				targ['get' + utils.toUpperCamel(prop)] = returnVal(prop);
 			}
+		}
+
+		, simplifyInvite: function(invite)
+		{
+			return (invite && invite.toLowerCase().split('-').join('')) || '';
+		}
+
+		, normalizeInvite: function(invite)
+		{
+			if (invite)
+			{
+				invite = invite.toUpperCase();
+				var ilen = invite.length;
+				var ilen2 = ilen / 2;
+
+				if (ilen === 6 || ilen === 8)
+				{
+					invite = invite.substr(0, ilen2) + '-' + invite.substr(ilen2, ilen2);
+				}
+			}
+
+			return invite;
+		}
+
+		, cleanInvites: function(invites)
+		{
+			invites = invites || [];
+			for (var i = 0, len = invites.length; i < len; i++)
+			{
+				invites[i] = utils.normalizeInvite(invites[i]);
+			}
+
+			return invites;
 		}
 
 	};

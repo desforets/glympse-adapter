@@ -23,29 +23,29 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'lint',
+    'replace:updateVersion',
     'processhtml:dist',
     'useminPrepare',
     'requirejs:compile',
     'concat',
-    //'cssmin',
     'newer:uglify',
 	'newer:imagemin',
     'copy:dist',
     'rev',
     'usemin',
-    'htmlmin'
-	//'clean:postDist'
+    'htmlmin',
+	'copy:build'
   ]);
 
   grunt.registerTask('lint', [
     'jscs',
     'eslint'
   ]);
-  
+
   grunt.registerTask('test', [
     'lint'
   ]);
-  
+
   grunt.registerTask('crush', [
     'newer:imagemin'
   ]);

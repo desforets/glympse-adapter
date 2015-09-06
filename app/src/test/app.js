@@ -6,6 +6,7 @@ define(function(require, exports, module)
     // import dependencies
 	var GlympseAdapter = require('glympse-adapter/GlympseAdapter');
 	var AdapterDefines = require('glympse-adapter/GlympseAdapterDefines');
+	var VersionInfo = require('glympse-adapter/VersionInfo');
 
 	// Test app-specific
 	var ViewManager = require('test/ViewManager');
@@ -17,6 +18,8 @@ define(function(require, exports, module)
 	var cards;
 	var invitesCard;
 	var invitesGlympse;
+
+	console.log(VersionInfo.id + ' v(' + VersionInfo.version + ')');
 
 	var stubViewer =
 	{
