@@ -12,7 +12,7 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('GlympseInvite', cfg.dbg);
-		var svr = (cfg.adapter.svcGlympse || '//api.sandbox.glympse.com/v2/');
+		var svr = (cfg.svcGlympse || '//api.sandbox.glympse.com/v2/');
 		var inviteUrl = (svr + 'invites/' + idInvite);
 		var cMaxAttempts = 3;
 

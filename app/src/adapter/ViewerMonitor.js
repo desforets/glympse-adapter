@@ -4,6 +4,7 @@ define(function(require, exports, module)
 
 	// defines
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
+	var lib = require('glympse-adapter/lib/utils');
 	var m = Defines.MSG;
 	var s = Defines.STATE;
 	var r = Defines.MAP.REQUESTS;
@@ -23,6 +24,8 @@ define(function(require, exports, module)
 		var that = this;
 		var cmdQueue = [];
 		var props = { };
+
+		var dbg = lib.dbg('ViewerMonitor', cfg.dbg);
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -243,11 +246,6 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////////////////////////////////////
 		// INTERNAL
 		///////////////////////////////////////////////////////////////////////////////////
-
-		function dbg(msg, args)
-		{
-			console.log('[ViewerMonitor] ' + msg + ((args) ? (': ' + JSON.stringify(args)) : ''));
-		}
 
 		function notifyExpired(idInvite, owner)
 		{

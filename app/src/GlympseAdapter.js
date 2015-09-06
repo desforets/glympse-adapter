@@ -33,10 +33,13 @@ define(function(require, exports, module)
 
 	function GlympseAdapter(controller, cfg)
 	{
-		var dbg = lib.dbg('GlympseAdapter', cfg.dbg);
-
+		var cfgApp = cfg.app;
 		var cfgAdapter = cfg.adapter;
 		var cfgViewer = cfg.viewer;
+
+		cfgAdapter.dbg = cfgApp.dbg;
+
+		var dbg = lib.dbg('GlympseAdapter', cfgApp.dbg);
 
 		var initialized = false;
 		var viewerMonitor;
@@ -51,7 +54,7 @@ define(function(require, exports, module)
 		var invitesGlympse = [];
 
 		// data
-		var cfgMonitor = { };
+		var cfgMonitor = { dbg: cfgApp.dbg };
 		var progressCurrent = 0;
 		var progressTotal = 0;
 		var mapCardInvites = { };
@@ -217,7 +220,7 @@ define(function(require, exports, module)
 			}
 			else if (lib.simplifyInvite(t).indexOf('demobot') < 0)
 			{
-				glympseLoader = new GlympseLoader(this, cfg);
+				glympseLoader = new GlympseLoader(this, cfgAdapter);
 				glympseLoader.init(t);	// FIXME: Assumes only one invite code!
 			}
 			else if (t || pg || g || twt)
