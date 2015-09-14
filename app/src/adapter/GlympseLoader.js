@@ -53,9 +53,31 @@ define(function(require, exports, module)
 				}
 
 				case m.InviteInit:
-				case m.InviteReady:
 				{
 					controller.notify(msg, args);
+					break;
+				}
+
+				case m.InviteReady:
+				{
+					var error = args.getError();
+
+					if (!error)
+					{
+						controller.notify(msg, args);
+					}
+					else
+					{
+						if (error.error === 'oauth_token' && error.error_detail.indexOf('expired') >= 0)
+						{
+							account.handleExpiredToken();
+						}
+						else
+						{
+							controller.notify(m.InviteError, args);
+						}
+					}
+
 					break;
 				}
 
@@ -83,10 +105,14 @@ define(function(require, exports, module)
 			}
 
 			//dbg('Auth token: ' + account.getToken() + ' -- ' + (info && info.token));
-			dbg('[' + ((cfg.anon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading Glympse invite "' + idInvite + '"');
+			dbg('[' + ((cfg.anon) ? 'ANON' : 'ACCT') + '] Token active. Loading Glympse invite "' + idInvite + '"');
 
-			invite = new GlympseInvite(that, idInvite, account.getToken(), cfg);
-			invite.init();
+			if (!invite)
+			{
+				invite = new GlympseInvite(that, idInvite, account, cfg);
+			}
+
+			invite.load();
 		}
 	}
 

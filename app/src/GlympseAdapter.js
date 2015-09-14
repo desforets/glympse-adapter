@@ -310,6 +310,13 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case m.InviteError:
+				{
+					dbg('Invite loading error', args.getError());
+					sendEvent(msg, args);
+					break;
+				}
+
 				case m.InviteReady:
 				{
 					//dbg('InviteReady: ' + args.getIdInvite() + ' -- isLoaded=' + args.isLoaded());

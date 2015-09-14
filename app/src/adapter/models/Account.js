@@ -9,6 +9,7 @@ define(function(require, exports, module)
 	var cPassword = 'p0';
 	var cTokenName = 'access_token';
 	var cUserName = 'n0';
+	var cAnonExchange = 'anon_exchange';
 
 
 	// Exported class
@@ -91,6 +92,17 @@ define(function(require, exports, module)
 			getNewToken();
 
 			return false;
+		};
+
+		this.handleExpiredToken = function()
+		{
+			dbg('>>>> EXPIRED anon=' + isAnon + ', token=' + token);
+			if (isAnon && token)
+			{
+				account[cAnonExchange] = token;
+			}
+
+			getNewToken();
 		};
 
 
