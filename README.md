@@ -55,6 +55,9 @@ in the array are the same format as specified in the Glympse Data stream model:
 - `InviteAdded` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id }`:
 Sent from the Glympse viewer whenever a Glympse invite has been successfully
 loaded and added to the map.
+- `InviteError` / `GlympseInvite.js instance`: An error occurred while trying to
+load the Glympse Invite to retrieve invite data. Call the `getError()` API on the
+returned `GlympseInvite` instance to determine additional error state.
 - `InviteInit` / `glympse_invite_id`: Notification sent when a Glympse invite is to
 be loaded by the adapter to check for Card linkage. Note that is only seen during the
 initial start-up sequence of the adapter.

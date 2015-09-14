@@ -75,6 +75,7 @@ define(function(require, exports, module)
 			, CardsInitStart: 'CardsInitStart'
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'
+			, InviteError: 'InviteError'
 			, InviteInit: 'InviteInit'
 			, InviteReady: 'InviteReady'
 			, InviteRemoved: 'InviteRemoved'

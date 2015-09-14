@@ -5,10 +5,11 @@ define(function(require, exports, module)
 	var lib = require('glympse-adapter/lib/utils');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var m = Defines.MSG;
+	var cOauthToken = 'oauth_token';
 
 
 	// Exported class
-	function GlympseInvite(controller, idInvite, token, cfg)
+	function GlympseInvite(controller, idInvite, account, cfg)
 	{
 		// consts
 		var dbg = lib.dbg('GlympseInvite', cfg.dbg);
@@ -23,7 +24,7 @@ define(function(require, exports, module)
 		var error;
 		var loaded = false;
 		var that = this;
-		var inviteParams = { 'no_count': true, 'oauth_token': token, 'next': next };
+		var inviteParams = { 'no_count': true, 'next': next };
 
 		// TODO: Just map data props directly??
 		//	---> Only want immediate non-Objects/Arrays
@@ -76,8 +77,10 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.init = function()
+		this.load = function()
 		{
+			var token = account.getToken();
+
 			if (!idInvite || !token)
 			{
 				return false;
@@ -85,6 +88,8 @@ define(function(require, exports, module)
 
 			// Kick off invite load
 			attempts = 0;
+			inviteParams[cOauthToken] = token;
+
 			loadInvite();
 
 			return true;
