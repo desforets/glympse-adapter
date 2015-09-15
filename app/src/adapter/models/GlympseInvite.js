@@ -87,6 +87,7 @@ define(function(require, exports, module)
 			}
 
 			// Kick off invite load
+			error = null;
 			attempts = 0;
 			inviteParams[cOauthToken] = token;
 
