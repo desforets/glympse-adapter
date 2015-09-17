@@ -2,8 +2,18 @@
 
 ##Overview
 
-[ All below is incorrect, or mostly not to be believed. Leaving GVCA content for now as it will be relevent/reused for the most part (in addition to additional items) ]
+The Glympse Adapter (GA) is a shim to be included with any web app wanting to directly host the
+Glympse viewer for direct interaction with it, and to provide its public APIs over an iframe boundary
+when it is intended to be used in conjunction with a GA instance running in host mode.
 
+In addition, the API bridge provided by the GA maintains a mostly equivalent adaption of the Glympse
+viewer API, save for some differences in event handler registration and callback signatures. These
+(and all, really) will be described in detail. By default, the exposed set of endpoints are those of
+the core Glympse Viewer API. Apps can also extend/override the GA endpoints with their own methods,
+which are published to GA consumers during setup.
+
+[ Content above abandon all hope is current/relevent for the GlympseAdapter. Stuff below is mostly
+in-line, but needs updating/refresh ]
 
 
 
@@ -23,68 +33,68 @@
 The following is a description of the various notification messages that are sent
 by the adapter (defined in the `GlympseAdapterDefines.MSG` object):
 - `AdapterInit` / `{ isCard: bool, t: string }`: Indicates the adapter is beginning
-its loading sequence with the passed card invite or the specified Glympse invite
-(indicated via the `t` parameter)
+  its loading sequence with the passed card invite or the specified Glympse invite
+  (indicated via the `t` parameter)
 - `AdapterReady` / `{ cards:[ invites ], glympses: [ invites ]}`: Specifies the
-adapter has resolved all Card and Glympse invites and will begin the process
-of loading the specified Glympse invites. It should be noted that the adapter
-may return a card that was not specified in the `AdapterInit` phase, and may
-have changed the initial Glympse invite code, or included additional Glympse
-invites. This is due to the adapter detecting a Card invite reference in the
-initial Glympse invite code, and aligning the viewer to the Card reference and
-it's child Glympse invites.
+  adapter has resolved all Card and Glympse invites and will begin the process
+  of loading the specified Glympse invites. It should be noted that the adapter
+  may return a card that was not specified in the `AdapterInit` phase, and may
+  have changed the initial Glympse invite code, or included additional Glympse
+  invites. This is due to the adapter detecting a Card invite reference in the
+  initial Glympse invite code, and aligning the viewer to the Card reference and
+  it's child Glympse invites.
 - `CardInit` / `card_invite`: Fired just before an attempt is made to load the
-Card invite.
+  Card invite.
 - `CardReady` / `card_invite`: Fired once the given Card invite has completed
-loading, regardless of success. Check the passed card's instance given upon
-the `CardsInitEnd` event.
+  loading, regardless of success. Check the passed card's instance given upon
+  the `CardsInitEnd` event.
 - `CardsInitEnd` / `[ card_instance0, ..., card_instanceN ]`: Sent once all
-cards have been loaded. The passed array are a set of Card.js class instances
-that can be check for various properties/state. Please reference the `Card.js`
-Data Model section for available APIs.
+  cards have been loaded. The passed array are a set of Card.js class instances
+  that can be check for various properties/state. Please reference the `Card.js`
+  Data Model section for available APIs.
 -`CardsInitStart` / `[ card_invite0, ..., card_inviteN ]`: Notification sent
-just before Card data is loaded. The passed array is a list of the Card invite
-codes that will be loaded.
+  just before Card data is loaded. The passed array is a list of the Card invite
+  codes that will be loaded.
 - `DataUpdate` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id, data: [ property_0, ..., propertyM ] }`:
-Event passed from the Glympse API for a given Glympse invite code, for unknown/custom
-properties found in the Glympse's data stream. The format of property elements
-in the array are the same format as specified in the Glympse Data stream model:
+  Event passed from the Glympse API for a given Glympse invite code, for unknown/custom
+  properties found in the Glympse's data stream. The format of property elements
+  in the array are the same format as specified in the Glympse Data stream model:
   - `t`: Time property was generated
   - `n`: Property id
   - `v`: Property value (may be default type, or a custom Object with additional members)
 - `InviteAdded` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id }`:
-Sent from the Glympse viewer whenever a Glympse invite has been successfully
-loaded and added to the map.
+  Sent from the Glympse viewer whenever a Glympse invite has been successfully
+  loaded and added to the map.
 - `InviteError` / `GlympseInvite.js instance`: An error occurred while trying to
-load the Glympse Invite to retrieve invite data. Call the `getError()` API on the
-returned `GlympseInvite` instance to determine additional error state.
+  load the Glympse Invite to retrieve invite data. Call the `getError()` API on the
+  returned `GlympseInvite` instance to determine additional error state.
 - `InviteInit` / `glympse_invite_id`: Notification sent when a Glympse invite is to
-be loaded by the adapter to check for Card linkage. Note that is only seen during the
-initial start-up sequence of the adapter.
+  be loaded by the adapter to check for Card linkage. Note that is only seen during the
+  initial start-up sequence of the adapter.
 - `InviteReady` / `GlympseInvite.js instance`: Notification sent once a Glympse invite
-has been loaded. The `GlympseInvite.js` instance is a class that can be referenced for
-additional info on the status of the invite (i.e. if it was successfully loaded and has
-a Card reference). This is generally only needed by the adapter itself to determine if
-a card + additional Glympse invites need to be loaded. However, it will have possibly
-interesting information for the adapter host. Additional API information on the
-`GlympseInvite.js` class is found elsewhere in this documentation.
+  has been loaded. The `GlympseInvite.js` instance is a class that can be referenced for
+  additional info on the status of the invite (i.e. if it was successfully loaded and has
+  a Card reference). This is generally only needed by the adapter itself to determine if
+  a card + additional Glympse invites need to be loaded. However, it will have possibly
+  interesting information for the adapter host. Additional API information on the
+  `GlympseInvite.js` class is found elsewhere in this documentation.
 - `InviteRemoved` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id }`:
-Sent from the Glympse viewer whenever a Glympse invite has been removed from the map.
-No further updates will be seen from the Glympse invite via the adapter.
+  Sent from the Glympse viewer whenever a Glympse invite has been removed from the map.
+  No further updates will be seen from the Glympse invite via the adapter.
 - `Progress` / `{ curr: int, total: int }`: Seen during the initial loading phases of
-the adapter, and stops once the final `ViewerReady` message is generated.
+  the adapter, and stops once the final `ViewerReady` message is generated.
 - `StateUpdate` / `{ id: property_id, invite: glympse_invite_id, owner: glympse_account_id, card: card_id, t: timestamp, val: property_value }`:
-Updates generated when known properties are changed in the Glympse invite. Below is the
-list on known properties that can be seen via the `StateUpdate` message. These are enumerated
-in the `GlympseAdapterDefines.STATE` object
-  - `avatar`
-  - `destination`
-  - `end_time`
-  - `eta`
-  - `message`
-  - `name`
-  - `phase`
-  - `start_time`
+  Updates generated when known properties are changed in the Glympse invite. Below is the
+  list on known properties that can be seen via the `StateUpdate` message. These are enumerated
+  in the `GlympseAdapterDefines.STATE` object
+  - `Avatar`
+  - `Destination`
+  - `InviteEnd`
+  - `InviteStart`
+  - `Eta`
+  - `Message`
+  - `Name`
+  - `Phase`
   - `Arrived`
   - `Expired`
   - `NoInvites` (seen if no Glympse invites are successfully loaded in the map)
@@ -115,23 +125,15 @@ for direct access to the Glympse viewer application API and all of its component
 ABANDON ALL HOPE, YE WHO ENTER
 ===========================================
 
-The Glympse Viewer Client Adapter (GVCA) is a shim to be included with any web app wanting to directly host the Glympse viewer for
-direct interaction with it, and to provide its public APIs over an iframe boundary when it is intended to be used in
-conjunction with the [Glympse Viewer Host Adapater (GVHA)](https://github.com/Glympse/glympse-viewer-host-adapter) shim.
 
-In addition, the API bridge provided by the GVCA maintains a mostly equivalent adaption of the Glympse viewer API, save for some
-differences in event handler registration and callback signatures. These (and all, really) will be described in detail. By default,
-the exposed set of endpoints are those of the core Glympse Viewer API. Apps can also extend/override the GVCA endpoints with their
-own methods, which are published to GVHA consumers during setup.
+##GA Usage
 
+GA usage is straight-forward, but does have a dependency on a recent version of
+[jQuery](http://jquery.com). jQuery aside, all that is needed is to include the built
+`GlympseAdapter` in your page, along with a bit of initialization and configuration to get
+the adapter up and running:
 
-##GVCA Usage
-
-Adapter usage is straight-forward, but does have a dependency on a recent version of [jQuery](http://jquery.com). jQuery aside, all
-that is needed is to include the built `ViewClientAdapter` in your page, along with a bit of initialization and configuration to
-get the adapter up and running:
-
-	<script type="text/javascript" src="../dist/ViewClientAdapter-CURRENT_VERSION.min.js"></script>
+	<script type="text/javascript" src="../dist/glympse-adapter-CURRENT_VERSION.min.js"></script>
 
 Initialization, including inserting the viewer into your page, should be done after
 the page onLoad event has fired:
@@ -145,7 +147,7 @@ the page onLoad event has fired:
 		// Set up the adapter
 
 		/* Global namespace */
-		var adapter = new glympse.ViewClientAdapter(viewer_handler_instance, cfg);
+		var adapter = new glympse.GlympseAdapter(viewer_handler_instance, cfg);
 		adapter.run($('#div_viewer_container'));   // Note jQuery object reference
 	});
 
@@ -155,12 +157,12 @@ A couple of things to note here:
 - `div_viewer_container` is the id of an HTML `div` element that already exists in the local DOM. The viewer will be inserted into this element.
 
 For the `viewer_handler_reference` class, it must provide a public method with a signature of `notify(idMessage, messageData)`.
-The `idMessage` parameter is a string that will be one of the values as defined in the `glympse.ViewClientAdapterDefines.MSG` object:
+The `idMessage` parameter is a string that will be one of the values as defined in the `glympse.GlympseAdapterDefines.MSG` object:
   - `MSG.ViewerInit`: Sent when the viewer has started its initialization process, but is still not quite ready for interaction. `messageData` should be ignored.
   - `MSG.ViewerReady`: Sent whenever the Glympse viewer is fully initialized and ready for interaction. `messageData` should be ignored.
   - `MSG.StateUpdate`: The most common message, this is generated whenever something interesting has changed with the observed invite. `messageData` defines the updated state identifier and its associated value (details given below).
 
-The states specified in the `StateUpdate` event are as follows (ids are defined in the `glympse.VieweClientAdapterDefines.STATE` object):
+The states specified in the `StateUpdate` event are as follows (ids are defined in the `glympse.GlympseAdapterDefines.STATE` object):
 
 - `STATE.Name`: User's name of the invite (`val` = string)
 - `STATE.Avatar`: User's avatar image of the invite (`val` = URL string)
@@ -194,14 +196,24 @@ GVCA configuration format has two main components -- one for the Glympse viewer,
   - `interfaces`: Allows for local overrides/extensions of advertised Glympse viewer endpoints. More details can be found in `Custom Endpoints`.
 
 ##Adapter Endpoints
-All relevent Glympse Viewer APIs are available for use with the GVCA.
+All relevent Glympse Viewer APIs are available for use with the GA. Access them via the `map` property
+of the adapter instance (i.e.
+`var eta = myAdapter.map.getInviteProperty({ idProperty: GlympseAdapterDefines.STATE.Eta })`).
 
-- `getValue(id)`: Returns the current value of the active Glympse invite, based on the given `id`:
+- `getInviteProperies(idInvite)`: Returns all current properties for the given Glympse invite id.
+  If `idInvite` is null/undefined, the first active Glympse's properties are returned.
+  The returned object properties are defined in `GlympseAdapterDefines.STATE.*`.
+- `getInviteProperty(cfgInvite)`: Returns the current property value of a Glympse invite. `cfgInvite` = `{ idProperty: name_of_property, idInvite: glympse_invite_id }` Note that `idInvite` can be null if the first/only tracked Glympse invite is desired.
+  Available `idProperty` values are as follows (specified via `GlympseAdapterDefines.STATE.*` property names):
   - `Arrived`: Returns a boolean based on the active Glympse's arrival state
   - `Avatar`: String URL pointing to the Glympse sender's avatar image
+  - `Destination`: Object describing current Glympse invite's destination
   - `Eta`: Current ETA (in seconds) of the Glympse sender (-1 if no destination is set)
   - `Expired`: Boolean idicating if the Glympse is still active
-  - `Name`: Glympse sender's usr name
+  - `InviteEnd`: Glympse invite end time (epoch time in ms)
+  - `InviteStart`: Glympse invite start time (epoch time in ms)
+  - `Message`: Message set for Glympse invite
+  - `Name`: Glympse sender's username
   - `Phase`: Any relevent information related to an invite's phase property (usually just a string, if not null)
 - `addInvites(invites)`: Accepts a semi-colon-delimited string of invites to display on the map. Additional configuration options are passed via comma-delimited strings, per Viewer API spec (found elsewhere).
 - `addGroups(groups)`: Accepts a semi-colon-delimited string of Glympse group names to display on the map. Additional configuration options are passed via comma-delimited strings, per Viewer API spec (found elsewhere).

@@ -77,14 +77,43 @@ define(function(require, exports, module)
 			viewerElement.removeEventListener(glyEvents.ETA, viewerEta, false);
 		};
 
-		this.getCurrentValue = function(id)
+		this.getCurrentProperties = function(idInvite)
 		{
-			if (id && props.hasOwnProperty(id))
+			// Allow for simpler property-bag retrieval if only tracking one invite
+			if (!idInvite)
 			{
-				return props[id];
+				for (idInvite in props)
+				{
+					if (idInvite)
+					{
+						break;
+					}
+				}
 			}
 
-			return 'Unknown id "' + id + '"';
+			if (props.hasOwnProperty(idInvite))
+			{
+				return props[idInvite];
+			}
+
+			return 'Unknown invite "' + idInvite + '"';
+		};
+
+		this.getCurrentValue = function(idProperty, idInvite)
+		{
+			var prop = this.getCurrentProperties(idInvite);
+
+			if (typeof prop === 'string')
+			{
+				return prop;
+			}
+
+			if (idProperty && prop.hasOwnProperty(idProperty))
+			{
+				return prop[idProperty];
+			}
+
+			return 'Unknown property id "' + idProperty + '" for invite "' + idInvite + '"';
 		};
 
 		this.cmd = function(cmd, args)
@@ -227,6 +256,8 @@ define(function(require, exports, module)
 				detail.data = unknowns;
 				controller.notify(m.DataUpdate, detail);
 			}
+
+			//dbg('>>>> props["' + idInvite + '"]', prop);
 		}
 
 		function viewerEta(e)
