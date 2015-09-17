@@ -84,6 +84,7 @@ in the `GlympseAdapterDefines.STATE` object
   - `message`
   - `name`
   - `phase`
+  - `start_time`
   - `Arrived`
   - `Expired`
   - `NoInvites` (seen if no Glympse invites are successfully loaded in the map)
