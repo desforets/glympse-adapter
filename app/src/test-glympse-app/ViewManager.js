@@ -16,7 +16,8 @@ define(function(require, exports, module)
 		// state
 		var controller;
 		var cards;
-		var invites;
+		var invitesCard;
+		var invitesGlympse;
 
 		// ui - general
 		var divLoading = $('#divLoading');
@@ -42,13 +43,19 @@ define(function(require, exports, module)
 					doResize();
 
 					cards = args.cards;
-					invites = args.invites;
+					invitesCard = args.invitesCard;
+					invitesGlympse = args.invitesGlympse;
 
-					dbg('Cards: ' + cards + ', invites: ' + invites);
+					dbg('Cards: ' + cards + ', invitesCard: ' + invitesCard + ', invitesGlympse: ' + invitesGlympse);
 
 					if (!cards || cards.length === 0)
 					{
 						dbg('--> Glympse viewer only: ' + cfg.adapter.map.getInvites().length + ' invites');
+					}
+
+					if (invitesGlympse)
+					{
+						dbg('Current properties for invite "' + invitesGlympse[0] + '"', cfg.adapter.map.getInviteProperties(invitesGlympse[0]));
 					}
 
 					break;

@@ -102,7 +102,9 @@ define(function(require, exports, module)
 			var id, action;
 			var cfgClient = { consumers: { } };
 			var events = { setUserInfo: setUserInfo };
-			var intInterfaces = { map: { getValue: getValue }
+			var intInterfaces = { map: { getInviteProperties: getInviteProperties
+									   , getInviteProperty: getInviteProperty
+									   }
 								, cards: {}
 								};
 
@@ -133,7 +135,7 @@ define(function(require, exports, module)
 
 				requests[idApi] = generateRequestAction(aid.targ);//aid.request;
 
-				// Static internal available APIs
+				// Generate public APIs from static internal interfaces
 				var targ = intInterfaces[idApi];
 				for (id in targ)
 				{
@@ -488,14 +490,27 @@ define(function(require, exports, module)
 		// HOST REQUEST HANDLERS (MAP)
 		///////////////////////////////////////////////////////////////////////////////
 
-		function getValue(id)
+		function getInviteProperties(idInvite)
 		{
 			if (!viewerMonitor)
 			{
 				return 'NOT_INITIALIZED';
 			}
 
-			return viewerMonitor.getCurrentValue(id);
+			return viewerMonitor.getCurrentProperties(idInvite);
+		}
+
+		// cfgInvite = { idProperty: name_of_property_to_retrieve
+		//			   , idInvite:   glympse_invite_id --> can be null if first invite is targetted
+		//			   }
+		function getInviteProperty(cfgInvite)
+		{
+			if (!viewerMonitor)
+			{
+				return 'NOT_INITIALIZED';
+			}
+
+			return viewerMonitor.getCurrentValue(cfgInvite.idProperty, cfgInvite.idInvite);
 		}
 	}
 
