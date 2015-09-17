@@ -9,6 +9,8 @@ define(function(require, exports, module)
 	var s = Defines.STATE;
 	var r = Defines.MAP.REQUESTS;
 
+	var cEtaVal = 'eta';
+	var cEtaTime = 'eta_ts';
 
 	// Exported class
 	function ViewerMonitor(controller, cfg)
@@ -264,7 +266,20 @@ define(function(require, exports, module)
 		{
 			var d = e.detail;
 			var t = new Date().getTime();
-			controller.infoUpdate(s.Eta, d.id, d.owner, t, { 'eta': d.data * 1000, 'eta_ts': t });
+			var idProp = s.Eta;
+			var prop = props[d.id];
+			var val = prop[idProp];
+
+			if (!val)
+			{
+				val = {};
+				prop[idProp] = val;
+			}
+
+			val[cEtaVal] = d.data * 1000;
+			val[cEtaTime] = t;
+
+			controller.infoUpdate(idProp, d.id, d.owner, t, val);
 		}
 
 		function viewerInviteAdded(e)

@@ -65,6 +65,10 @@ define(function(require, exports, module)
 				{
 					//dbg('args', args);
 					dbg('[' + args.invite + '/' + args.card + '] "' + args.id + '"', args.val);
+					if (invitesGlympse)
+					{
+						dbg('Current properties for invite "' + invitesGlympse[0] + '"', cfg.adapter.map.getInviteProperties(invitesGlympse[0]));
+					}
 					break;
 				}
 
