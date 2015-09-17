@@ -15,6 +15,15 @@ define(function(require, exports, module)
 	{
 		// consts
 		var glyEvents = window.glympse.events;
+		var propMap = [ s.Avatar
+					  , s.Destination
+					  , s.InviteStart
+					  , s.InviteEnd
+					  , s.Eta
+					  , s.Message
+					  , s.Name
+					  , s.Phase
+					  ];	// Known/tracked properties
 
 		// state
 		var timerEnd;
@@ -163,7 +172,6 @@ define(function(require, exports, module)
 			var owner = detail.owner;
 
 			var unknowns = [];	// Unknown properties that are passed along
-			var maps = [ s.Avatar, s.Destination, s.EndTime, s.Eta, s.Message, s.Name, s.Phase ];	// Known/tracked properties
 
 			if (!props[idInvite])
 			{
@@ -183,9 +191,9 @@ define(function(require, exports, module)
 				var t = val.t;
 				var found = false;
 
-				for (var j = 0, jlen = maps.length; j < jlen; j++)
+				for (var j = 0, jlen = propMap.length; j < jlen; j++)
 				{
-					var id = maps[j];
+					var id = propMap[j];
 
 					//console.log('n=' + n + ', id=' + id);
 					if (n === id)
@@ -202,7 +210,7 @@ define(function(require, exports, module)
 				}
 
 				// Check for additional processing
-				if (n === s.EndTime)
+				if (n === s.InviteEnd)
 				{
 					notifyExpired(idInvite, owner);
 				}
@@ -257,7 +265,7 @@ define(function(require, exports, module)
 
 			// One last check
 			var t = new Date().getTime();
-			var eTime = props[s.EndTime];
+			var eTime = props[s.InviteEnd];
 			if (eTime > t)
 			{
 				timerEnd = setTimeout(notifyExpired, (eTime - t));

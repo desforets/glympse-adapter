@@ -94,8 +94,9 @@ define(function(require, exports, module)
 			// Known data stream properties
 			  Avatar: 'avatar'
 			, Destination: 'destination'
-			, EndTime: 'end_time'
 			, Eta: 'eta'
+			, InviteEnd: 'end_time'
+			, InviteStart: 'start_time'
 			, Message: 'message'
 			, Name: 'name'
 			, Owner: 'owner'
