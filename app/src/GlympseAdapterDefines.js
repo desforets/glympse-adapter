@@ -17,8 +17,6 @@ define(function(require, exports, module)
 				, addMarkers: 'addMarkers'
 				, addTwitterTopics: 'addTwitterTopics'
 				, addTwitterUsers: 'addTwitterUsers'
-				, generateRoute: 'generateRoute'
-				, ignoreDestinations: 'ignoreDestinations'
 				, refreshView: 'refreshView'
 				, removeInvites: 'removeInvites'
 				, setApiServices: 'setApiServices'
@@ -35,6 +33,8 @@ define(function(require, exports, module)
 			, REQUESTS_LOCAL: {
 				  getInvites: 'getInvites'
 				, getMap: 'getMap'
+				, generateRoute: 'generateRoute'
+				, ignoreDestinations: 'ignoreDestinations'
 			}
 		}
 

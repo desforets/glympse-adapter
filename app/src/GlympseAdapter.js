@@ -16,13 +16,13 @@ define(function(require, exports, module)
 	var ViewerMonitor = require('glympse-adapter/adapter/ViewerMonitor');
 	var CardsController = require('glympse-adapter/adapter/CardsController');
 	var GlympseLoader = require('glympse-adapter/adapter/GlympseLoader');
+	var GlympseHost = require('glympse-adapter/adapter/GlympseHost');
 
 	// consts
 	var idOasisPort = 'glympse';
 	var s = Defines.STATE;
 	var m = Defines.MSG;
 	var mStateUpdate = m.StateUpdate;	// Used alot
-
 
 	// Faked AMD module setup -- necessary??
 	if (!window.Oasis)
@@ -33,9 +33,9 @@ define(function(require, exports, module)
 
 	function GlympseAdapter(controller, cfg)
 	{
-		var cfgApp = cfg.app;
-		var cfgAdapter = cfg.adapter;
-		var cfgViewer = cfg.viewer;
+		var cfgApp = (cfg && cfg.app) || {};
+		var cfgAdapter = (cfg && cfg.adapter) || {};
+		var cfgViewer = (cfg && cfg.viewer) || {};
 
 		cfgAdapter.dbg = cfgApp.dbg;
 
@@ -58,6 +58,11 @@ define(function(require, exports, module)
 		var progressCurrent = 0;
 		var progressTotal = 0;
 		var mapCardInvites = { };
+
+		// host mode
+		var host;
+		var port;
+		var sandbox;
 
 
 
@@ -84,6 +89,25 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
+		this.runHost = function(cfgHost)
+		{
+			host = new GlympseHost(this);
+
+			oasisLocal.autoInitializeSandbox();	// Found in minified source
+			oasisLocal.configure('allowSameOrigin', true);
+
+			var cfgSandbox = { url: cfgHost.url,
+							   type: 'html',
+							   capabilities: [ idOasisPort ],
+							   services: { }
+							 };
+
+			cfgSandbox.services[idOasisPort] = host.init(cfgHost);
+			sandbox = oasisLocal.createSandbox(cfgSandbox);
+
+			return sandbox.el;
+		};
+
 		this.run = function(newViewer)
 		{
 			if (initialized)
@@ -99,6 +123,16 @@ define(function(require, exports, module)
 			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
 			cardsController = new CardsController(this, cfgAdapter);
 
+			var card = cfgAdapter.card;
+			var t = cfgAdapter.t;
+			var pg = cfgAdapter.pg;
+			var twt = cfgAdapter.twt;
+			var g = cfgAdapter.g;
+			var cleanInvites = lib.cleanInvites;
+
+			invitesCard = (card) ? cleanInvites([ card ]) : [];
+			invitesGlympse = cleanInvites(splitMulti(t));
+
 			var id, action;
 			var cfgClient = { consumers: { } };
 			var events = { setUserInfo: setUserInfo };
@@ -112,7 +146,10 @@ define(function(require, exports, module)
 			cfgViewer.services = cfgAdapter.svcGlympse;
 			//console.log('adapter svcs: ' + cfgAdapter.svcGlympse);
 
-			var connectSettings = { invite: ((cfgViewer.t) ? cfgViewer.t.split(',')[0] : '???')
+			var connectSettings = { invitesCard: invitesCard
+								  , invitesGlympse: invitesGlympse
+								  , id: VersionInfo.id
+								  , version: VersionInfo.version
 								 // apiMap: [ idApi0, idApi1, ... ]
 								 // apiCards: [ idApi0, idApi1, ... ]
 								 // apiExternal: [ idApi0, ... ]
@@ -123,7 +160,7 @@ define(function(require, exports, module)
 						 { id: 'CARDS', targ: cardsController}//, action: generateCardsAction, request: processCards }
 					   ];
 
-			var requests = { ext: processExternal };
+			var requests = { };//ext: processExternal };
 
 			// Defines.*.REQUESTS specifies the various API endpoints
 			// to expose to both local and host consumers
@@ -194,15 +231,6 @@ define(function(require, exports, module)
 
 			oasisLocal.connect(cfgClient);
 
-			var card = cfgAdapter.card;
-			var t = cfgAdapter.t;
-			var pg = cfgAdapter.pg;
-			var twt = cfgAdapter.twt;
-			var g = cfgAdapter.g;
-			var cleanInvites = lib.cleanInvites;
-
-			invitesCard = (card) ? cleanInvites([ card ]) : [];
-			invitesGlympse = cleanInvites(splitMulti(t));
 			t = invitesGlympse.join(';');
 
 			progressCurrent = 0;
@@ -261,10 +289,19 @@ define(function(require, exports, module)
 				case m.CardsInitStart:
 				case m.InviteInit:
 				case m.ViewerInit:
-				case m.ViewerReady:
 				{
 					updateProgress();
 					sendEvent(msg, args);
+					break;
+				}
+
+				case m.ViewerReady:
+				{
+					// Break ViewReady out to hand off viewer app reference for local
+					// consumers only. Hosted consumers will only get a notification.
+					updateProgress();
+					sendOasisMessage(msg, true);
+					notifyController(msg, args, true);
 					break;
 				}
 
@@ -384,6 +421,30 @@ define(function(require, exports, module)
 			sendOasisMessage(mStateUpdate, args);
 		};
 
+		// [HOST Mode] Callback once connected client sends a 'Connect' event
+		this.clientConnected = function(options)
+		{
+			port = sandbox.capabilities[idOasisPort];
+
+			// 'interfaces' object is an array of string ids
+			dbg('clientConnected: "' + options.id + '" v(' + options.version + ')');
+			var interfaceTypes = [ 'map', 'card', 'ext' ];
+
+			for (var i = 0, len = interfaceTypes.length; i < len; i++)
+			{
+				var intType = interfaceTypes[i];
+				var interfaces = (options && options[intType]);
+				if (interfaces)
+				{
+					for (var j = 0, jlen = interfaces.length; j < jlen; j++)
+					{
+						var id = interfaces[j];
+						this[intType][id] = generateCustomInterface(id);
+					}
+				}
+			}
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// INTERNAL
@@ -410,10 +471,18 @@ define(function(require, exports, module)
 			};
 		}
 
-		function processExternal(args)
+		function generateCustomInterface(id)
 		{
-			console.log('processExternal: ' + JSON.stringify(args));
+			return function(args)
+			{
+				return port.request(id, args);
+			};
 		}
+
+//		function processExternal(args)
+//		{
+//			console.log('processExternal: ' + JSON.stringify(args));
+//		}
 
 		function notifyController(msg, args, evtMsg)
 		{
@@ -451,6 +520,7 @@ define(function(require, exports, module)
 			for (var i = 0, len = connectQueue.length; i < len; i++)
 			{
 				var q = connectQueue[i];
+				//dbg('Sending: ' + q.id);
 				this.send(q.id, q.val);
 			}
 
@@ -467,7 +537,8 @@ define(function(require, exports, module)
 		{
 			if (connectedOasis)
 			{
-				oasisLocal.consumers[idOasisPort].send(id, val);
+				//dbg('send "' + id + '" ', val);
+				oasisLocal.consumers[idOasisPort].send(id, (val && val.toJSON && val.toJSON()) || val);
 			}
 			else
 			{
