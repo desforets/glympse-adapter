@@ -109,25 +109,9 @@ define(function(require, exports, module)
 
 	function doResize(forced)
 	{
-		//var w = $(window).width();
-		var h = $(window).height();// - $('#hdrApp').height();
+		var h = $(window).height();
 
-		//var isDefault = (true/*autoSize*/ && (h == 444 || h == 356 || w == 444 || w == 356));
-		//var baseHeight = ((!isDefault) ? h : ((w > h) ? 267 : h + 60));
-		//var offset = h;
-
-		//var app = glympse.viewer.apps[cfg.viewer.appId];
-		/*if (app && (typeof forced) !== 'boolean' && h === baseHeight)
-		{
-			setTimeout(function()
-			{
-				doResize(true);
-				app.refreshView();
-			}, 500);
-			return;
-		}*/
-
-		$('#divLoading').css({ height: $(window).height() + 0*1 });
+		$('#divLoading').css({ height: h });
 		$('#glympser').css({ height: h });
 	}
 });

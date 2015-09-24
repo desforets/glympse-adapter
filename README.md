@@ -1,6 +1,6 @@
-#The Glympse Adapter
+# The Glympse Adapter
 
-##Overview
+## Overview
 
 The Glympse Adapter (GA) is a shim to be included with any web app wanting to directly host the
 Glympse viewer for direct interaction with it, and to provide its public APIs over an iframe boundary
@@ -14,7 +14,7 @@ which are published to GA consumers during setup.
 
 
 
-##Available modules
+## Available modules
 The following AMD modules are available for use when building a module-based application.
 While intended for using GA as a client-based module, there should be no surprises even
 if running in host-mode.
@@ -29,7 +29,7 @@ if running in host-mode.
 - `glympse-adapter/lib/utils`: Static library containing utility functions useful
   for interacting with the GlympseAdapter module. [TODO: list available methods]
 
-##Adapter Messages/Events
+## Adapter Messages/Events
 
 The following is a description of the various notification messages (or Events, if
 using GA in it's host configuration) that are sent by the adapter (defined in the
@@ -104,14 +104,15 @@ using GA in it's host configuration) that are sent by the adapter (defined in th
   - `Arrived`
   - `Expired`
   - `NoInvites` (seen if no Glympse invites are successfully loaded in the map)
-- `ViewerInit` / `true`: Sent when the Glympse map viewer is beginning its initialization process
+- `ViewerInit` / `true`: Sent when the Glympse map viewer is beginning its initialization
+  process, but is not yet ready
 - `ViewerReady` / `Glympse_viewer_instance`: Generated once the Glympse map control is
 fully loaded and ready for presentation/interaction. The provided instance reference allows
 for direct access to the Glympse viewer application API and all of its components.
   - Note that in GA Host mode, Glympse Viewer instances are not passed
 
 
-##Message/Event flow
+## Message/Event flow
 
 * params = card_invite, no glympse_invites
 
@@ -126,7 +127,7 @@ for direct access to the Glympse viewer application API and all of its component
 		AdapterInit -> P -> InviteInit -> P -> InviteReady -> (move to card_invite/no glympse_invites flow)
 
 
-##Adapter Endpoints
+## Adapter Endpoints
 All relevent Glympse Viewer APIs are available for use with the GA. When running in client-mode,
 all APIs are available, along with any instance variables that may be passed along. In host-mode,
 the only Viewer APIs not available are ones relating to DOM or global environment information,
@@ -137,7 +138,7 @@ Endpoints are broken out on the following components:
   - `card`: Glympse Card endpoints accessiable via `adapter_instance.card.*`
   - `ext`: Custom client-app-included endpoints accessiable via `adapter_instance.ext.*`
 
-###GlympseAdapter.map.* endpoints (host/client-mode):
+### GlympseAdapter.map.* endpoints (host/client-mode):
 
 Below is a list of all of the exposed GA APIs with respect to the Glympse Viewer API, and available
 to either host or client-based consumers. These endpoints are also specified in
@@ -196,7 +197,7 @@ Access to these endpoints can be made via the `map` property of the adapter inst
   - `zoomMax`: Sets max zoom level of the map for auto-zoom. `val` = Max integer zoom level.
 
 
-###GlympseAdapter.map.* endpoints (client-mode-only):
+### GlympseAdapter.map.* endpoints (client-mode-only):
 
 The following APIs are only available to consumers of the GA when running in client-mode.
 These are also specifed in `GlympseAdapterDefines.MAP.REQUESTS_LOCAL`:
@@ -211,13 +212,13 @@ These are also specifed in `GlympseAdapterDefines.MAP.REQUESTS_LOCAL`:
   The APIs available under a GlympseInvite will be discussed elsewhere in this document.
 - `getMap()`: Returns a reference to the HERE map control used by the Glympse viewer. This reference is
   suitable for adding additional custom overlays in conjunction with the Glympse viewer's UI
-  components. For more information, please refer to the [HERE Javascript APIs](https://developer.here.com/javascript-apis)
+  components. For more information, please refer to the [HERE Javascript APIs]
   documentation.
 - `ignoreDestinations(bool)`: Hides current invite destinations. Returns a list of all affected
   destination objects.
 
 
-###GlympseAdapter.cards.* endpoints (host/client-mode):
+### GlympseAdapter.cards.* endpoints (host/client-mode):
 
 Below is a list of all of the exposed GA APIs with respect to the Glympse Cards API, and available
 to either host or client-based consumers. These endpoints are also specified in
@@ -229,7 +230,7 @@ Access to these endpoints can be made via the `cards` property of the adapter in
 - Currently, no Cards-related endpoints are available for the GA
 
 
-###GlympseAdapter.cards.* endpoints (client-mode-only):
+### GlympseAdapter.cards.* endpoints (client-mode-only):
 
 The following APIs are only available to consumers of the GA when running in client-mode.
 These are also specifed in `GlympseAdapterDefines.CARDS.REQUESTS_LOCAL`:
@@ -237,7 +238,7 @@ These are also specifed in `GlympseAdapterDefines.CARDS.REQUESTS_LOCAL`:
 - Currently, no Cards-related endpoints are available for the GA
 
 
-###GlympseAdapter.ext.* endpoints (host/client-mode):
+### GlympseAdapter.ext.* endpoints (host/client-mode):
 
 Below is a list of all of the exposed GA APIs with respect to custom APIs generated by the
 client-mode-based application that has integrated the GA. Generally, these APIs will be available
@@ -250,31 +251,24 @@ Access to these endpoints can be made via the `ext` property of the adapter inst
 
 
 
-[ Content above abandon all hope is current/relevent for the GlympseAdapter. Stuff below is mostly
-in-line, but needs updating/refresh ]
-
-===========================================
-===========================================
-===========================================
-===========================================
-ABANDON ALL HOPE, YE WHO ENTER
-===========================================
-
-
-## GA Client-Mode
+## Client-Mode
 Below descibes how to utilize the GA in "client-mode", where full access is available to all
 Viewer components, data structures, and many customization options. However, it also requires
 more care in getting going, and maintaining a clean separation from the Glympse Viewer, which
 will now be partially affected by the global namespace and default styling options.
 
-###Usage
+### Usage
 
 GA usage is straight-forward, but does have a dependency on a recent version of
-[jQuery](http://jquery.com). jQuery aside, all that is needed is to include the built
+[jQuery]. jQuery aside, all that is needed is to include the built
 `GlympseAdapter` in your page, along with a bit of initialization and configuration to get
 the adapter up and running:
 
-	<script type="text/javascript" src="../dist/glympse-adapter-CURRENT_VERSION.min.js"></script>
+	<script type="text/javascript" src="glympse-adapter-CURRENT_VERSION.min.js"></script>
+
+Alternatively, the GA is available as a [Bower] package to include with your project if using
+[RequireJS] via `bower install glympse-adapter --save`. If using the Bower package, there is
+no need to include it as an external reference.
 
 Initialization, including inserting the viewer into your page, should be done after
 the page onLoad event has fired:
@@ -289,30 +283,30 @@ the page onLoad event has fired:
 
 		/* Global namespace */
 		var adapter = new glympse.GlympseAdapter(viewer_handler_instance, cfg);
-		adapter.run($('#div_viewer_container'));   // Note jQuery object reference
+
+		/* AMD module format */
+		//var GlympseAdapter = require('glympse-adapter/GlympseAdapter');
+		//var adapter = new GlympseAdapter(viewer_handler_instance, cfg);
+		
+		adapter.client($('#div_viewer_container'));   // Note jQuery object reference
 	});
 
 A couple of things to note here:
-- `viewer_handler_instance` is a class instance to handle events and messages generated by the Glympse Viewer (described below)
-- `cfg` is a simple Javascript object that defined both adapter and Glympse Viewer configuration (described below)
-- `div_viewer_container` is the id of an HTML `div` element that already exists in the local DOM. The viewer will be inserted into this element.
+- `viewer_handler_instance` is a class instance to handle events and messages generated by
+  the Glympse Viewer (described below).
+- `cfg` is a simple Javascript object that defined both adapter and Glympse Viewer
+  configuration (described below).
+- `div_viewer_container` is the id of an HTML `div` element that already exists in the local
+  DOM. The Glympse viewer will be inserted into this element when it is fully loaded.
 
-For the `viewer_handler_reference` class, it must provide a public method with a signature of `notify(idMessage, messageData)`.
-The `idMessage` parameter is a string that will be one of the values as defined in the `glympse.GlympseAdapterDefines.MSG` object:
-  - `MSG.ViewerInit`: Sent when the viewer has started its initialization process, but is still not quite ready for interaction. `messageData` should be ignored.
-  - `MSG.ViewerReady`: Sent whenever the Glympse viewer is fully initialized and ready for interaction. `messageData` should be ignored.
-  - `MSG.StateUpdate`: The most common message, this is generated whenever something interesting has changed with the observed invite. `messageData` defines the updated state identifier and its associated value (details given below).
+For the `viewer_handler_reference` class, it must provide a public method with a signature of
+`notify(idMessage, messageData)`. The `idMessage` parameter is a string that will be one of
+the values as defined in the `glympse.GlympseAdapterDefines.MSG` object. `messageData` can be
+a number of different types, depending on the value of `idMessage`. Please refer to the
+*Adapter Messages/Events* section for specifics of each message type.
 
-The states specified in the `StateUpdate` event are as follows (ids are defined in the `glympse.GlympseAdapterDefines.STATE` object):
-
-- `STATE.Name`: User's name of the invite (`val` = string)
-- `STATE.Avatar`: User's avatar image of the invite (`val` = URL string)
-- `STATE.ETA`: Time remaining before user arrives at their destination (`val` = float representing time remaining, in seconds)
-- `STATE.Arrived`: Flag indicating whether the user of the invite has approximately arrived at their destination (`val` = boolean)
-- `STATE.Expired`: Flag indicating whether the watched Glympse has expired (`val` = boolean)
-- `STATE.Phase`: String/Object of the invite's current phase (`val` = string/object)
-
-GVCA configuration format has two main components -- one for the Glympse viewer, and one for the adapater itself:
+GA client-mode  configuration format has two main components -- one for the Glympse viewer,
+and one for the adapater itself:
 
 	cfg =
 	{
@@ -320,24 +314,48 @@ GVCA configuration format has two main components -- one for the Glympse viewer,
 			.. normal viewer config settings ..
 		}
 		, adapter: {
-			  hideEvents: false
-			, hideUpdates: false
-			, viewerPollInterval: 5000
-			, initialize: callbackInitialize
-			, interfaces: { id0: callback0, id1: callback1, ..., idN: callbackN }
+			  card: *string*
+			, t: *string*
+			, pg: *string*
+			, g: *string*
+			, twt: *string*
+			, hideEvents: *bool*
+			, hideUpdates: *bool*
+			, initialize: *function*
+			, interfaces: { id0: callback0, ..., idN: callbackN }
+			, anon: *bool*
+			, sandbox: *bool*
+			, svcGlympse: *string*
+			, svcCards: *string*
+			, dbg: *bool*
 		}
 	}
 
-- `viewer` configuration is the normal Glympse viewer configuration object, described elsewhere. It should be noted that a valid invite/group/Twitter handler/Twitter topic setting should be set for normal viewer initialization
+- `viewer` configuration is the normal Glympse viewer configuration object, described
+  elsewhere. It should be noted that a valid invite/group/Twitter handler/Twitter topic
+  setting should be set for normal viewer initialization.
 - `adapter` settings are as follows:
-  - `hideEvents`: Don't send event-related messages back to the `viewer_handler_reference.notify()` method. Currently, this includes the `MSG.ViewerInit` and `MSG.ViewerReady` messages.
-  - `hideUpdates`: Don't send `MSG.StateUpdate` messages back to the `viewer_handler_reference.notify()` method.
-  - `viewerPollInterval`: Specifies (in ms) the time between viewer queries to detect for any state updates that would generate a `MSG.StateUpdate` message.
-  - `initialize`: Method to call when the adapter has successully synced with a host adapater via iframe interface. Can be null.
-  - `interfaces`: Allows for local overrides/extensions of advertised Glympse viewer endpoints. More details can be found in `Custom Endpoints`.
+  - `hideEvents`: Don't send event-related messages back to the
+  `viewer_handler_reference.notify()` method. Currently, this includes everything except the
+  `StateUpdate` message.
+  - `hideUpdates`: Don't send `StateUpdate` messages back to the
+  `viewer_handler_reference.notify()` method.
+  - `initialize`: Method to call when the adapter has successully synced with a host adapater
+  via iframe interface. Can be null.
+  - `interfaces`: Allows for local overrides/extensions of advertised Glympse viewer
+  endpoints. More details can be found in *Custom Endpoints*. Can also be null,
+  - `anon`: Whether to use anonymous or real Glympse accounts when interacting with either the
+  Cards or Glympse API
+  - `sandbox`: Force usage of the sandbox environment for Cards/Glympses
+  - `svcGlympse`: Override the default Glympse API datacenter. Default is
+  `//api.glympse.com/v2/`.
+  - `svcCards`: Override the default Cards API datacenter. Default is
+  `//api.cards.glympse.com/api/v1/`.
+  - `dbg`: Enable debugging state. Defaults to `false`.
+  - `card`, `t`, `g`, `twt`, `pg`: Standard Cards/Glympse invite types.
 
 
-###Custom Marker Configuration
+### Custom Marker Configuration
 For the `addMarkers(cfgMarkers)` API, the `cfgMarkers` object is of the following format:
 
 	cfgMarkers = { showInfo: true|false, markers: [ marker_0_cfg, marker_1_cfg, ..., marker_N_cfg ] };
@@ -361,7 +379,7 @@ Each marker configuration is of the following format:
 						}
 					};
 
-###Custom Route Options
+### Custom Route Options
 For the `addRoute(cfgRoute)` API, the following configuration object is used:
 
 	cfgRoute = { start: [ lat, lng ]
@@ -372,10 +390,11 @@ For the `addRoute(cfgRoute)` API, the following configuration object is used:
 				, style: { strokeColor: 'rgba(255,0,0,0.8)' }
 			   };
 
-###Custom Endpoints
-While not usuaully necessary, the GVCA allows for extending and/or overriding the default set of endpoints exposed by the Glympse
-viewer if you need to allow for additional functionality aside from that provided by the default Glympse viewer. As noted above,
-the format for specifying custom endpoints is in the adapter's `interfaces` configuration setting:
+### Custom Endpoints
+While not usuaully necessary, the GA allows for extending and/or overriding the default set of
+endpoints exposed by the Adapter if you need to allow for additional functionality. As noted
+above, the format for specifying custom endpoints is in the adapter's `interfaces`
+configuration setting:
 
 	cfg =
 	{
@@ -388,53 +407,44 @@ the format for specifying custom endpoints is in the adapter's `interfaces` conf
 		}
 	}
 
-The `interfaces` object is an optional collection of methods to be made available for GVHA consumers, or to override existing Glympse
-viewer methods. Each item in the collection is decribed in the following manner:
+The `interfaces` object is an optional collection of methods to be made available for GA
+consumers, or to override existing Glympse viewer methods. Each item in the collection is
+decribed in the following manner:
 
-- `id`: The name of the interface to advertise to GVHA consumers upon initial adapter setup.
-- `callback`: The method to execute when called from the GVHA consumer.
+- `id`: The name of the interface to advertise to GA host-mode consumers upon initial adapter setup.
+- `callback`: The method to execute when called from the GA host-mode consumer.
 
-For `id`, if the name is the same as one of the pre-defined endpoints (listed above), the default implementation is replaced with this
-custom version. However, the default is still available via the id with the same name, but with a `base_` prefix (i.e. `base_getValue`
-to reach the Glympse viewer's implementation).
+For `id`, if the name is the same as one of the pre-defined endpoints (listed above), the default
+implementation is replaced with this custom version. However, the default is still available via
+the id with the same name, but with a `base_` prefix (i.e. `base_getValue` to reach the Glympse
+viewer's implementation).
 
-Almost any valid Javascript name can be used, save for the default public method names of the GVCA. To be safe, prefix the name of your
-custom endpoints with a unique name (i.e. "my" would work wonderfully).
+Almost any valid Javascript name can be used, save for the default public method names of the
+GA. To be safe, prefix the name of your custom endpoints with a unique name (i.e. "my" would
+work wonderfully).
 
-For now, your customized endpoints should return some value directly, if expected by the caller. The current version of the GVCA does
-not support deferred responses. In the next version, a Promise-based return value will allow for async handling for delayed results (i.e.
-Ajax-based calls).
+For now, your customized endpoints should return some value directly, if expected by the caller.
+The current version of the GA does not support deferred responses. In the next version, a
+Promise-based return value will allow for async handling for delayed results (i.e. Ajax-based
+calls).
 
-And for reference, the test app pair of `index-dist.html` and `test/app.js` show an example custom endpoint of `customMethodExample`.
-This can be easily extended and/or enhanced for your needs.
-
-
-###Preview
-A sample of setting up a GVCA-based webapp can be found in `index-test.html`, which leverages a sample test app found under the
-`src/test/` directory in this repo. It demonstrates a simple `viewer_handler_reference` class, along with a default viewer initialization.
-
-`index-dist.html` demonstrates the use of the GVCA with it's GVHA counterpart. However, some setup is required to alias the
-local machine to point to the `indext-test.html` through a localhost alias of test.localhost.
+And for reference, the test app pair of `index-test.html` and `test/app.js` show an example
+custom endpoint of `customMethodExample`. This can be easily extended and/or enhanced for your
+needs.
 
 
-###Installation
-
-The recommended method for using the GVCA component is with the build GlympseViewerClientAdapter-CURRENT_VERSION.min.js file
-found in the `builds/` directory of this repo. Usually, the highest version is the one to use.
-
-
-## GA Host-Mode
+## Host-Mode
 Below descibes how to utilize the GA in "host-mode", with limited access to Viewer components
 and data structures. It runs in an iframe-based environment, providing a clean separation to the
 rest of the page in which it is embedded. That said, the communication channel established with the
 View-Mode-based GA control is fairly robust and can handle a number of data types (including such
 things as image data).
 
-###Usage
+### Usage
 
-Host-Mode usage is straight-forward. It has been designed to replicate the Glympse Viewer
-and Cards APIs, adding a bit of initialization and configuration to get the adapter up and
-running. All that is needed is to include the built GlympseAdapter.js in your page:
+Host-Mode usage has been designed to replicate the Glympse Viewer and Cards APIs, adding a
+bit of initialization and configuration to get the adapter up and running. All that is needed
+is to include the built GlympseAdapter.js in your page:
 
 	<script type="text/javascript" src="../dist/GlympseAdapter-VERSION.min.js"></script>
 
@@ -448,15 +458,15 @@ the page onLoad event has fired:
 		...
 
 		// Set up the adapter
-		
+
 		/* Global namespace */
 		var adapter = new glympse.GlympseAdapter();
-		
+
 		/* AMD module format */
 		//var GlympseAdapter = require('glympse-adapter/GlympseAdapter');
 		//var adapter = new GlympseAdapter();
-		
-		var el = adapter.runHost({
+
+		var el = adapter.host({
 			url: 'http://glympse.com/INVITE_CODE?partnerid=MY_PARTNER_ID',
 			initialize: clientInitialized,
 			connect: clientConnected,
@@ -498,7 +508,7 @@ It should be noted that the only *required* parameter in the above configuration
 parameter, which initializes the Glympse viewer iframe.
 
 All API calls return a Promise, allowing for async handling of all results. These should be
-treated like any baseline [Promise/A+](https://promisesaplus.com/) system:
+treated like any baseline [Promise/A+] system:
 
 	adapter.map.getInviteProperty({ idProperty: GlympseAdapterDefines.STATE.Name }).then(function(data)
 	{
@@ -510,41 +520,87 @@ this document. Additionally, refer to `app/test-host/index-host.html` as a refer
 available APIs with the GA running in host-mode.
 
 
-###Supported Hosting Events
-A couple of specific events have been added to detect proper loading and initialization
-steps during the course of loading an iframe'd Glympse viewer. Both of these settings are
-specified in the GVHA.init() configuration:
+### Host Event support
+Events generated by the hosted client-based GA application can be hooked during host
+mode initialization. All of the named events can be mapped by providing a function
+callback. If no callback is provided, no event will be generated.
 
-- `Initialize`: Invoked whenever the iframe html has been loaded and registered with the host container.
-- `Connect`: Sent once the hosted viewer has application has loaded and initialized its interfaces with the host container. The callback is passed a Javascript object containing the invite code used by the viewer and a list of additional custom methods available (default = `null`).
+#### Host-specific Events
+A couple low-level events have been added to monitor the loading and initialization
+steps during the course of loading an iframe'd Glympse Adapter-based viewer. Both
+of these settings are specified in the passed `host(cfg)` API configuration (outlined
+elsewhere). However, these events are generally not needed for most applications,
+except to monitor initialization and loading progress.
 
+- `Initialize`: Invoked whenever the iframe html has been loaded and registered with
+  the host container. Callback format is: `callback(name)`. The passed `name`
+  parameter in the callback is the id used interface with the client-hosted viewer.
 
-###Mapped Viewer Events
-Several Glympse Viewer-specific events are available for use within your application. A couple are
-only used during viewer intialization, with only one event currently in use during the lifetime of
-the viewer while it is active:
-
-- `ViewerInit`: Called when the viewer has begun is component loading and registration process.
-- `ViewerReady`: Called when the viewer has fully loaded all components and map information and is fully ready to display the Glympse map.
-- `StateUpdate`: Sent whenever changes occur on the watched Glympse invite. The data sent is a Javascript Object with the following members:
-  - `id`: String identifier of the state change (values described below).
-  - `val`: Value pertaining to the specified state change. It can be of varying types.
-
-The range of values for the `StateUpdate` update that will be as follows:
-
-- `Arrived`: Flag indicating whether the user of the invite has approximately arrived at their destination (`val` = boolean)
-- `Avatar`: User's avatar image of the invite (`val` = URL string)
-- `Eta`: Time remaining before user arrives at their destination (`val` = float representing time remaining, in seconds)
-- `Expired`: Flag indicating whether the watched Glympse has expired (`val` = boolean)
-- `Name`: User's name of the invite (`val` = string)
-- `Phase`: String/Object of the invite's current phase (`val` = string/object)
-
+- `Connect`: Sent once the hosted GA application has loaded and initialized
+  its interfaces with the host container. Callback format is: `callback(options)`.
+  The passed `options` parameter in the callback shows the features of the hosted
+  iframe'd client:
+  - `invitesCard`: *(string)* List of Card invites to load
+  - `invitesGlympse`: *(string)* List of Glympse invites to load (*string*)
+  - `id`: *(string)* Connected client app identifier (generally "glympse-adapter") (*string*)
+  - `version`: *(string)* Connected client GA version (*string*)
+  - `map`: *(array)* Available map-based APIs
+  - `cards`: *(array)* Available cards-based APIs
+  - `ext`: *(array)* Available custom APIs
 
 
 
-##Project Notes
-This project leverages [oasis.js](https://github.com/tildeio/oasis.js) and [rsvp.js](https://github.com/tildeio/rsvp.js) for
-hosting and communication semantics. Unfortunately, due to each of their development approaches, a snapshot of their transpiled
-Require.js-based sources must be included with this project to properly use their functionality. For future maintenance, the
-latest commits used in this snapshot are `4c657d15` and `5cfda622` of the `tildeio/oasis.js` and `tildeio/rsvp.js` repos
-respectively.
+#### Cards/Map/Custom Events
+All of the GA-based event handlers are specified in the `events` section of the `host(cfg)`
+configuration (as outlined above). The names of the handlers are identical to the name of the
+Adapter event to be handled. For example, to handle the `ViewerInit` and `ViewerReady` events,
+the `host()` config object would look like:
+
+    var htmlElement = adapter.host(
+		{ url: ...,
+		  events: { ViewerInit: myViewerInit, ViewerReady: myViewerReady }
+		}
+	);
+
+If you do not specify a handler for a particular GA event, it will not be raised by GA.
+
+
+### Previews
+A sample of setting up a GA-based webapp (running in client mode) can be found in
+`index-test.html` or `test-glympse-app/index-glympse-app.html`, which leverages a
+sample test apps found under the `src/test` and `src/test-glympse-app` directories respectively.
+They demonstrate various approaches to instantiating and running the GA in client mode, along
+with a default viewer initialization.
+
+`index-dist.html` demonstrates the use of the GA in client-mode with it's GA host-mode
+counterpart. However, some setup is required to alias the local machine to point to the
+`indext-test.html` through a localhost alias of test.localhost.
+
+
+## Installation
+
+The recommended method for using the GA component in a client-mode environment is through a
+Bower installation of your require.js project. It is registered in the Bower registry as
+`glympse-adapter` -- `bower install glympse-adapter --save`.
+
+If you aren't using a require.js environment, or are planning to run the GA in host mode, then
+you should use the latest pre-built version of the Adapter. Grab the
+GlympseAdapter-CURRENT_VERSION.min.js file found in the `builds/` directory of this repo.
+Usually, the highest version is the one to use.
+
+
+## Project Notes
+This project leverages [oasis.js] and [rsvp.js] for hosting and communication semantics.
+Unfortunately, due to each of their development approaches, a snapshot of their transpiled
+Require.js-based sources must be included with this project to properly use their functionality.
+For future maintenance, the latest commits used in this snapshot are `4c657d15` and `5cfda622`
+of the `tildeio/oasis.js` and `tildeio/rsvp.js` repos respectively.
+
+
+[HERE Javascript APIs]: https://developer.here.com/javascript-apis
+[jQuery]: http://jquery.com
+[Bower]: http://bower.io/
+[RequireJS]: http://requirejs.org
+[Promise/A+]: https://promisesaplus.com/
+[oasis.js]: https://github.com/tildeio/oasis.js
+[rsvp.js]: https://github.com/tildeio/rsvp.js

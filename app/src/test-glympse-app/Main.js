@@ -92,7 +92,7 @@ define(function(require, exports, module)
 			cfgAdapter.interfaces = { customMethodExample: doCustomMethod };
 
 			adapter = new GlympseAdapter(that, cfgCore);
-			adapter.run(cfgAdapter.element);
+			adapter.client(cfgAdapter.element);
 			cfg.adapter = adapter;	// Reference for general app usage
 		}
 

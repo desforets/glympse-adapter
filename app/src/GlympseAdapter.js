@@ -37,7 +37,7 @@ define(function(require, exports, module)
 		var cfgAdapter = (cfg && cfg.adapter) || {};
 		var cfgViewer = (cfg && cfg.viewer) || {};
 
-		cfgAdapter.dbg = cfgApp.dbg;
+		cfgAdapter.dbg = cfgApp.dbg || cfgAdapter.dbg;
 
 		var dbg = lib.dbg('GlympseAdapter', cfgApp.dbg);
 
@@ -89,7 +89,7 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.runHost = function(cfgHost)
+		this.host = function(cfgHost)
 		{
 			host = new GlympseHost(this);
 
@@ -108,7 +108,7 @@ define(function(require, exports, module)
 			return sandbox.el;
 		};
 
-		this.run = function(newViewer)
+		this.client = function(newViewer)
 		{
 			if (initialized)
 			{

@@ -102,7 +102,7 @@ define(function(require, exports, module)
 		cfg.adapter.interfaces = { customMethodExample: doCustomMethod };
 
 		adapter = new GlympseAdapter(stubViewer, cfg);
-		adapter.run($('#glympser'));
+		adapter.client($('#glympser'));
 
 		setTimeout(doResize, 250);
 	}

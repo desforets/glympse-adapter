@@ -15,37 +15,6 @@
         <script type="text/javascript" src="../../lib/requirejs/require.js" data-main="requireConfig-host"></script>
         <!-- /process -->
 
-		<script type="text/javascript">
-			var urlParams = {}; (function () { var e, a = /\+/g, r = /([^&=]+)=?([^&]*)/g, d = function (s) { return decodeURIComponent(s.replace(a, " ")); }, q = window.location.search.substring(1); while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]); })();
-			var b = glympse.broadcastTypes;
-			window.cfgApp =
-			{
-				app: {
-				}
-				, viewer: {
-					  onlyCss: urlParams.onlyCss
-					, onlyCanvas: urlParams.onlyCanvas
-					, basePath: '//dev.glympse.com/'
-					, broadcast: [ b.DATA, b.ETA, b.INVITE_STATUS ].join(',')
-					//, extCfg: "UvoM1hkDMkGonTTTxk4e6Q"
-				}
-				, adapter: {
-					  card: urlParams.card// || '3DNH-3793'
-					, t: urlParams.t || 'demobot0'
-					, pg: urlParams.pg
-					, g: urlParams.g
-					, twt: urlParams.twt
-					, hideEvents: false
-					, hideUpdates: false
-					, viewerPollInterval: 5000
-					, anon: true		// Account.js
-					, sandbox: true		// Account.js
-					, svcGlympse: '//api.sandbox.glympse.com/v2/'
-					//, svcGlympse: '//api.glympse.com/v2/'
-					, svcCards: '//api.cards.sandbox.glympse.com/api/v1/'
-				}
-			};
-		</script>
 		<script>
 		$(window).ready(function()
 		{
@@ -112,8 +81,8 @@
 //				}
 
 				// Set up the adapter
-				var viewer = new glympse.GlympseAdapter();
-				var el = viewer.runHost({
+				var viewer = new glympse.GlympseAdapter(null, { dbg: false });
+				var el = viewer.host({
 					//url: 'http://' + ((urlParams.datacenter) ? (urlParams.datacenter + '.') : '') + 'glympse.com/' + (urlParams.t || 'bot002') + '?partnerid=' + urlParams.partnerid,
 					url: 'http://localhost:8000/index-test.html?debug=1&t=' + (urlParams.t || 'bot002'),
 					initialize: clientInitialized,
