@@ -17,4 +17,4 @@ require.config({
 
     ]
 });
-require(['glympse-adapter/GlympseAdapter']);
+require(['app']);

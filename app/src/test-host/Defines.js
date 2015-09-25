@@ -8,7 +8,8 @@ define(function(require, exports, module)
 		{
 			  LoadInvite: 'LoadInvite'
 			, InitUi: 'InitUi'
-			, LocationUpdate: 'LocationUpdate'
+			, LogEvent: 'LogEvent'
+			, SetAdapterUi: 'SetAdapterUi'
 		}
 	};
 });

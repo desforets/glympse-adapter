@@ -16,196 +16,39 @@
         <!-- /process -->
 
 		<script>
-		$(window).ready(function()
+		var urlParams = {}; (function () { var e, a = /\+/g, r = /([^&=]+)=?([^&]*)/g, d = function (s) { return decodeURIComponent(s.replace(a, " ")); }, q = window.location.search.substring(1); while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]); })();
+		var cfgApp =
 		{
-			// Simple query string parser
-			var urlParams = {}; (function () { var e, a = /\+/g, r = /([^&=]+)=?([^&]*)/g, d = function (s) { return decodeURIComponent(s.replace(a, " ")); }, q = window.location.search.substring(1); while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]); })();
-
-			// Simple html logger
-			var outputText = $('#outputText');
-			function logEvent(tag, data)
+			adapter:
 			{
-				var div = $(document.createElement('div'));
-				div.text(tag + ((!data) ? '' : (': ' + ((typeof data === 'string') ? data : JSON.stringify(data)))));
-				outputText.append(div);
-				outputText.stop().animate({ scrollTop: outputText[0].scrollHeight }, 250);
+				dbg: true
+				, card: urlParams.card// || '3DNH-3793'
+				, t: urlParams.t || 'demobot0'
+				, pg: urlParams.pg
+				, g: urlParams.g
+				, twt: urlParams.twt
+				, hideEvents: false
+				, hideUpdates: false
+				, anon: true		// Account.js
+				, sandbox: true		// Account.js
+				, svcGlympse: '//api.sandbox.glympse.com/v2/'
+				//, svcGlympse: '//api.glympse.com/v2/'
+				, svcCards: '//api.cards.sandbox.glympse.com/api/v1/'
 			}
-
-			function clientInitialized(name)
+			, app:
 			{
-				logEvent('** INITIALIZED (' + name + ') **');
+				  dbg: true
+				, elementAdapter: 'divSandbox'
+				, urlClient: 'http://localhost:8000/index-test.html?debug=1&t=' + (urlParams.t || 'robt0001')
 			}
-
-			function clientConnected(data)
+			, viewer:
 			{
-				logEvent('** Connected ** ', data);
 			}
-
-			function adapterInit(data) { logEvent('[adapterInit]', data); }
-			function adapterReady(data) { logEvent('[adapterReady]', data); }
-			function cardInit(data) { logEvent('[cardInit]', data); }
-			function cardReady(data) { logEvent('[cardReady]', data); }
-			function cardsInitEnd(data) { logEvent('[cardsInitEnd]', data); }
-			function cardsInitStart(data) { logEvent('[cardsInitStart]', data); }
-			function dataUpdate(data) { logEvent('[dataUpdate]', data); }
-			function inviteAdded(data) { logEvent('[inviteAdded]', data); }
-			function inviteError(data) { logEvent('[inviteError]', data); }
-			function inviteInit(data) { logEvent('[inviteInit]', data); }
-			function inviteReady(data) { logEvent('[inviteReady]', data); }
-			function inviteRemoved(data) { logEvent('[inviteRemoved]', data); }
-			function progress(data) { logEvent('[Progress]', data); }
-
-			function viewerInit(data) { logEvent('[ViewerInit]', data); }
-			function viewerReady(data) { logEvent('[ViewerReady]', data); }
-
-			var cntEta = 0;
-			function stateUpdate(data)
-			{
-				if (!data)
-				{
-					return;
-				}
-
-				if (data.id !== 'eta' || (cntEta++ % 60) === 0)
-				{
-					logEvent('[StateUpdate]', data);
-				}
-			}
-
-			function init()
-			{
-//				if (!urlParams.partnerid)
-//				{
-//					logEvent('[Init]: ** ERROR **  Need non-null partnerid param!');
-//					return;
-//				}
-
-				// Set up the adapter
-				var viewer = new glympse.GlympseAdapter(null, { dbg: false });
-				var el = viewer.host({
-					//url: 'http://' + ((urlParams.datacenter) ? (urlParams.datacenter + '.') : '') + 'glympse.com/' + (urlParams.t || 'bot002') + '?partnerid=' + urlParams.partnerid,
-					url: 'http://localhost:8000/index-test.html?debug=1&t=' + (urlParams.t || 'bot002'),
-					initialize: clientInitialized,
-					connect: clientConnected,
-					events:
-					{
-						AdapterInit: adapterInit,
-						AdapterReady: adapterReady,
-						CardInit: cardInit,
-						CardReady: cardReady,
-						CardsInitEnd: cardsInitEnd,
-						CardsInitStart: cardsInitStart,
-						DataUpdate: dataUpdate,
-						InviteAdded: inviteAdded,
-						InviteError: inviteError,
-						InviteInit: inviteInit,
-						InviteReady: inviteReady,
-						InviteRemoved: inviteRemoved,
-						Progress: progress,
-						StateUpdate: stateUpdate,
-						ViewerInit: viewerInit,
-						ViewerReady: viewerReady
-					}
-				});
-
-				$(el).css({ width: '100%', height: '100%' });
-				$('#divSandbox1').append(el);
-
-				var input = $('#txtInput');
-
-				// Get values
-				function doGetValue(param, output)
-				{
-					viewer.getValue(param).then(function(data)
-					{
-						if (typeof data === 'boolean') data = data.toString();
-						else if (data === null) data = 'null';
-						logEvent('[get' + output + ']', data);
-					});
-				}
-
-				$('#getArrived').click(function() { doGetValue('Arrived', 'Arrived'); });
-				$('#getAvatar').click(function() { doGetValue('Avatar', 'Avatar'); });
-				$('#getEta').click(function() { doGetValue('Eta', 'ETA'); });
-				$('#getExpired').click(function() { doGetValue('Expired', 'Expired'); });
-				$('#getName').click(function() { doGetValue('Name', 'Name'); });
-				$('#getPhase').click(function() { doGetValue('Phase', 'Phase'); });
-
-
-				// Commands
-				$('#sendRefresh').click(function()
-				{
-					viewer.refreshView().then(function(data) { logEvent('[Refresh]', data); });
-				});
-
-
-				// Inputs
-				function doInput(method, output)
-				{
-					var val = input.val();
-					if (val)
-					{
-						viewer[method](val).then(function(data) { logEvent('[' + output + '] val=' + val, data); });
-						input.val('');
-					}
-					else
-					{
-						logEvent('[' + output + '] ERROR: Need input!');
-					}
-				}
-
-				$('#addInvite').click(function() { doInput('addInvites', 'AddInvites'); });
-				$('#addGroup').click(function() { doInput('addGroups', 'AddGroups'); });
-				$('#addTopic').click(function() { doInput('addTwitterTopics', 'AddTwitterTopics'); });
-				$('#addUser').click(function() { doInput('addTwitterUsers', 'AddTwitterUsers'); });
-				$('#removeInvite').click(function() { doInput('removeInvites', 'RemoveInvites'); });
-				$('#setApiUrl').click(function() { doInput('setApiServices', 'SetApiServices'); });
-				$('#setPadding').click(function()
-				{
-					var tag = '[Padding]';
-					var val = input.val();
-					if (val)
-					{
-						try {
-							var padding = JSON.parse(val);
-							logEvent(tag + ' isArray:' + (padding instanceof Array) + ', typeof:' + (typeof padding));
-							viewer.setPadding(padding).then(function(data) { logEvent(tag, data); });;
-							input.val('');
-						}
-						catch(e)
-						{
-							logEvent(tag + ' ERROR: Invalid padding param: ' + val);
-						}
-					}
-					else
-					{
-						logEvent(tag + ' ERROR: Need input - integer or 4 integer array')
-					}
-				});
-
-
-				$('#btnOutputClear').click(function()
-				{
-					$('#outputText').empty();
-				});
-			}
-
-			// Hack to wait on load of require.js modules.
-			// Not necessary for almond-ized version
-			if (!window.glympse || !window.glympse.GlympseAdapter)
-			{
-				setTimeout(init, 1000);
-			}
-			else
-			{
-				init();
-			}
-		});
-
+		};
 		</script>
   </head>
   <body>
-	  <div id="divSandbox1" style="width:600px; height: 400px; margin-bottom: 10px; overflow: hidden;">
+	  <div id="divSandbox" style="width:600px; height: 400px; margin-bottom: 10px; overflow: hidden;">
 	  </div>
 	  <div style='margin-bottom: 20px;'>
 		<input id='getArrived' value='Arrived?' type='button'/>

@@ -91,6 +91,13 @@ define(function(require, exports, module)
 
 		this.host = function(cfgHost)
 		{
+			if (initialized)
+			{
+				return;
+			}
+
+			initialized = true;
+
 			host = new GlympseHost(this);
 
 			oasisLocal.autoInitializeSandbox();	// Found in minified source
@@ -439,7 +446,7 @@ define(function(require, exports, module)
 					for (var j = 0, jlen = interfaces.length; j < jlen; j++)
 					{
 						var id = interfaces[j];
-						this[intType][id] = generateCustomInterface(id);
+						this[intType][id] = generateCustomInterface(intType, id);
 					}
 				}
 			}
@@ -471,11 +478,14 @@ define(function(require, exports, module)
 			};
 		}
 
-		function generateCustomInterface(id)
+		function generateCustomInterface(intType, id)
 		{
+			var request = { id: id, args: null };
+
 			return function(args)
 			{
-				return port.request(id, args);
+				request.args = args;
+				return port.request(intType, request);
 			};
 		}
 

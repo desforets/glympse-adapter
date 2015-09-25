@@ -120,6 +120,8 @@ define(function(require, exports, module)
 
 		this.cmd = function(cmd, args)
 		{
+			//dbg('cmd = ' + cmd + ', args', args);
+
 			if (!viewerApp)
 			{
 				cmdQueue.push({ cmd: cmd, args: args });
@@ -128,6 +130,19 @@ define(function(require, exports, module)
 
 			switch (cmd)
 			{
+				case 'getInviteProperties':
+				{
+					return this.getCurrentProperties(args);
+				}
+
+				case 'getInviteProperty':
+				{
+					// args = { idProperty: name_of_property_to_retrieve
+					//		  , idInvite:   glympse_invite_id --> can be null if first invite is targetted
+					//		  }
+					return this.getCurrentValue(args.idProperty, args.idInvite);
+				}
+
 				case r.setPadding:
 				{
 					if (!(args instanceof Array))
@@ -226,7 +241,6 @@ define(function(require, exports, module)
 				{
 					var id = propMap[j];
 
-					//console.log('n=' + n + ', id=' + id);
 					if (n === id)
 					{
 						found = true;
