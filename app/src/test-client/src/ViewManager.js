@@ -2,9 +2,12 @@ define(function(require, exports, module)
 {
     'use strict';
 
-	// imports
+	// Core imports
+	var lib = require('glympse-adapter/lib/utils');
 	var AdapterDefines = require('glympse-adapter/GlympseAdapterDefines');
-	var Defines = require('Defines');
+
+	// Test app-specific
+	var Defines = require('src/Defines');
 
 	var c = Defines.CMD;
 	var appMSG = AdapterDefines.MSG;
@@ -13,6 +16,8 @@ define(function(require, exports, module)
 	// Exported class
 	function ViewManager(cfg)
 	{
+		var dbg = lib.dbg('Client-VM', cfg.dbg);
+
 		// state
 		var controller;
 		var cards;
@@ -65,10 +70,10 @@ define(function(require, exports, module)
 				{
 					//dbg('args', args);
 					dbg('[' + args.invite + '/' + args.card + '] "' + args.id + '"', args.val);
-					if (invitesGlympse)
-					{
-						dbg('Current properties for invite "' + invitesGlympse[0] + '"', cfg.adapter.map.getInviteProperties(invitesGlympse[0]));
-					}
+					//if (invitesGlympse)
+					//{
+						//dbg('Current properties for invite "' + invitesGlympse[0] + '"', cfg.adapter.map.getInviteProperties(invitesGlympse[0]));
+					//}
 					break;
 				}
 
@@ -93,11 +98,6 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////////////////////////////
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////
-
-		function dbg(msg, args)
-		{
-			console.log('[ViewManager] ' + msg + ((args) ? (': ' + JSON.stringify(args)) : ''));
-		}
 
 		function doResize(forced)
 		{

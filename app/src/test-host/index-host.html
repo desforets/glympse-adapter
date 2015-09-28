@@ -8,7 +8,7 @@
         <script type=text/javascript src="//dev.glympse.com/js/loader/latest/jquery.glympser.min.js"></script>
 
 		<!-- process:remove:dev -->
-		<script type="text/javascript" src="app.js"></script>
+		<script type="text/javascript" src="src/app.js"></script>
 		<!-- /process -->
 
         <!-- process:remove:dist -->
@@ -16,35 +16,38 @@
         <!-- /process -->
 
 		<script>
-		var urlParams = {}; (function () { var e, a = /\+/g, r = /([^&=]+)=?([^&]*)/g, d = function (s) { return decodeURIComponent(s.replace(a, " ")); }, q = window.location.search.substring(1); while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]); })();
-		var cfgApp =
-		{
-			adapter:
+			function logMsg(param, val, sep)
 			{
-				dbg: true
-				, card: urlParams.card// || '3DNH-3793'
-				, t: urlParams.t || 'demobot0'
-				, pg: urlParams.pg
-				, g: urlParams.g
-				, twt: urlParams.twt
-				, hideEvents: false
-				, hideUpdates: false
-				, anon: true		// Account.js
-				, sandbox: true		// Account.js
-				, svcGlympse: '//api.sandbox.glympse.com/v2/'
-				//, svcGlympse: '//api.glympse.com/v2/'
-				, svcCards: '//api.cards.sandbox.glympse.com/api/v1/'
+				console.log('%c%s%c%s%s', 'font-weight: bold', param, 'font-weight: normal', (sep || ' - '), val);
 			}
-			, app:
+
+			logMsg('[index-host.html]', 'Query string options:', ' ');
+			logMsg('t', 'Glympse invite code to load');
+			//logMsg('card', 'Card invite code to load');
+			logMsg('debug', 'Enable Host-mode debugging');
+			logMsg('debugClient', 'Enable Client-mode debugging');
+
+			var urlParams = {}; (function () { var e, a = /\+/g, r = /([^&=]+)=?([^&]*)/g, d = function (s) { return decodeURIComponent(s.replace(a, " ")); }, q = window.location.search.substring(1); while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]); })();
+			var cfgApp =
 			{
-				  dbg: true
-				, elementAdapter: 'divSandbox'
-				, urlClient: 'http://localhost:8000/index-test.html?debug=1&t=' + (urlParams.t || 'robt0001')
-			}
-			, viewer:
-			{
-			}
-		};
+				dbg: (urlParams.debug != null) ? 0 : 1
+				, adapter:
+				{
+					  hideEvents: false
+					, hideUpdates: false
+				}
+				, app:
+				{
+					elementAdapter: 'divSandbox'
+					, urlClient: 'http://localhost:8000/src/test-client/index-client.html?'
+								+ 't=' + (urlParams.t || 'robt0001')
+								+ ((urlParams.debugClient != null) ? ('&debug=' + urlParams.clientDebug)
+																   : '')
+				}
+				, viewer:
+				{
+				}
+			};
 		</script>
   </head>
   <body>
@@ -53,10 +56,15 @@
 	  <div style='margin-bottom: 20px;'>
 		<input id='getArrived' value='Arrived?' type='button'/>
 		<input id='getAvatar' value='Avatar?' type='button'/>
+		<input id='getDestination' value='Destination?' type='button'/>
 		<input id='getEta' value='ETA?' type='button'/>
 		<input id='getExpired' value='Expired?' type='button'/>
+		<input id='getMessage' value='Message?' type='button'/>
 		<input id='getName' value='Name?' type='button'/>
+		<input id='getOwner' value='Owner?' type='button'/>
 		<input id='getPhase' value='Phase?' type='button'/>
+		<input id='getStartTime' value='Start Time?' type='button'/>
+		<input id='getEndTime' value='EndTime?' type='button'/>
 		<input id='sendRefresh' value='Refresh?' type='button'/>
 	  </div>
 	  <div style='margin-bottom: 20px;'>

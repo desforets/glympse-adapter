@@ -2,15 +2,22 @@ define(function(require, exports, module)
 {
     'use strict';
 
-	// views
-	var Defines = require('Defines');
+	// Core imports
+	var lib = require('glympse-adapter/lib/utils');
+	var AdapterDefines = require('glympse-adapter/GlympseAdapterDefines');
+
+	// Test app-specific
+	var Defines = require('src/Defines');
 
 	var c = Defines.CMD;
+	var s = AdapterDefines.STATE;
 
 
 	// Exported class
 	function ViewManager(cfg)
 	{
+		var dbg = lib.dbg('Host-VM', cfg.dbg);
+
 		// state
 		var controller;
 
@@ -69,11 +76,6 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////
 
-		function dbg(msg, args)
-		{
-			console.log('[ViewManager] ' + msg + ((args) ? (': ' + JSON.stringify(args)) : ''));
-		}
-
 		function forceResize()
 		{
 			// Hack for viewer display
@@ -93,12 +95,18 @@ define(function(require, exports, module)
 
 		function doGetValue(param, output)
 		{
-			console.log('getInviteProperty: ' + param + ' -- ' + cfg.adapter.map.getInviteProperty({ idProperty: param }));
 			//cfg.adapter.getValue(param).then(function(data)
 			cfg.adapter.map.getInviteProperty({ idProperty: param }).then(function(data)
 			{
-				if (typeof data === 'boolean') data = data.toString();
-				else if (data === null) data = 'null';
+				if (typeof data === 'boolean')
+				{
+					data = data.toString();
+				}
+				else if (data === null)
+				{
+					data = 'null';
+				}
+
 				logEvent('[get' + output + ']', data);
 			});
 		}
@@ -108,7 +116,11 @@ define(function(require, exports, module)
 			var val = input.val();
 			if (val)
 			{
-				cfg.adapter.map[method](val).then(function(data) { logEvent('[' + output + '] val=' + val, data); });
+				cfg.adapter.map[method](val).then(function(data)
+				{
+					logEvent('[' + output + '] val=' + val, data);
+				});
+
 				input.val('');
 			}
 			else
@@ -124,7 +136,10 @@ define(function(require, exports, module)
 
 		function refreshView()
 		{
-			cfg.adapter.map.refreshView().then(function(data) { logEvent('[Refresh]', data); });
+			cfg.adapter.map.refreshView().then(function(data)
+			{
+				logEvent('[Refresh]', data);
+			});
 		}
 
 		function setPadding()
@@ -136,20 +151,39 @@ define(function(require, exports, module)
 				try {
 					var padding = JSON.parse(val);
 					logEvent(tag + ' isArray:' + (padding instanceof Array) + ', typeof:' + (typeof padding));
-					cfg.adapter.map.setPadding(padding).then(function(data) { logEvent(tag, data); });;
+					cfg.adapter.map.setPadding(padding).then(function(data)
+					{
+						logEvent(tag, data);
+					});
+
 					input.val('');
 				}
-				catch(e)
+				catch (e)
 				{
 					logEvent(tag + ' ERROR: Invalid padding param: ' + val);
 				}
 			}
 			else
 			{
-				logEvent(tag + ' ERROR: Need input - integer or 4 integer array')
+				logEvent(tag + ' ERROR: Need input - integer or 4 integer array');
 			}
 		}
 
+		function generateClick(id, info)
+		{
+			return function()
+			{
+				doGetValue(id, info);
+			};
+		}
+
+		function generateInput(targ, output)
+		{
+			return function()
+			{
+				doInput(targ, output);
+		   };
+		}
 
 		///////////////////////////////////////////////////////////////////////////
 		// CALLBACKS
@@ -160,21 +194,26 @@ define(function(require, exports, module)
 		// INIT
 		///////////////////////////////////////////////////////////////////////////
 
-		$('#getArrived').click(function() { doGetValue('Arrived', 'Arrived'); });
-		$('#getAvatar').click(function() { doGetValue('avatar', 'Avatar'); });
-		$('#getEta').click(function() { doGetValue('eta', 'ETA'); });
-		$('#getExpired').click(function() { doGetValue('Expired', 'Expired'); });
-		$('#getName').click(function() { doGetValue('name', 'Name'); });
-		$('#getPhase').click(function() { doGetValue('phase', 'Phase'); });
+		$('#getArrived').click(generateClick(s.Arrived, 'Arrived'));
+		$('#getAvatar').click(generateClick(s.Avatar, 'Avatar'));
+		$('#getDestination').click(generateClick(s.Destination, 'Destination'));
+		$('#getEta').click(generateClick(s.Eta, 'ETA'));
+		$('#getExpired').click(generateClick(s.Expired, 'Expired'));
+		$('#getMessage').click(generateClick(s.Message, 'Message'));
+		$('#getName').click(generateClick(s.Name, 'Name'));
+		$('#getOwner').click(generateClick(s.Owner, 'Owner'));
+		$('#getPhase').click(generateClick(s.Phase, 'Phase'));
+		$('#getStartTime').click(generateClick(s.InviteStart, 'Start Time'));
+		$('#getEndTime').click(generateClick(s.InviteEnd, 'End Time'));
 
 
 		// Commands
-		$('#addInvite').click(function() { doInput('addInvites', 'AddInvites'); });
-		$('#addGroup').click(function() { doInput('addGroups', 'AddGroups'); });
-		$('#addTopic').click(function() { doInput('addTwitterTopics', 'AddTwitterTopics'); });
-		$('#addUser').click(function() { doInput('addTwitterUsers', 'AddTwitterUsers'); });
-		$('#removeInvite').click(function() { doInput('removeInvites', 'RemoveInvites'); });
-		$('#setApiUrl').click(function() { doInput('setApiServices', 'SetApiServices'); });
+		$('#addInvite').click(generateInput('addInvites', 'AddInvites'));
+		$('#addGroup').click(generateInput('addGroups', 'AddGroups'));
+		$('#addTopic').click(generateInput('addTwitterTopics', 'AddTwitterTopics'));
+		$('#addUser').click(generateInput('addTwitterUsers', 'AddTwitterUsers'));
+		$('#removeInvite').click(generateInput('removeInvites', 'RemoveInvites'));
+		$('#setApiUrl').click(generateInput('setApiServices', 'SetApiServices'));
 		$('#sendRefresh').click(refreshView);
 		$('#setPadding').click(setPadding);
 		$('#btnOutputClear').click(clearOutput);

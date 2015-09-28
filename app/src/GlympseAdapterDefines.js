@@ -5,7 +5,8 @@ define(function(require, exports, module)
 
 	var Defines =
 	{
-		MAP: {
+		PORT: 'glympse'
+		, MAP: {
 
 			/////////////////////////////////////////
 			// API Endpoints - host and client

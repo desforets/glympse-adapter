@@ -81,7 +81,10 @@ define(function(require, exports, module)
 
 		this.getCurrentProperties = function(idInvite)
 		{
-			// Allow for simpler property-bag retrieval if only tracking one invite
+			idInvite = (idInvite && lib.simplifyInvite(idInvite));
+
+			// Allow for simpler property-bag retrieval if only
+			// tracking one invite
 			if (!idInvite)
 			{
 				for (idInvite in props)
@@ -213,7 +216,7 @@ define(function(require, exports, module)
 		function viewerData(e)
 		{
 			var detail = e.detail;
-			var idInvite = detail.id;
+			var idInvite = (detail.id && lib.simplifyInvite(detail.id));
 			var data = detail.data;
 			var owner = detail.owner;
 

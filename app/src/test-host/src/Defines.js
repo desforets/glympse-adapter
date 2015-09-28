@@ -6,8 +6,7 @@ define(function(require, exports, module)
 	{
 		CMD:
 		{
-			  LoadInvite: 'LoadInvite'
-			, InitUi: 'InitUi'
+			  InitUi: 'InitUi'
 			, LogEvent: 'LogEvent'
 			, SetAdapterUi: 'SetAdapterUi'
 		}

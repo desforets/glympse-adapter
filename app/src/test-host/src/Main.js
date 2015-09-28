@@ -3,26 +3,24 @@ define(function(require, exports, module)
 {
     'use strict';
 
-    // import dependencies
+	// Core imports
+	var lib = require('glympse-adapter/lib/utils');
 	var GlympseAdapter = require('glympse-adapter/GlympseAdapter');
 	var AdapterDefines = require('glympse-adapter/GlympseAdapterDefines');
-	var VersionInfo = require('glympse-adapter/VersionInfo');
-	var lib = require('glympse-adapter/lib/utils');
 
 	// Test app-specific
-	var ViewManager = require('ViewManager');
-	var Defines = require('Defines');
+	var ViewManager = require('src/ViewManager');
+	var Defines = require('src/Defines');
 
+	var c = Defines.CMD;
 	var m = AdapterDefines.MSG;
-	var _id = 'Main';
-
-	console.log(VersionInfo.id + ' v(' + VersionInfo.version + ')');
 
 
 	function Main(vm, cfgCore)
 	{
 		// Main config for app setup
 		var cfg = (cfgCore && cfgCore.app) || { };
+		var dbg = lib.dbg('Host-Main', cfg.dbg);
 
 		var adapter;
 		var viewManager = vm;
@@ -30,8 +28,7 @@ define(function(require, exports, module)
 		var invitesCard;
 		var invitesGlympse;
 		var that = this;
-
-		var dbg = lib.dbg(_id, cfg.dbg);
+		var cntEta = 0;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -53,11 +50,10 @@ define(function(require, exports, module)
 				case m.ViewerReady:
 				{
 					dbg('----> VIEWER READY');
-					viewManager.cmd(Defines.CMD.InitUi, { invitesCard: invitesCard
-														, invitesGlympse: invitesGlympse
-														, cards: cards
-														});
-					//dbg('MAP = ' + adapter.map.getMap());
+					viewManager.cmd(c.InitUi, { invitesCard: invitesCard
+											  , invitesGlympse: invitesGlympse
+											  , cards: cards
+											  });
 					break;
 				}
 
@@ -71,7 +67,6 @@ define(function(require, exports, module)
 
 				default:
 				{
-					//dbg('[OTHER] StubViewer.notify(): [' + msg + '] -- ' + JSON.stringify(args));
 					return viewManager.cmd(msg, args);
 				}
 			}
@@ -86,26 +81,69 @@ define(function(require, exports, module)
 
 		function adapterInit()
 		{
-			var cfgAdapter = cfgCore.adapter;
-
-			cfgAdapter.initialize = adapterPostInit;
-			cfgAdapter.interfaces = { customMethodExample: doCustomMethod };
-
-			adapter = new GlympseAdapter(that, cfgCore);
-			adapter.client(cfgAdapter.element);
+			adapter = new GlympseAdapter(that, { dbg: false });
 			cfg.adapter = adapter;	// Reference for general app usage
+
+			// In this example, we'll capture all GA events
+			var events = {};
+			for (var id in AdapterDefines.MSG)
+			{
+				events[id] = (id === m.StateUpdate) ? stateUpdate
+													: generateCallback(id);
+			}
+
+			var el = adapter.host({
+				url: cfg.urlClient,
+				initialize: clientInitialized,
+				connect: clientConnected,
+				events: events
+			});
+
+			viewManager.cmd(c.SetAdapterUi, el);
 		}
 
-		function adapterPostInit()
+		function clientInitialized(name)
 		{
-			dbg('ADAPTER_POST_INIT');
-			//viewManager.cmd(c.Progress, 1 / 3);
+			viewManager.cmd(c.LogEvent, { id: ('** INITIALIZED (' + name + ') **') });
 		}
 
-		function doCustomMethod(args)
+		function clientConnected(data)
 		{
-			dbg('CALLED CUSTOM_METHOD: ' + JSON.stringify(args));
-			return { passed: args, sample: 'badu!' };
+			viewManager.cmd(c.LogEvent, { id: '** Connected ** ', data: data });
+		}
+
+		function generateCallback(id)
+		{
+			// Pull off interesting events
+			if (id === m.AdapterReady
+			 || id === m.ViewerReady
+			 || id === m.CardsInitEnd
+			   )
+			{
+				return function(data)
+				{
+					that.notify(id, data);
+				};
+			}
+
+			// Everything else just gets logged
+			return function(data)
+			{
+				viewManager.cmd(c.LogEvent, { id: id, data: data });
+			};
+		}
+
+		function stateUpdate(data)
+		{
+			if (!data)
+			{
+				return;
+			}
+
+			if (data.id !== 'eta' || (cntEta++ % 60) === 0)
+			{
+				viewManager.cmd(c.LogEvent, { id: '[StateUpdate]', data: data });
+			}
 		}
 
 
