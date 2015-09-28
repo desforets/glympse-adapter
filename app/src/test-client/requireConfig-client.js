@@ -17,4 +17,4 @@ require.config({
 
     ]
 });
-require(['app']);
+require(['src/app']);
