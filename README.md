@@ -71,7 +71,7 @@ $(window).ready(function()
 
 	/* AMD module format */
 	//var GlympseAdapter = require('glympse-adapter/GlympseAdapter');
-	//var adapter = new GlympseAdapter(viewer_handler_instance, cfg);
+	//var adapter = new GlympseAdapter(adapter_handler_instance, cfg);
 
 	adapter.client($('#div_viewer_container'));   // Note jQuery object reference
 });
@@ -277,7 +277,7 @@ $(window).ready(function()
 	// Set up the adapter
 
 	/* Global namespace */
-	var adapter = new glympse.GlympseAdapter();
+	var adapter = new glympse.GlympseAdapter(adapter_handler_instance, cfg);
 
 	/* AMD module format */
 	//var GlympseAdapter = require('glympse-adapter/GlympseAdapter');
