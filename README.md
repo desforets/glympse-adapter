@@ -258,7 +258,7 @@ adding a bit of initialization and configuration to get the adapter up and runni
 All that is needed is to include the built GlympseAdapter.js in your page:
 
 ```html
-<script type="text/javascript" src="../dist/GlympseAdapter-VERSION.min.js"></script>
+<script type="text/javascript" src="glympse-adapter-VERSION.min.js"></script>
 ```
 
 As noted in the Client Mode section, the GA can also be used in an AMD module
