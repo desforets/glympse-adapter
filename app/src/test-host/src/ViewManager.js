@@ -98,13 +98,17 @@ define(function(require, exports, module)
 			//cfg.adapter.getValue(param).then(function(data)
 			cfg.adapter.map.getInviteProperty({ idProperty: param }).then(function(data)
 			{
-				if (typeof data === 'boolean')
-				{
-					data = data.toString();
-				}
-				else if (data === null)
+				if (data === null || data.v === null)
 				{
 					data = 'null';
+				}
+				else if (typeof data.v === 'boolean')
+				{
+					data = data.v.toString();
+				}
+				else
+				{
+					data = data.v;
 				}
 
 				logEvent('[get' + output + ']', data);

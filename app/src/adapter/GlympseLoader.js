@@ -68,9 +68,16 @@ define(function(require, exports, module)
 					}
 					else
 					{
-						if (error.error === 'oauth_token' && error.error_detail.indexOf('expired') >= 0)
+						if (error.error === 'oauth_token')
 						{
-							account.handleExpiredToken();
+							if (error.error_detail.indexOf('expired') >= 0)
+							{
+								account.handleExpiredToken();
+							}
+							else
+							{
+								account.handleInvalidToken();
+							}
 						}
 						else
 						{

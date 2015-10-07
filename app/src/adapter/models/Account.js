@@ -105,6 +105,18 @@ define(function(require, exports, module)
 			getNewToken();
 		};
 
+		this.handleInvalidToken = function()
+		{
+			dbg('>>>> INVALID anon=' + isAnon + ', token=' + token);
+			if (isAnon && token)
+			{
+				token = null;
+				account[cAnonExchange] = undefined;
+			}
+
+			getNewToken();
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
