@@ -249,7 +249,8 @@ define(function(require, exports, module)
 						found = true;
 						if (prop[id] !== v)
 						{
-							prop[id] = v;
+							val.n = undefined;
+							prop[id] = val;
 							//dbg('id=' + id + ', v', v);
 							controller.infoUpdate(id, idInvite, owner, t, v);
 							break;
@@ -265,8 +266,10 @@ define(function(require, exports, module)
 
 				if (!found)
 				{
-					//dbg('unknown', val)
 					unknowns.push(val);
+					val = $.extend({}, val);
+					val.n = undefined;
+					prop[n] = val;
 				}
 			}
 
