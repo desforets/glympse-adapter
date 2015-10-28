@@ -287,7 +287,7 @@ define(function(require, exports, module)
 			var d = e.detail;
 			var t = new Date().getTime();
 			var idProp = s.Eta;
-			var id = lib.simplifyInvite(d.id)
+			var id = lib.simplifyInvite(d.id);
 			var prop = props[id];
 			var val = prop[idProp];
 
