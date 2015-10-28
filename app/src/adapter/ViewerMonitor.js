@@ -217,8 +217,15 @@ define(function(require, exports, module)
 		{
 			var detail = e.detail;
 			var idInvite = (detail.id && lib.simplifyInvite(detail.id));
-			var data = $.extend(true, {}, detail.data);
+			var data = [];
+			var ddata = detail.data || [];
 			var owner = detail.owner;
+			var i, ilen;
+
+			for (i = 0, ilen = ddata.length; i < ilen; i++)
+			{
+				data.push($.extend({}, ddata[i]));
+			}
 
 			var unknowns = [];	// Unknown properties that are passed along
 
@@ -232,7 +239,7 @@ define(function(require, exports, module)
 
 			//console.log('DATA: ' + JSON.stringify(detail, null, '  '));
 
-			for (var i = 0, ilen = data.length; i < ilen; i++)
+			for (i = 0, ilen = data.length; i < ilen; i++)
 			{
 				var val = data[i];
 				var v = val.v;
