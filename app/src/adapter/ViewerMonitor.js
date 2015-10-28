@@ -217,7 +217,7 @@ define(function(require, exports, module)
 		{
 			var detail = e.detail;
 			var idInvite = (detail.id && lib.simplifyInvite(detail.id));
-			var data = detail.data;
+			var data = $.extend(true, {}, detail.data);
 			var owner = detail.owner;
 
 			var unknowns = [];	// Unknown properties that are passed along
@@ -287,7 +287,8 @@ define(function(require, exports, module)
 			var d = e.detail;
 			var t = new Date().getTime();
 			var idProp = s.Eta;
-			var prop = props[d.id];
+			var id = lib.simplifyInvite(d.id);
+			var prop = props[id];
 			var val = prop[idProp];
 
 			if (!val)
@@ -299,7 +300,7 @@ define(function(require, exports, module)
 			val[cEtaVal] = d.data * 1000;
 			val[cEtaTime] = t;
 
-			controller.infoUpdate(idProp, d.id, d.owner, t, val);
+			controller.infoUpdate(idProp, id, d.owner, t, val);
 		}
 
 		function viewerInviteAdded(e)
@@ -335,6 +336,7 @@ define(function(require, exports, module)
 			if (eTime > t)
 			{
 				timerEnd = setTimeout(notifyExpired, (eTime - t));
+				return;
 			}
 
 			controller.infoUpdate(s.Expired, idInvite, owner, t, (eTime <= t));
