@@ -477,17 +477,17 @@ using GA in host-mode) that are sent by the adapter (defined in the
   Updates generated when known properties are changed in the Glympse invite. Below is
   the list on known properties that can be seen via the `StateUpdate` message. These
   are enumerated in the `GlympseAdapterDefines.STATE` object
+  - `Arrived`
   - `Avatar`
   - `Destination`
+  - `Eta`
+  - `Expired`
   - `InviteEnd`
   - `InviteStart`
-  - `Eta`
   - `Message`
   - `Name`
-  - `Phase`
-  - `Arrived`
-  - `Expired`
   - `NoInvites` (seen if no Glympse invites are successfully loaded in the map)
+  - `Phase`
 - `ViewerInit` / `true`: Sent when the Glympse map viewer is beginning its
   initialization process, but is not yet ready.
 - `ViewerReady` / `Glympse_viewer_instance`: Generated once the Glympse map control is

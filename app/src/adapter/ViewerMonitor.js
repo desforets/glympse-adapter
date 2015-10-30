@@ -25,6 +25,7 @@ define(function(require, exports, module)
 					  , s.Message
 					  , s.Name
 					  , s.Phase
+					  , s.Expired
 					  ];	// Known/tracked properties
 
 		// state
@@ -337,16 +338,34 @@ define(function(require, exports, module)
 				timerEnd = 0;
 			}
 
-			// One last check
 			var t = new Date().getTime();
-			var eTime = props[s.InviteEnd];
-			if (eTime > t)
+			var stateExpired = s.Expired;
+			var prop = props[idInvite];
+			var endTime = prop[s.InviteEnd].v;
+			var propExpired = prop[stateExpired];
+			var expired = (t >= endTime);
+
+			if (!propExpired)
 			{
-				timerEnd = setTimeout(notifyExpired, (eTime - t));
+				propExpired = { t: t, n: stateExpired, v: expired };
+				prop[stateExpired] = propExpired;
+			}
+
+			propExpired.v = expired;
+
+			// One last check
+			if (!expired)
+			{
+				timerEnd = setTimeout(function()
+				{
+					notifyExpired(idInvite, owner);
+				}
+				, (endTime - t + 1000));
+
 				return;
 			}
 
-			controller.infoUpdate(s.Expired, idInvite, owner, t, (eTime <= t));
+			controller.infoUpdate(s.Expired, idInvite, owner, t, expired);
 		}
 	}
 
