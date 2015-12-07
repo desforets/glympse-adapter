@@ -27,6 +27,7 @@
     "node": ">= 0.10.0"
   },
   "devDependencies": {
+    "common-ground": "^1.2.0",
     "grunt": "~0.4.4",
     "grunt-bower-requirejs": "^2.0.0",
     "grunt-contrib-clean": "^0.6.0",
@@ -47,6 +48,8 @@
     "grunt-text-replace": "^0.4.0",
     "grunt-usemin": "^2.1.1",
     "load-grunt-config": "^0.13.1",
+    "ncp": "^2.0.0",
+    "through2": "^2.0.0",
     "time-grunt": "^1.0.0"
   },
   "scripts": {
