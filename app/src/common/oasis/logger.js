@@ -1,49 +1,48 @@
 /*eslint-disable */
 /* jscs:disable */
-define("oasis/logger",
-  [],
-  function() {
-    "use strict";
-    function Logger() {
-      this.enabled = false;
-    }
+define(function (require, exports, module) {
+	"use strict";
+	function Logger() {
+		this.enabled = false;
+	}
 
-    Logger.prototype = {
-      enable: function () {
-        this.enabled = true;
-      },
+	Logger.prototype = {
+		enable: function () {
+			this.enabled = true;
+		},
 
-      disable: function () {
-        this.enabled = false;
-      },
+		disable: function () {
+			this.enabled = false;
+		},
 
-      log: function () {
-        if (logger.enabled) {
-          if (typeof console !== 'undefined' && typeof console.log === 'function') {
-            console.log.apply(console, arguments);
-          } else if (typeof console !== 'undefined' && typeof console.log === 'object') {
-            // Log in IE
-            try {
-              switch (arguments.length) {
-                case 1:
-                  console.log(arguments[0]);
-                  break;
-                case 2:
-                  console.log(arguments[0], arguments[1]);
-                  break;
-                default:
-                  console.log(arguments[0], arguments[1], arguments[2]);
-              }
-            } catch(e) {}
-          }
-        }
-      }
-    };
+		log: function () {
+			if (logger.enabled) {
+				if (typeof console !== 'undefined' && typeof console.log === 'function') {
+					console.log.apply(console, arguments);
+				} else if (typeof console !== 'undefined' && typeof console.log === 'object') {
+					// Log in IE
+					try {
+						switch (arguments.length) {
+							case 1:
+								console.log(arguments[0]);
+								break;
+							case 2:
+								console.log(arguments[0], arguments[1]);
+								break;
+							default:
+								console.log(arguments[0], arguments[1], arguments[2]);
+						}
+					} catch (e) {
+					}
+				}
+			}
+		}
+	};
 
-    var logger = new Logger();
+	var logger = new Logger();
 
 
-    return logger;
-  });
+	module.exports = logger;
+});
 /* jscs:enable */
 /*eslint-enable */

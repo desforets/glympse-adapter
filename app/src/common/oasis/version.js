@@ -1,9 +1,7 @@
 /* jscs:disable */
-define("oasis/version",
-  [],
-  function() {
-    "use strict";
+define(function (require, exports, module) {
+	"use strict";
 
-    return '0.4.0';
-  });
+	module.exports = '0.4.0';
+});
 /* jscs:enable */
