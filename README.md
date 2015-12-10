@@ -707,6 +707,21 @@ properly use their functionality. For future maintenance, the latest commits use
 this snapshot are `4c657d15` and `5cfda622` of the `tildeio/oasis.js` and
 `tildeio/rsvp.js` repos respectively.
 
+##Modules converter
+To convert modules from RequireJS format to CommonJS:
+
+```
+cd converter/
+node convert
+```
+
+To convert modules from RequireJS format to global variables:
+
+```
+cd converter/
+node convert global
+```
+
 
 [HERE Javascript APIs]: https://developer.here.com/javascript-apis
 [jQuery]: http://jquery.com
