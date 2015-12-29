@@ -146,17 +146,12 @@ define(function(require, exports, module)
 
 //			try
 //			{
-				if (resp && resp.body && resp.result === 'ok')
+				if (resp && resp.response && resp.result === 'ok')
 				{
 					//dbg('Got card data', resp);
 					loaded = true;
-					that.setData(resp.body);
+					that.setData(resp.response);
 					controller.notify(m.CardReady, idCard);
-
-//					result.status = true;
-//					result.token = token;
-
-//					controller.notify(Account.InitComplete, result);
 					return;
 				}
 //			}
