@@ -6,6 +6,23 @@ define(function(require, exports, module)
 {
 	var defCfg = '__gacfg';
 
+	function returnVal(data, propId)
+	{
+		return function()
+		{
+			return (data && data[propId]);
+		};
+	}
+
+	function returnDataStreamVal(data, propId)
+	{
+		return function()
+		{
+			var p = (data && data[propId]);
+			return (p && (p.v || p));
+		};
+	}
+
 	// Simple lib export
 	var utils =
 	{
@@ -89,20 +106,13 @@ define(function(require, exports, module)
 			return out;
 		}
 
-		, mapProps: function(targ, props, data)
+		, mapProps: function(targ, props, data, dataStreamProp)
 		{
-			function returnVal(propId)
-			{
-				return function()
-				{
-					return (data && data[propId]);
-				};
-			}
-
 			for (var i = 0, len = props.length; i < len; i++)
 			{
 				var prop = props[i];
-				targ['get' + utils.toUpperCamel(prop)] = returnVal(prop);
+				targ['get' + utils.toUpperCamel(prop)] = (dataStreamProp) ? returnDataStreamVal(data, prop)
+																		  : returnVal(data, prop);
 			}
 		}
 
