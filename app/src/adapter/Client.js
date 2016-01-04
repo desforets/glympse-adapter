@@ -317,7 +317,7 @@ define(function(require, exports, module)
 					//	return null;
 					}
 
-					dbg('InviteReady: ' + args.getIdInvite() + ' -- isLoaded=' + args.isLoaded());
+					//dbg('InviteReady: ' + args.getIdInvite() + ' -- isLoaded=' + args.isLoaded());
 					sendEvent(msg, args);
 
 					idCard = args.getReference();
