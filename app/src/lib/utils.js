@@ -143,7 +143,7 @@ define(function(require, exports, module)
 			invites = invites || [];
 			for (var i = 0, len = invites.length; i < len; i++)
 			{
-				invites[i] = utils.normalizeInvite(invites[i]);
+				invites[i] = utils.simplifyInvite(invites[i]);
 			}
 
 			return invites;
