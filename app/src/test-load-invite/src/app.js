@@ -42,7 +42,7 @@ define(function(require, exports, module)
 					}
 				}
 			}
-		}
+		};
 
 		var loader = new GlympseLoader(handler, cfgAdapter);
 		loader.init(cfgAdapter.t);
