@@ -135,6 +135,11 @@ define(function(require, exports, module)
 			var customInterfaces = cfgAdapter.interfaces;
 			if (customInterfaces)
 			{
+				requests.ext = function(data)
+				{
+					return customInterfaces[data.id](data.args);
+				};
+
 				var extInterfaces = [];
 				for (id in customInterfaces)
 				{
