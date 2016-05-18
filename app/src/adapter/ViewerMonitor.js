@@ -339,7 +339,7 @@ define(function(require, exports, module)
 			}
 
 			var t = new Date().getTime();
-			var stateExpired = s.Expired;
+			var stateExpired = s.Expired.toLowerCase();
 			var prop = props[idInvite];
 			var endTime = prop[s.InviteEnd].v;
 			var propExpired = prop[stateExpired];
@@ -347,7 +347,7 @@ define(function(require, exports, module)
 
 			if (!propExpired)
 			{
-				propExpired = { t: t, n: stateExpired, v: expired };
+				propExpired = { t: t, v: expired };
 				prop[stateExpired] = propExpired;
 			}
 
