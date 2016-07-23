@@ -77,7 +77,7 @@ define(function(require, exports, module)
 			return (cookie) ? (JSON.parse(cookie))[name] : null;
 		}
 
-		, setCfgVal: function(name, value, idCfg)
+		, setCfgVal: function(name, value, idCfg, daysExpire)
 		{
 			var cfg = (idCfg || defCfg);
 			var cookie = utils.getCookie(cfg);
@@ -85,7 +85,7 @@ define(function(require, exports, module)
 			cookie = (cookie) ? JSON.parse(cookie) : {};
 			cookie[name] = value;
 
-			utils.setCookie(cfg, JSON.stringify(cookie));
+			utils.setCookie(cfg, JSON.stringify(cookie), daysExpire);
 		}
 
 		, capFirst: function(str)
