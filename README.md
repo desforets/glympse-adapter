@@ -612,6 +612,8 @@ client-mode. These are also specifed in `GlympseAdapterDefines.MAP.REQUESTS_LOCA
   This reference is suitable for adding additional custom overlays in conjunction with
   the Glympse viewer's UI components. For more information, please refer to the
   [HERE Javascript APIs] documentation.
+- `getMapContainer()`: Returns a reference to map container object used by the viewer.
+  All map-related functionality is performed via this object. FIXME: need docs on it's APIs.
 - `ignoreDestinations(bool)`: Hides current invite destinations. Returns a list of all
   affected destination objects.
 

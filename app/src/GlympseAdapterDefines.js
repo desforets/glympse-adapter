@@ -34,6 +34,7 @@ define(function(require, exports, module)
 			, REQUESTS_LOCAL: {
 				  getInvites: 'getInvites'
 				, getMap: 'getMap'
+				, getMapContainer: 'getMapContainer'
 				, generateRoute: 'generateRoute'
 				, ignoreDestinations: 'ignoreDestinations'
 			}
