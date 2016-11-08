@@ -47,10 +47,10 @@ define(function(require, exports, module)
 		// PROPERTIES
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.getViewer = function()
-		{
-			return (client && client.getViewer());
-		};
+		//this.getViewer = function()
+		//{
+		//	return (client && client.getViewer());
+		//};
 
 
 		///////////////////////////////////////////////////////////////////////////////
