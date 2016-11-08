@@ -49,10 +49,13 @@ define(function(require, exports, module)
 		// PROPERTIES
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.getViewer = function()
-		{
-			return viewerMonitor.getViewer();
-		};
+		// Disabled for now.. all through front-door.
+		// Add to MAP.REQUESTS_LOCAL for additional client-only interfaces
+		//this.getViewer = function()
+		//{
+		//	return viewerMonitor.getViewer();
+		//};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
