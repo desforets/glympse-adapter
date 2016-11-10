@@ -21,7 +21,7 @@ define(function(require, exports, module)
 		// consts
 		var dbg = lib.dbg('Card', cfg.dbg);
 		var svr = (cfg.svcCards || '//api.cards.sandbox.glympse.com/api/v1/');
-		var cardUrl = (svr + 'cards/invites/' + idCard);
+		var cardUrl = (svr + 'cards/' + idCard);
 		var cardParams = { members: true };
 		var cMaxAttempts = 3;
 

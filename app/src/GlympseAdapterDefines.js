@@ -47,6 +47,7 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			REQUESTS: {
+				getCards: 'getCards'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
 				//, removeInvites: 'removeInvites'
@@ -75,6 +76,8 @@ define(function(require, exports, module)
 			, CardReady: 'CardReady'
 			, CardsInitEnd: 'CardsInitEnd'
 			, CardsInitStart: 'CardsInitStart'
+			, CardAdded: 'CardAdded'
+			, CardRemoved: 'CardRemoved'
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'
 			, InviteError: 'InviteError'

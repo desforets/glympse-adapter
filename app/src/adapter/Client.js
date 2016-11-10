@@ -64,6 +64,7 @@ define(function(require, exports, module)
 		this.init = function(settings)
 		{
 			var card = cfgAdapter.card;
+			var cardsMode = cfgAdapter.cardsMode;
 			var t = cfgAdapter.t;
 			var pg = cfgAdapter.pg;
 			var twt = cfgAdapter.twt;
@@ -164,7 +165,7 @@ define(function(require, exports, module)
 
 			oasisLocal.connect(cfgClient);
 
-			var initSettings = { isCard: (card != null)
+			var initSettings = { isCard: (card != null || cardsMode)
 							   , t: invitesGlympse
 							   , pg: splitMulti(pg)
 							   , twt: splitMulti(twt)
@@ -178,7 +179,7 @@ define(function(require, exports, module)
 
 
 			// Card vs Glympse Invite loading
-			if (invitesCard.length > 0)
+			if (invitesCard.length > 0 || cardsMode)
 			{
 				cardsController.init(invitesCard);
 			}
@@ -354,6 +355,14 @@ define(function(require, exports, module)
 						this.loadViewer(cfgViewer);
 					}
 
+					break;
+				}
+
+				case m.CardAdded:
+				case m.CardRemoved:
+				{
+					sendEvent(msg, args);
+					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
 					break;
 				}
 

@@ -19,12 +19,14 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('CardsController', cfg.dbg);
+		var pollInterval = cfg.pollCards || 60000;
 
 		// state
 		var that = this;
 		var account = new Account(this, cfg);
 		var cardInvites;
 		var cards;
+		var cardsIndex;
 		var cardsReady = 0;
 
 
@@ -35,7 +37,8 @@ define(function(require, exports, module)
 		this.init = function(cardsInvitesToLoad)
 		{
 			cards = [];
-			cardInvites = cardsInvitesToLoad;
+			cardsIndex = {};
+			cardInvites = cardsInvitesToLoad || [];
 
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
 			controller.notify(m.CardsInitStart, cardInvites);
@@ -82,6 +85,8 @@ define(function(require, exports, module)
 			return null;
 		};
 
+		this.getCards = getCards;
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
@@ -101,15 +106,67 @@ define(function(require, exports, module)
 			// Now load card(s)
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				var card = new Card(that, cardInvites[i], account.getToken(), cfg);
-				if (!card.init())
+				loadCard(cardInvites[i]);
+			}
+
+			getCards();
+			setInterval(getCards, pollInterval);
+		}
+
+		function loadCard(cardInvite) {
+			var card = new Card(that, cardInvite, account.getToken(), cfg);
+			if (card.init()) {
+				cards.push(card);
+				cardsIndex[cardInvite] = card;
+				controller.notify(m.CardAdded, card);
+			} else {
+				dbg('Error starting card: ' + cardInvite);
+			}
+		}
+
+		function getCards() {
+			var svr = (cfg.svcCards || '//api.cards.sandbox.glympse.com/api/v1/');
+			$.ajax(
 				{
-					dbg('Error starting card: ' + cardInvites[i]);
+					type: 'GET',
+					dataType: 'JSON',
+					beforeSend: function (request) {
+						request.setRequestHeader('Authorization', 'Bearer ' + account.getToken());
+					},
+					url: svr + 'cards',
+					processData: true
+				})
+				.done(function (data) {
+					processCardsData(data);
+				})
+				.fail(function () {
+					processCardsData();
+				});
+		}
+
+		function processCardsData(resp) {
+			if (resp && resp.response && resp.result === 'ok') {
+				var i, card, len, cardId, allCardIds = [];
+				for (i = 0, len = resp.response.length; i < len; i++) {
+					card = resp.response[i];
+					allCardIds.push(card.id);
+					if (cardInvites.indexOf(card.id) === -1) {
+						cardInvites.push(card.id);
+						loadCard(card.id);
+					}
 				}
-				else
-				{
-					cards.push(card);
+				for (i = 0, len = cardInvites.length; i < len; i++) {
+					cardId = cardInvites[i];
+					if (allCardIds.indexOf(cardId) === -1) {
+						cardInvites.splice(i, 1);
+						cards.splice(cards.indexOf(cardsIndex[cardId]), 1);
+						card = cardsIndex[cardId];
+						delete cardsIndex[cardId];
+						controller.notify(m.CardRemoved, card);
+					}
 				}
+			} else {
+				dbg('failed to load cards');
 			}
 		}
 	}
