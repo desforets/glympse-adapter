@@ -30,7 +30,10 @@
 					, basePath: '//dev.glympse.com/'
 					, broadcast: [ b.DATA, /*b.ETA,*/ b.INVITE_STATUS ].join(',')
 					//, extCfg: "UvoM1hkDMkGonTTTxk4e6Q"
-				}
+					, disableSummary: true
+					, hideDialog: 255
+
+			}
 				, adapter: {
 					  card: urlParams.card// || '3DNH-3793'
 					, t: urlParams.t || 'demobot0'

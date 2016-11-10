@@ -71,6 +71,7 @@ define(function(require, exports, module)
 			viewerElement.addEventListener(glyEvents.ETA, viewerEta, false);
 			viewerElement.addEventListener(glyEvents.INVITE_ADDED, viewerInviteAdded, false);
 			viewerElement.addEventListener(glyEvents.INVITE_REMOVED, viewerInviteRemoved, false);
+			viewerElement.addEventListener(glyEvents.INVITE_CLICKED, viewerInviteClicked, false);
 		};
 
 		this.shutdown = function()
@@ -323,6 +324,13 @@ define(function(require, exports, module)
 			//dbg('InviteRemoved', e.detail);
 			e.detail.data = undefined;
 			controller.notify(m.InviteRemoved, e.detail);
+		}
+
+		function viewerInviteClicked(e)
+		{
+			//dbg('InviteClicked', e.detail);
+			e.detail.data = undefined;
+			controller.notify(m.InviteClicked, e.detail);
 		}
 
 
