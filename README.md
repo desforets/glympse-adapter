@@ -452,6 +452,9 @@ using GA in host-mode) that are sent by the adapter (defined in the
 - `InviteAdded` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id }`:
   Sent from the Glympse viewer whenever a Glympse invite has been successfully
   loaded and added to the map.
+- `InviteClicked` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id }`:
+  Sent from the Glympse viewer whenever a Glympse invite has been clicked by the
+  user (user icon or destination).
 - `InviteError` / `GlympseInvite.js instance`: An error occurred while trying to
   load the Glympse Invite to retrieve invite data. Call the `getError()` API on the
   returned `GlympseInvite` instance to determine additional error state.

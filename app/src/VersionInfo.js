@@ -11,7 +11,7 @@ define(function(require, exports, module)
 	module.exports =
 	{
 		id: 'glympse-adapter',
-		version: '1.4.0',
-		buildDate: '2016-11-08T20:01:05Z'
+		version: '1.4.1',
+		buildDate: '2016-11-10T00:37:41Z'
 	};
 });
