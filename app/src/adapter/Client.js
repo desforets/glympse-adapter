@@ -11,6 +11,7 @@ define(function(require, exports, module)
 	var CardsController = require('glympse-adapter/adapter/CardsController');
 	var CoreController = require('glympse-adapter/adapter/CoreController');
 	var GlympseLoader = require('glympse-adapter/adapter/GlympseLoader');
+	var Account = require('glympse-adapter/adapter/models/Account');
 
 	var s = Defines.STATE;
 	var m = Defines.MSG;
@@ -35,6 +36,7 @@ define(function(require, exports, module)
 		var mapCardInvites = { };
 		var viewerMonitor;
 		var coreController;
+		var authToken;
 
 		var progressCurrent = 0;
 		var progressTotal = 0;
@@ -84,9 +86,11 @@ define(function(require, exports, module)
 
 			$.extend(settings, { invitesCard: invitesCard, invitesGlympse: invitesGlympse });
 
+
 			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
+			coreController = new CoreController(this, cfgAdapter);
+			cfgAdapter.authToken = authToken;
 			cardsController = new CardsController(this, cfgAdapter);
-			coreController = new CoreController(this, cfgApp);
 
 			// API namespaced endpoints
 			var svcs = [ { id: 'MAP', targ: viewerMonitor },
@@ -212,13 +216,14 @@ define(function(require, exports, module)
 			//console.log('cfg.viewer=' + cfgMonitor.viewer);
 			$.extend(cfgViewer, cfgNew);
 
-			if(newViewerElement) {
+			if (newViewerElement)
+			{
 				cfgMonitor.viewer = newViewerElement;
 			}
 
-			viewerMonitor.run();
-
-			if(cfgMonitor.viewer) {
+			if (cfgMonitor.viewer)
+			{
+				viewerMonitor.run();
 				$(cfgMonitor.viewer).glympser(cfgViewer);
 			}
 		};
@@ -379,9 +384,25 @@ define(function(require, exports, module)
 					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
 					break;
 				}
-				case m.LoggedIn:
-					sendEvent(msg, args);
+				case Account.InitComplete:
+					authToken = args.token;
+
+					if (glympseLoader && glympseLoader.initialized)
+					{
+						glympseLoader.notify(msg, args);
+					}
+					if (cardsController && cardsController.initialized)
+					{
+						cardsController.notify(msg, args);
+					}
+					sendEvent(m.LoggedIn, args);
 					break;
+
+				case Account.AccountCreateStatus:
+				{
+					sendEvent(m.AccountCreateStatus, args);
+					break;
+				}
 
 				default:
 				{
@@ -392,7 +413,6 @@ define(function(require, exports, module)
 
 			return null;
 		};
-
 
 		///////////////////////////////////////////////////////////////////////////////
 		// INTERNAL

@@ -17,7 +17,7 @@ define(function(require, exports, module)
 	{
 		// state
 		var attempts = 0;
-		var isAnon = cfg.anon;
+		var isAnon = !cfg.apiKey;
 		var token;
 
 		// consts
@@ -25,7 +25,7 @@ define(function(require, exports, module)
 		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
 		var account = { username: 'viewer', password: 'password' };
 		//var apiKey = (cfg.sandbox) ? 'nXQ44D38OdVzEC34' : 'nXQ44D38OdVzEC34';
-		var apiKey = (cfg.sandbox) ? 'eHXSnRf0slRRxGpC' : 'TDuy3X0PfQAyYjTt';
+		var apiKey = cfg.apiKey || ((cfg.sandbox) ? 'eHXSnRf0slRRxGpC' : 'TDuy3X0PfQAyYjTt');
 		var urlCreate = (svr + 'account/create');
 		var urlLogin = (svr + 'account/login');
 
@@ -117,6 +117,18 @@ define(function(require, exports, module)
 			getNewToken();
 		};
 
+		this.create = function ()
+		{
+			if (!isAnon)
+			{
+				createAccount();
+			}
+			else
+			{
+				dbg('Creating account failed, anonymous mode ON');
+			}
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
@@ -187,7 +199,7 @@ define(function(require, exports, module)
 
 		function createAccount()
 		{
-			$.getJSON(urlCreate, account)
+			$.getJSON(urlCreate, { api_key: account.api_key })
 			.done(function(data)
 			{
 				processCreateAccount(data);
@@ -207,6 +219,7 @@ define(function(require, exports, module)
 			try
 			{
 				var resp = (data && data.response);
+				controller.notify(Account.AccountCreateStatus, data);
 				if (resp && data.result === 'ok')
 				{
 					var id = resp.id;
@@ -251,6 +264,7 @@ define(function(require, exports, module)
 
 	// Account defines
 	Account.InitComplete = 'AccountInitComplete';
+	Account.AccountCreateStatus = 'AccountCreateStatus';
 
 
 	module.exports = Account;

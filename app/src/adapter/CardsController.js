@@ -22,15 +22,17 @@ define(function(require, exports, module)
 
 		// state
 		var that = this;
-		var account = new Account(this, cfg);
 		var cardInvites;
 		var cards;
 		var cardsReady = 0;
+		var token = cfg.authToken;
 
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
+
+		this.initialized = false;
 
 		this.init = function(cardsInvitesToLoad)
 		{
@@ -40,10 +42,12 @@ define(function(require, exports, module)
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
 			controller.notify(m.CardsInitStart, cardInvites);
 
-			if (account.init())
+			if (token)
 			{
-				accountInitComplete(true);
+				accountInitComplete(token);
 			}
+
+			this.initialized = true;
 		};
 
 
@@ -53,7 +57,8 @@ define(function(require, exports, module)
 			{
 				case Account.InitComplete:
 				{
-					accountInitComplete(args.status, args);
+					token = args.token;
+					accountInitComplete(args.token, args);
 					break;
 				}
 
@@ -87,11 +92,11 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function accountInitComplete(status, info)
+		function accountInitComplete(token, args)
 		{
-			if (!status)
+			if (!token)
 			{
-				dbg('Error during Account.Init()', info);
+				dbg('Error during Account.Init()', args);
 				return;
 			}
 
@@ -101,7 +106,7 @@ define(function(require, exports, module)
 			// Now load card(s)
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				var card = new Card(that, cardInvites[i], account.getToken(), cfg);
+				var card = new Card(that, cardInvites[i], token, cfg);
 				if (!card.init())
 				{
 					dbg('Error starting card: ' + cardInvites[i]);

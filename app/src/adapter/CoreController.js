@@ -9,9 +9,7 @@ define(function(require, exports, module)
 	var s = Defines.STATE;
 	var r = Defines.REQUESTS;
 
-	// Cards-specific
 	var Account = require('glympse-adapter/adapter/models/Account');
-
 
 	// Exported class
 	function CoreController(controller, cfg)
@@ -20,8 +18,12 @@ define(function(require, exports, module)
 		var dbg = lib.dbg('CoreController', cfg.dbg);
 
 		// state
-		var that = this;
 		var account = new Account(this, cfg);
+
+		if(account.init())
+		{
+			controller.notify(Account.InitComplete, { status: true, token: account.getToken() });
+		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -32,8 +34,9 @@ define(function(require, exports, module)
 			switch (msg)
 			{
 				case Account.InitComplete:
+				case Account.AccountCreateStatus:
 				{
-					controller.notify(m.LoggedIn, args);
+					controller.notify(msg, args);
 					break;
 				}
 
@@ -47,16 +50,21 @@ define(function(require, exports, module)
 			return null;
 		};
 
-		this.cmd = function(method, args) {
-			switch (method){
+		this.cmd = function(method, args)
+		{
+			switch (method)
+			{
 				case "accountCreate":
+				{
 					createAccount();
 					break;
+				}
 			}
 		};
 
-		function createAccount() {
-			controller.notify(m.LoggedIn, []);
+		function createAccount()
+		{
+			account.create();
 		}
 	}
 

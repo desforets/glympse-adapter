@@ -88,7 +88,8 @@ define(function(require, exports, module)
 		/////////////////////////////////////////
 
 		, MSG: {
-			AdapterInit: 'AdapterInit'
+			  AccountCreateStatus:'AccountCreateStatus'
+			, AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
 			, CardInit: 'CardInit'
 			, CardReady: 'CardReady'

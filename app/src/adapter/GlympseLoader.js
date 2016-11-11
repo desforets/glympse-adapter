@@ -22,7 +22,7 @@ define(function(require, exports, module)
 
 		// state
 		var that = this;
-		var account = new Account(this, cfg);
+		var token = cfg.authToken;
 		var idInvite;
 		var invite;
 
@@ -31,14 +31,17 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
+		this.initialized = false;
+
 		this.init = function(inviteToLoad)
 		{
 			idInvite = inviteToLoad;
 
-			if (account.init())
+			if (token)
 			{
-				accountInitComplete(true);
+				accountInitComplete(token);
 			}
+			this.initialized = true;
 		};
 
 
@@ -48,7 +51,8 @@ define(function(require, exports, module)
 			{
 				case Account.InitComplete:
 				{
-					accountInitComplete(args.status, args);
+					token = args.token;
+					accountInitComplete(token, args);
 					break;
 				}
 
@@ -95,9 +99,9 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function accountInitComplete(status, info)
+		function accountInitComplete(token, info)
 		{
-			if (!status)
+			if (!token)
 			{
 				dbg('Error during Account.Init()', info);
 				return;
@@ -108,7 +112,7 @@ define(function(require, exports, module)
 
 			if (!invite)
 			{
-				invite = new GlympseInvite(that, idInvite, account, cfg);
+				invite = new GlympseInvite(that, idInvite, token, cfg);
 			}
 
 			invite.load();

@@ -10,7 +10,7 @@ define(function(require, exports, module)
 
 
 	// Exported class
-	function GlympseInvite(controller, idInvite, account, cfg)
+	function GlympseInvite(controller, idInvite, accountToken, cfg)
 	{
 		// consts
 		var dbg = lib.dbg(cModuleId, cfg.dbg);
@@ -85,7 +85,7 @@ define(function(require, exports, module)
 
 		this.load = function()
 		{
-			var token = account.getToken();
+			var token = accountToken;
 
 			if (!idInvite || !token)
 			{

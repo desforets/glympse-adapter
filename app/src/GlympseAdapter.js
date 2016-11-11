@@ -58,9 +58,9 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.loadViewer = function(cfgNew, viewer)
+		this.loadViewer = function(cfgNew, viewerElement)
 		{
-			return (client && client.loadViewer(cfgNew, viewer));
+			return (client && client.loadViewer(cfgNew, viewerElement));
 		};
 
 		this.host = function(cfgHost)
