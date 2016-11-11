@@ -76,6 +76,8 @@ define(function(require, exports, module)
 			, CardReady: 'CardReady'
 			, CardsInitEnd: 'CardsInitEnd'
 			, CardsInitStart: 'CardsInitStart'
+			, CardMemberInviteAdded: 'CardMemberInviteAdded'
+			, CardMemberInviteRemoved: 'CardMemberInviteRemoved'
 			, CardAdded: 'CardAdded'
 			, CardRemoved: 'CardRemoved'
 			, DataUpdate: 'DataUpdate'

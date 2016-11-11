@@ -32,6 +32,7 @@ define(function(require, exports, module)
 		var invitesReferences = { };
 		var glympseLoader;
 		var mapCardInvites = { };
+		var cardsInitialized = false;
 		var viewerMonitor;
 
 		var progressCurrent = 0;
@@ -227,7 +228,7 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
-			var idCard;
+			var idCard, card;
 
 			switch (msg)
 			{
@@ -256,10 +257,11 @@ define(function(require, exports, module)
 				{
 					sendEvent(msg, args);
 					invitesGlympse = [];
+					cardsInitialized = true;
 
 					for (var i = 0, cards = args, len = cards.length; i < len; i++)
 					{
-						var card = cards[i];
+						card = cards[i];
 						idCard = card.getIdCard();
 
 						if (!card.isLoaded())
@@ -300,15 +302,34 @@ define(function(require, exports, module)
 					//dbg('Card map', mapCardInvites);
 
 					// Real cards/invites to be loaded
-					if (invitesGlympse.length > 0)
-					{
+					// if (invitesGlympse.length > 0)
+					// {
 						//console.log('---> Loading invites: ' + invitesGlympse);
-						cfgViewer.t = invitesGlympse.join(';');
-						this.loadViewer(cfgViewer);
-					}
+					//FixMe: viewer can't be initialized w/o invite, so pass incorrect one for now
+					cfgViewer.t = invitesGlympse.join(';') || 'incorrect';
+					this.loadViewer(cfgViewer);
+					// }
 
 					break;
 				}
+
+				case m.CardMemberInviteAdded:
+					dbg('start share', args);
+					if (cardsInitialized) {
+						invitesGlympse.push(args);
+						controller.map.addInvites(args);
+					}
+					sendEvent(msg, args);
+					break;
+
+				case m.CardMemberInviteRemoved:
+					dbg('stop share', args);
+					if (cardsInitialized) {
+						invitesGlympse.splice(invitesGlympse.indexOf(args), 1);
+						controller.map.removeInvites(args);
+					}
+					sendEvent(msg, args);
+					break;
 
 				case m.InviteError:
 				{
@@ -340,9 +361,9 @@ define(function(require, exports, module)
 
 							progressTotal += (5 + 1 * 2) - 2;
 							invitesCard.push(idCard);
-							sendEvent(m.AdapterInit, { isCard: true });
+							//sendEvent(m.AdapterInit, { isCard: true });
 							updateProgress();
-							cardsController.init(invitesCard);
+							//cardsController.init(invitesCard);
 						}
 					}
 					else

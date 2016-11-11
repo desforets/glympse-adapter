@@ -66,6 +66,11 @@ define(function(require, exports, module)
 					controller.notify(msg, args);
 					if (msg === m.CardReady)
 					{
+						var card = cardsIndex[args];
+						if (cards.indexOf(card) === -1) {
+							cards.push(card);
+							controller.notify(m.CardAdded, card);
+						}
 						if (--cardsReady === 0)
 						{
 							controller.notify(m.CardsInitEnd, cards);
@@ -74,6 +79,11 @@ define(function(require, exports, module)
 
 					break;
 				}
+
+				case m.CardMemberInviteAdded:
+				case m.CardMemberInviteRemoved:
+					controller.notify(msg, args);
+					break;
 
 				default:
 				{
@@ -109,6 +119,10 @@ define(function(require, exports, module)
 				loadCard(cardInvites[i]);
 			}
 
+			if (!cardInvites.length) {
+				controller.notify(m.CardsInitEnd, []);
+			}
+
 			getCards();
 			setInterval(getCards, pollInterval);
 		}
@@ -116,9 +130,7 @@ define(function(require, exports, module)
 		function loadCard(cardInvite) {
 			var card = new Card(that, cardInvite, account.getToken(), cfg);
 			if (card.init()) {
-				cards.push(card);
 				cardsIndex[cardInvite] = card;
-				controller.notify(m.CardAdded, card);
 			} else {
 				dbg('Error starting card: ' + cardInvite);
 			}
@@ -159,8 +171,9 @@ define(function(require, exports, module)
 					cardId = cardInvites[i];
 					if (allCardIds.indexOf(cardId) === -1) {
 						cardInvites.splice(i, 1);
-						cards.splice(cards.indexOf(cardsIndex[cardId]), 1);
 						card = cardsIndex[cardId];
+						cards.splice(cards.indexOf(card), 1);
+						card.destroy();
 						delete cardsIndex[cardId];
 						controller.notify(m.CardRemoved, card);
 					}

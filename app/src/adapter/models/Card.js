@@ -16,6 +16,7 @@ define(function(require, exports, module)
 		var data;
 		var loaded = false;
 		var members;
+		var currentlySharing = [];
 		var that = this;
 
 		// consts
@@ -24,6 +25,7 @@ define(function(require, exports, module)
 		var cardUrl = (svr + 'cards/' + idCard);
 		var cardParams = { members: true };
 		var cMaxAttempts = 3;
+		var pollInterval = cfg.pollCards || 60000;
 
 		// TODO: Just map data props directly??
 		//	---> Only want immediate non-Objects/Arrays
@@ -67,16 +69,36 @@ define(function(require, exports, module)
 			return data;
 		};
 
+		//TODO: looks like need to poll only cards list (with members=true&invites=true parameter)
 		this.setData = function(val)
 		{
 			data = val;
 			lib.mapProps(this, props, data);
 
 			var mems = data.members;
+			var member, invite;
+			var allShares = [];
 			members = [];
 			for (var i = 0, len = ((mems && mems.length) || 0); i < len; i++)
 			{
-				members.push(new Member(mems[i], cfg));
+				member = new Member(mems[i], cfg);
+				members.push(member);
+				invite = member.getTicket().getInviteCode();
+				//console.log('  [' + j + ']: ' + invite);
+				if (invite) {
+					allShares.push(invite);
+					if (currentlySharing.indexOf(invite) === -1) {
+						currentlySharing.push(invite);
+						controller.notify(m.CardMemberInviteAdded, invite);
+					}
+				}
+			}
+			for (i = 0, len = currentlySharing.length; i < len; i++) {
+				invite = currentlySharing[i];
+				if (allShares.indexOf(invite) === -1) {
+					currentlySharing.splice(i, 1);
+					controller.notify(m.CardMemberInviteRemoved, invite);
+				}
 			}
 
 			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
@@ -98,7 +120,20 @@ define(function(require, exports, module)
 			attempts = 0;
 			loadCard();
 
+			that.poll = setInterval(function () {
+				attempts = 0;
+				loadCard();
+			}, pollInterval);
+
 			return true;
+		};
+
+		this.destroy = function () {
+			clearInterval(that.poll);
+
+			for (var i = 0, len = currentlySharing.length; i < len; i++) {
+				controller.notify(m.CardMemberInviteRemoved, currentlySharing[i]);
+			}
 		};
 
 		this.toJSON = function()
