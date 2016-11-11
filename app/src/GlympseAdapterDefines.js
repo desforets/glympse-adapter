@@ -63,13 +63,32 @@ define(function(require, exports, module)
 			}
 		}
 
+		, CORE: {
+
+			/////////////////////////////////////////
+			// API Endpoints - host and client
+			/////////////////////////////////////////
+
+			REQUESTS: {
+			}
+
+
+			/////////////////////////////////////////
+			// API Endpoints: client-only
+			/////////////////////////////////////////
+
+			, REQUESTS_LOCAL: {
+				accountCreate: 'accountCreate'
+			}
+		}
+
 
 		/////////////////////////////////////////
 		// Notification messages
 		/////////////////////////////////////////
 
 		, MSG: {
-			  AdapterInit: 'AdapterInit'
+			AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
 			, CardInit: 'CardInit'
 			, CardReady: 'CardReady'
@@ -82,6 +101,7 @@ define(function(require, exports, module)
 			, InviteInit: 'InviteInit'
 			, InviteReady: 'InviteReady'
 			, InviteRemoved: 'InviteRemoved'
+			, LoggedIn: 'LoggedIn'
 			, Progress: 'Progress'
 			, StateUpdate: 'StateUpdate'
 			, ViewerInit: 'ViewerInit'

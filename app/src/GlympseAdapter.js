@@ -41,6 +41,7 @@ define(function(require, exports, module)
 		this.map = {};
 		this.cards = {};
 		this.ext = {};
+		this.core = {};
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -57,9 +58,9 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.loadViewer = function(cfgNew)
+		this.loadViewer = function(cfgNew, viewer)
 		{
-			return (client && client.loadViewer(cfgNew));
+			return (client && client.loadViewer(cfgNew, viewer));
 		};
 
 		this.host = function(cfgHost)
@@ -86,7 +87,7 @@ define(function(require, exports, module)
 							   , oasisLocal
 							   , controller
 							   , cfg
-							   , viewerHtmlElement[0]
+							   , viewerHtmlElement && viewerHtmlElement[0]
 							   );
 
 			client.init({ id: VersionInfo.id

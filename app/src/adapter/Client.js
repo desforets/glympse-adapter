@@ -9,6 +9,7 @@ define(function(require, exports, module)
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var ViewerMonitor = require('glympse-adapter/adapter/ViewerMonitor');
 	var CardsController = require('glympse-adapter/adapter/CardsController');
+	var CoreController = require('glympse-adapter/adapter/CoreController');
 	var GlympseLoader = require('glympse-adapter/adapter/GlympseLoader');
 
 	var s = Defines.STATE;
@@ -33,6 +34,7 @@ define(function(require, exports, module)
 		var glympseLoader;
 		var mapCardInvites = { };
 		var viewerMonitor;
+		var coreController;
 
 		var progressCurrent = 0;
 		var progressTotal = 0;
@@ -84,16 +86,19 @@ define(function(require, exports, module)
 
 			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
 			cardsController = new CardsController(this, cfgAdapter);
+			coreController = new CoreController(this, cfgApp);
 
 			// API namespaced endpoints
 			var svcs = [ { id: 'MAP', targ: viewerMonitor },
-						 { id: 'CARDS', targ: cardsController}
+						 { id: 'CARDS', targ: cardsController},
+					     { id: 'CORE', targ: coreController}
 					   ];
 
 			var intInterfaces = { map: { getInviteProperties: getInviteProperties
 									   , getInviteProperty: getInviteProperty
 									   }
 								, cards: {}
+								, core: {}
 								};
 
 			// Defines.SVC_ID.REQUESTS specifies the various API endpoints
@@ -199,15 +204,23 @@ define(function(require, exports, module)
 			}
 		};
 
-		this.loadViewer = function(cfgNew)
+		this.loadViewer = function(cfgNew, newViewerElement)
 		{
 			// Signal the cards/invites to load
 			sendEvent(m.AdapterReady, { cards: invitesCard, glympses: invitesGlympse });
 
 			//console.log('cfg.viewer=' + cfgMonitor.viewer);
 			$.extend(cfgViewer, cfgNew);
+
+			if(newViewerElement) {
+				cfgMonitor.viewer = newViewerElement;
+			}
+
 			viewerMonitor.run();
-			$(cfgMonitor.viewer).glympser(cfgViewer);
+
+			if(cfgMonitor.viewer) {
+				$(cfgMonitor.viewer).glympser(cfgViewer);
+			}
 		};
 
 		this.infoUpdate = function(id, invite, owner, t, val)
@@ -366,6 +379,9 @@ define(function(require, exports, module)
 					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
 					break;
 				}
+				case m.LoggedIn:
+					sendEvent(msg, args);
+					break;
 
 				default:
 				{
