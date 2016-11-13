@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.4.2   | 2016/11/12 | *InviteClicked* event propagation fix
 1.4.1   | 2016/11/09 | Add *InviteClicked* event
 1.4.0   | 2016/11/08 | Remove `adapter.getViewer()`, add client-only `adapter.map.getMapContainer()` method
 1.3.10  | 2016/07/23 | Expire option for `setCfgVal()`: `lib.setCfgVal(name, val, daysExpire)` _(default: 365)_
