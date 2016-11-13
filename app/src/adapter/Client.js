@@ -334,6 +334,13 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case m.InviteClicked:
+				{
+					//dbg('Invite clicked', args);
+					sendEvent(msg, args);
+					break;
+				}
+
 				case m.InviteReady:
 				{
 					if (!args.isLoaded())
