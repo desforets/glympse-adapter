@@ -84,6 +84,12 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case appMSG.InviteClicked:
+				{
+					dbg('[** InviteClicked **] - Invite: "' + args.id + '"', args);
+					break;
+				}
+
 				default:
 				{
 					dbg('cmd() - unknown cmd: "' + cmd + '"', args);
