@@ -25,29 +25,27 @@ define(function(require, exports, module)
 		var cardInvites;
 		var cards;
 		var cardsReady = 0;
-		var token = cfg.authToken;
+		var initialized = false;
+		var authToken = cfg.authToken;
 
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.initialized = false;
-
 		this.init = function(cardsInvitesToLoad)
 		{
 			cards = [];
 			cardInvites = cardsInvitesToLoad;
-
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
+			initialized = true;
+
 			controller.notify(m.CardsInitStart, cardInvites);
 
-			if (token)
+			if (authToken)
 			{
-				accountInitComplete(token);
+				accountInitComplete();
 			}
-
-			this.initialized = true;
 		};
 
 
@@ -57,8 +55,8 @@ define(function(require, exports, module)
 			{
 				case Account.InitComplete:
 				{
-					token = args.token;
-					accountInitComplete(args.token, args);
+					authToken = args.token;
+					accountInitComplete(args);
 					break;
 				}
 
@@ -92,24 +90,32 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function accountInitComplete(token, args)
+		function accountInitComplete(args)
 		{
-			if (!token)
+			var sig = '[accountInitComplete] - ';
+
+			if (!initialized)
 			{
-				dbg('Error during Account.Init()', args);
+				dbg(sig + 'not initialized', args);
+				return;
+			}
+
+			if (!authToken)
+			{
+				dbg(sig + 'authToken unavailable', args);
 				return;
 			}
 
 			//dbg('Auth token: ' + account.getToken() + ' -- ' + (info && info.token));
-			dbg('[' + ((cfg.anon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
+			dbg(sig + '[' + ((cfg.isAnon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				var card = new Card(that, cardInvites[i], token, cfg);
+				var card = new Card(that, cardInvites[i], authToken, cfg);
 				if (!card.init())
 				{
-					dbg('Error starting card: ' + cardInvites[i]);
+					dbg(sig + 'error starting card: ' + cardInvites[i]);
 				}
 				else
 				{

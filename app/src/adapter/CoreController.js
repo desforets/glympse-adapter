@@ -20,21 +20,25 @@ define(function(require, exports, module)
 		// state
 		var account = new Account(this, cfg);
 
-		if(account.init())
-		{
-			controller.notify(Account.InitComplete, { status: true, token: account.getToken() });
-		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
+
+		this.init = function()
+		{
+			if (account.init())
+			{
+				controller.notify(Account.InitComplete, { status: true, token: account.getToken() });
+			}
+		};
 
 		this.notify = function(msg, args)
 		{
 			switch (msg)
 			{
 				case Account.InitComplete:
-				case Account.AccountCreateStatus:
+				case Account.CreateStatus:
 				{
 					controller.notify(msg, args);
 					break;
@@ -54,13 +58,24 @@ define(function(require, exports, module)
 		{
 			switch (method)
 			{
-				case "accountCreate":
+				case 'accountCreate':
 				{
 					createAccount();
 					break;
 				}
+
+				case 'generateToken':
+				{
+					account.generateToken();
+					break;
+				}
 			}
 		};
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		// UTILITY
+		///////////////////////////////////////////////////////////////////////////////
 
 		function createAccount()
 		{

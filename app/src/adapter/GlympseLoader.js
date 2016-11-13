@@ -5,8 +5,8 @@ define(function(require, exports, module)
 	var lib = require('glympse-adapter/lib/utils');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var m = Defines.MSG;
-	var s = Defines.STATE;
-	var r = Defines.REQUESTS;
+	//var s = Defines.STATE;
+	//var r = Defines.REQUESTS;
 
 	// Glympse-specific
 	var Account = require('glympse-adapter/adapter/models/Account');
@@ -17,31 +17,30 @@ define(function(require, exports, module)
 	function GlympseLoader(controller, cfg)
 	{
 		// consts
-		var dbg = lib.dbg('GlympseInvites', cfg.dbg);
-		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
+		var dbg = lib.dbg('GlympseLoader', cfg.dbg);
+		//var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
 
 		// state
 		var that = this;
-		var token = cfg.authToken;
+		var authToken = cfg.authToken;
 		var idInvite;
 		var invite;
+		var initialized = false;
 
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.initialized = false;
-
 		this.init = function(inviteToLoad)
 		{
 			idInvite = inviteToLoad;
+			initialized = true;
 
-			if (token)
+			if (authToken)
 			{
-				accountInitComplete(token);
+				accountInitComplete(authToken);
 			}
-			this.initialized = true;
 		};
 
 
@@ -51,8 +50,8 @@ define(function(require, exports, module)
 			{
 				case Account.InitComplete:
 				{
-					token = args.token;
-					accountInitComplete(token, args);
+					authToken = args.token;
+					accountInitComplete(authToken, args);
 					break;
 				}
 
@@ -64,21 +63,21 @@ define(function(require, exports, module)
 
 				case m.InviteReady:
 				{
-					var error = args.getError();
+					//var error = args.getError();
 
-					if (error && error.error === 'oauth_token')
-					{
-						if (error.error_detail.indexOf('expired') >= 0)
-						{
-							account.handleExpiredToken();
-						}
-						else
-						{
-							account.handleInvalidToken();
-						}
-
-						break;
-					}
+					// if (error && error.error === 'oauth_token')
+					// {
+					// 	if (error.error_detail.indexOf('expired') >= 0)
+					// 	{
+					// 		account.handleExpiredToken();
+					// 	}
+					// 	else
+					// 	{
+					// 		account.handleInvalidToken();
+					// 	}
+                    //
+					// 	break;
+					// }
 
 					controller.notify(msg, args);
 					break;
@@ -101,18 +100,30 @@ define(function(require, exports, module)
 
 		function accountInitComplete(token, info)
 		{
-			if (!token)
+			var sig = '[accountInitComplete] - ';
+
+			if (!initialized)
 			{
-				dbg('Error during Account.Init()', info);
+				dbg(sig + 'not initialized', info);
+				return;
+			}
+
+			if (!authToken)
+			{
+				dbg(sig + 'authToken unavailable', info);
 				return;
 			}
 
 			//dbg('Auth token: ' + account.getToken() + ' -- ' + (info && info.token));
-			dbg('[' + ((cfg.anon) ? 'ANON' : 'ACCT') + '] Token active. Loading Glympse invite "' + idInvite + '"');
+			dbg(sig + '[' + ((cfg.isAnon) ? 'ANON' : 'ACCT') + '] Token active. Loading Glympse invite "' + idInvite + '"');
 
-			if (!invite)
+			if (invite)
 			{
-				invite = new GlympseInvite(that, idInvite, token, cfg);
+				invite.setToken(authToken);
+			}
+			else
+			{
+				invite = new GlympseInvite(that, idInvite, authToken, cfg);
 			}
 
 			invite.load();

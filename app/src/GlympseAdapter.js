@@ -58,9 +58,9 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.loadViewer = function(cfgNew, viewerElement)
+		this.loadViewer = function(cfgNew, mapHtmlElement)
 		{
-			return (client && client.loadViewer(cfgNew, viewerElement));
+			return (client && client.loadViewer(cfgNew, mapHtmlElement));
 		};
 
 		this.host = function(cfgHost)
@@ -76,7 +76,7 @@ define(function(require, exports, module)
 			return hostElement;
 		};
 
-		this.client = function(viewerHtmlElement)
+		this.client = function(mapHtmlElement)
 		{
 			if (host || client)
 			{
@@ -87,7 +87,7 @@ define(function(require, exports, module)
 							   , oasisLocal
 							   , controller
 							   , cfg
-							   , viewerHtmlElement && viewerHtmlElement[0]
+							   , (mapHtmlElement && mapHtmlElement[0])
 							   );
 
 			client.init({ id: VersionInfo.id

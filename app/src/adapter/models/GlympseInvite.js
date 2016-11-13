@@ -78,6 +78,11 @@ define(function(require, exports, module)
 			//dbg('Invite "' + this.getIdInvite() + '" loaded (reference: "' + this.getReference() + '")');
 		};
 
+		this.setToken = function(val)
+		{
+			accountToken = val;
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
