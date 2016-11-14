@@ -65,6 +65,7 @@ define(function(require, exports, module)
 			token = settings[cAcctTokenName];
 			if (token)
 			{
+				controller.notify(Account.InitComplete, { status: true, token: account.getToken() });
 				return true;
 			}
 
@@ -76,6 +77,7 @@ define(function(require, exports, module)
 
 				if (!u || !p)
 				{
+					controller.notify(Account.CreateStatus, { status: false, error: 'no_account', errorDetail: 'No account exists for the current apiKey.' });
 					return false;
 				}
 

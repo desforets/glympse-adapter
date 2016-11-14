@@ -27,14 +27,7 @@ define(function(require, exports, module)
 
 		this.init = function()
 		{
-			if (account.init())
-			{
-				controller.notify(Account.InitComplete, { status: true, token: account.getToken() });
-			}
-			else
-			{
-				controller.notify(Account.CreateStatus, { status: false });
-			}
+			account.init();
 		};
 
 		this.notify = function(msg, args)
