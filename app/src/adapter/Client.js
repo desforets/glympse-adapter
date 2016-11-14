@@ -9,7 +9,9 @@ define(function(require, exports, module)
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var ViewerMonitor = require('glympse-adapter/adapter/ViewerMonitor');
 	var CardsController = require('glympse-adapter/adapter/CardsController');
+	var CoreController = require('glympse-adapter/adapter/CoreController');
 	var GlympseLoader = require('glympse-adapter/adapter/GlympseLoader');
+	var Account = require('glympse-adapter/adapter/models/Account');
 
 	var s = Defines.STATE;
 	var m = Defines.MSG;
@@ -25,6 +27,7 @@ define(function(require, exports, module)
 		var dbg = lib.dbg('Client', cfgApp.dbg);
 
 		// state
+		var that = this;
 		var cardsController;
 		var cfgMonitor = { dbg: cfgApp.dbg, viewer: elementViewer };
 		var invitesCard;
@@ -34,6 +37,8 @@ define(function(require, exports, module)
 		var mapCardInvites = { };
 		var cardsInitialized = false;
 		var viewerMonitor;
+		var coreController;
+		var authToken;
 
 		var progressCurrent = 0;
 		var progressTotal = 0;
@@ -41,6 +46,8 @@ define(function(require, exports, module)
 		var connectedOasis = false;
 		var connectQueue = [];
 		var port;
+
+		var initialized = false;
 
 		cfgAdapter.dbg = cfgApp.dbg || cfgAdapter.dbg;
 		cfgViewer.services = cfgAdapter.svcGlympse; // Link viewer to card data center
@@ -62,14 +69,15 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
+		/**
+		 * Set up the client portion of the adapter
+		 * @param settings Object to advertise to any connecting adapter running in host-mode. This object is updated with all of the available interfaces/end-points.
+		 */
 		this.init = function(settings)
 		{
 			var card = cfgAdapter.card;
 			var cardsMode = cfgAdapter.cardsMode;
 			var t = cfgAdapter.t;
-			var pg = cfgAdapter.pg;
-			var twt = cfgAdapter.twt;
-			var g = cfgAdapter.g;
 
 			var cfgClient = { consumers: { } };
 			var events = { };
@@ -84,19 +92,23 @@ define(function(require, exports, module)
 
 			$.extend(settings, { invitesCard: invitesCard, invitesGlympse: invitesGlympse });
 
-			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
+
+			coreController = new CoreController(this, cfgAdapter);
 			cardsController = new CardsController(this, cfgAdapter);
+			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
 
 			// API namespaced endpoints
 			var svcs = [ { id: 'MAP', targ: viewerMonitor },
-						 { id: 'CARDS', targ: cardsController}
+						 { id: 'CARDS', targ: cardsController},
+					     { id: 'CORE', targ: coreController}
 					   ];
 
-			var intInterfaces = { map: { getInviteProperties: getInviteProperties
-									   , getInviteProperty: getInviteProperty
-									   }
-								, cards: {}
-								};
+			var intInterfaces = { map: {}, cards: {}, core: {} };
+
+			// Local overrides
+			// FIXME: This shouldn't go here
+			intInterfaces.map[ViewerMonitor.GetInviteProperties] = getInviteProperties;
+			intInterfaces.map[ViewerMonitor.GetInviteProperty] = getInviteProperty;
 
 			// Defines.SVC_ID.REQUESTS specifies the various API endpoints
 			// to expose to both client and host consumers:
@@ -166,50 +178,29 @@ define(function(require, exports, module)
 
 			oasisLocal.connect(cfgClient);
 
+			// Notify of invite loading status
 			var initSettings = { isCard: (card != null || cardsMode)
-							   , t: invitesGlympse
-							   , pg: splitMulti(pg)
-							   , twt: splitMulti(twt)
-							   , g: splitMulti(g)
-							   };
+								, t: invitesGlympse
+								, pg: splitMulti(cfgAdapter.pg)
+								, twt: splitMulti(cfgAdapter.twt)
+								, g: splitMulti(cfgAdapter.g)
+								};
 
 			progressCurrent = 0;
-			progressTotal = (card) ? (5 + 1 * 2) : 3;
+			progressTotal = (invitesCard.length > 0) ? (5 + 1 * 2) :
+							((invitesGlympse.length > 0) ? 3 : 0);
+
 			sendEvent(m.AdapterInit, initSettings);
 			updateProgress();
 
-
-			// Card vs Glympse Invite loading
-			if (invitesCard.length > 0 || cardsMode)
-			{
-				cardsController.init(invitesCard);
-			}
-			else if (lib.simplifyInvite(t).indexOf('demobot') < 0)
-			{
-				glympseLoader = new GlympseLoader(this, cfgAdapter);
-				glympseLoader.init(t);	// FIXME: Assumes only one invite code!
-			}
-			else if (t || pg || g || twt)
-			{
-				// Straight glympse invites/references to load
-				cfgViewer.t = t;
-				cfgViewer.pg = pg;
-				cfgViewer.twt = twt;
-				cfgViewer.g = g;
-
-				this.loadViewer(cfgViewer);
-			}
+			// Start up CoreController first to get current/new auth token
+			dbg('Init core..');
+			coreController.init();
 		};
 
-		this.loadViewer = function(cfgNew)
+		this.loadViewer = function(cfgNew, newMapElement)
 		{
-			// Signal the cards/invites to load
-			sendEvent(m.AdapterReady, { cards: invitesCard, glympses: invitesGlympse });
-
-			//console.log('cfg.viewer=' + cfgMonitor.viewer);
-			$.extend(cfgViewer, cfgNew);
-			viewerMonitor.run();
-			$(cfgMonitor.viewer).glympser(cfgViewer);
+			loadMap(cfgNew, newMapElement);
 		};
 
 		this.infoUpdate = function(id, invite, owner, t, val)
@@ -302,13 +293,13 @@ define(function(require, exports, module)
 					//dbg('Card map', mapCardInvites);
 
 					// Real cards/invites to be loaded
-					// if (invitesGlympse.length > 0)
+					//if (invitesGlympse.length > 0)
 					// {
 						//console.log('---> Loading invites: ' + invitesGlympse);
 					//FixMe: viewer can't be initialized w/o invite, so pass incorrect one for now
 					cfgViewer.t = invitesGlympse.join(';') || 'incorrect';
-					this.loadViewer(cfgViewer);
-					// }
+					loadMap(cfgViewer);
+					//}
 
 					break;
 				}
@@ -338,13 +329,32 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case m.InviteClicked:
+				{
+					//dbg('Invite clicked', args);
+					sendEvent(msg, args);
+					break;
+				}
+
 				case m.InviteReady:
 				{
 					if (!args.isLoaded())
 					{
-						dbg('Invite error state', args.getError());
-						sendEvent(m.InviteError, args);
-					//	return null;
+						var inviteError = args.getError();
+						dbg('Invite error state', inviteError);
+
+						// Refetch a new token on token errors. Account.InitComplete should
+						// properly push the new token to controllers so they can continue.
+						if (inviteError && inviteError.error === 'oauth_token')
+						{
+							coreController.cmd(CoreController.GenerateToken, true);
+						}
+						else
+						{
+							sendEvent(m.InviteError, args);
+						}
+
+						return null;
 					}
 
 					//dbg('InviteReady: ' + args.getIdInvite() + ' -- isLoaded=' + args.isLoaded());
@@ -373,7 +383,7 @@ define(function(require, exports, module)
 						updateProgress();
 						cfgViewer.t = args.getIdInvite();	// FIXME: Breaks for multiple initial invites
 
-						this.loadViewer(cfgViewer);
+						loadMap(cfgViewer);
 					}
 
 					break;
@@ -397,6 +407,43 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case Account.InitComplete:
+				{
+					if (args.status)
+					{
+						authToken = args.token;
+						cfgAdapter.authToken = authToken;
+						cfgViewer.authToken = authToken;
+						//dbg('Account.InitComplete', args);
+
+						if (glympseLoader)
+						{
+							glympseLoader.notify(msg, args);
+						}
+
+						if (cardsController)
+						{
+							cardsController.notify(msg, args);
+						}
+					}
+
+					sendEvent(m.AccountInit, args);
+
+					if (!initialized && args.status)
+					{
+						initialized = true;
+						loadInvites();
+					}
+
+					break;
+				}
+
+				case Account.CreateStatus:
+				{
+					sendEvent(m.AccountCreateStatus, args);
+					break;
+				}
+
 				default:
 				{
 					dbg('notify(): unknown msg: "' + msg + '"', args);
@@ -406,6 +453,70 @@ define(function(require, exports, module)
 
 			return null;
 		};
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		// EVENT HANDLERS
+		///////////////////////////////////////////////////////////////////////////////
+
+		function loadInvites()
+		{
+			// Various invite types handled by the map
+			var t = cfgAdapter.t;		// Core invite
+			var pg = cfgAdapter.pg;		// Core group (public)
+			var twt = cfgAdapter.twt;	// Twitter user (@) query
+			var g = cfgAdapter.g;		// Twitter topic (#) query
+
+			// Card vs Glympse Invite loading
+			if (invitesCard.length > 0)
+			{
+				cardsController.init(invitesCard);
+				return;
+			}
+
+			// Special handling to determine if a core invite has a card reference
+			// GlympseLoader will perform the lookup to determine if indeed there
+			// is a card invite to load instead of the presented core invite.
+			// FIXME: Assumes only one invite code!
+			if (lib.simplifyInvite(t).indexOf('demobot') < 0)
+			{
+				glympseLoader = new GlympseLoader(that, cfgAdapter);
+				glympseLoader.init(t);
+				return;
+			}
+
+			// Straight invite types to load
+			if (t || pg || g || twt)
+			{
+				cfgViewer.t = t;
+				cfgViewer.pg = pg;
+				cfgViewer.twt = twt;
+				cfgViewer.g = g;
+
+				loadMap(cfgViewer);
+			}
+		}
+
+		function loadMap(cfgNew, newMapElement)
+		{
+			dbg('loadMap!');
+			// Signal the cards/invites to load
+			sendEvent(m.AdapterReady, { cards: invitesCard, glympses: invitesGlympse });
+
+			//console.log('cfg.viewer=' + cfgMonitor.viewer);
+			$.extend(cfgViewer, cfgNew);
+
+			if (newMapElement)
+			{
+				cfgMonitor.viewer = newMapElement;
+			}
+
+			if (cfgMonitor.viewer)
+			{
+				viewerMonitor.run();
+				$(cfgMonitor.viewer).glympser(cfgViewer);
+			}
+		}
 
 
 		///////////////////////////////////////////////////////////////////////////////

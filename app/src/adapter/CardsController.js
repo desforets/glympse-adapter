@@ -23,11 +23,12 @@ define(function(require, exports, module)
 
 		// state
 		var that = this;
-		var account = new Account(this, cfg);
 		var cardInvites;
 		var cards;
 		var cardsIndex;
 		var cardsReady = 0;
+		var initialized = false;
+		var authToken = cfg.authToken;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -41,11 +42,13 @@ define(function(require, exports, module)
 			cardInvites = cardsInvitesToLoad || [];
 
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
+			initialized = true;
+
 			controller.notify(m.CardsInitStart, cardInvites);
 
-			if (account.init())
+			if (authToken)
 			{
-				accountInitComplete(true);
+				accountInitComplete();
 			}
 		};
 
@@ -56,7 +59,8 @@ define(function(require, exports, module)
 			{
 				case Account.InitComplete:
 				{
-					accountInitComplete(args.status, args);
+					authToken = args.token;
+					accountInitComplete(args);
 					break;
 				}
 
@@ -102,16 +106,24 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function accountInitComplete(status, info)
+		function accountInitComplete(args)
 		{
-			if (!status)
+			var sig = '[accountInitComplete] - ';
+
+			if (!initialized)
 			{
-				dbg('Error during Account.Init()', info);
+				dbg(sig + 'not initialized', args);
+				return;
+			}
+
+			if (!authToken)
+			{
+				dbg(sig + 'authToken unavailable', args);
 				return;
 			}
 
 			//dbg('Auth token: ' + account.getToken() + ' -- ' + (info && info.token));
-			dbg('[' + ((cfg.anon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
+			dbg(sig + '[' + ((cfg.isAnon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
 			for (var i = 0, len = cardInvites.length; i < len; i++)
@@ -119,7 +131,8 @@ define(function(require, exports, module)
 				loadCard(cardInvites[i]);
 			}
 
-			if (!cardInvites.length) {
+			if (!cardInvites.length)
+			{
 				controller.notify(m.CardsInitEnd, []);
 			}
 
@@ -128,10 +141,13 @@ define(function(require, exports, module)
 		}
 
 		function loadCard(cardInvite) {
-			var card = new Card(that, cardInvite, account.getToken(), cfg);
-			if (card.init()) {
+			var card = new Card(that, cardInvite, authToken, cfg);
+			if (card.init())
+			{
 				cardsIndex[cardInvite] = card;
-			} else {
+			}
+			else
+			{
 				dbg('Error starting card: ' + cardInvite);
 			}
 		}

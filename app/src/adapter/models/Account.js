@@ -7,29 +7,37 @@ define(function(require, exports, module)
 	var cApiKey = 'api_key';
 	var cMaxAttempts = 3;
 	var cPassword = 'p0';
-	var cTokenName = 'access_token';
 	var cUserName = 'n0';
-	var cAnonExchange = 'anon_exchange';
+	var cSvcPassword = 'password';
+	var cSvcUserName = 'username';
+	var cSvcError = 'error';
+	var cSvcErrorDetail = 'error_detail';
 
 
 	// Exported class
 	function Account(controller, cfg)
 	{
-		// state
-		var attempts = 0;
-		var isAnon = cfg.anon;
-		var token;
-
 		// consts
 		var dbg = lib.dbg('Account', cfg.dbg);
 		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
-		var account = { username: 'viewer', password: 'password' };
-		//var apiKey = (cfg.sandbox) ? 'nXQ44D38OdVzEC34' : 'nXQ44D38OdVzEC34';
-		var apiKey = (cfg.sandbox) ? 'eHXSnRf0slRRxGpC' : 'TDuy3X0PfQAyYjTt';
+		var sandbox = cfg.sandbox;
+		var idEnvironment = (sandbox) ? Account.EnvSandbox : Account.EnvProduction;
+
+		var account = {};
+		//var apiKey = cfg.apiKey || ((sandbox) ? 'eHXSnRf0slRRxGpC' : 'TDuy3X0PfQAyYjTt');
+		var apiKey = cfg.apiKey || ((sandbox) ? 'eHXSnRf0slRRxGpC' : 'nXQ44D38OdVzEC34'); //(sandbox) ? 'nXQ44D38OdVzEC34' : 'nXQ44D38OdVzEC34';
 		var urlCreate = (svr + 'account/create');
 		var urlLogin = (svr + 'account/login');
 
+		// state
+		var attempts = 0;
+		var isAnon = !cfg.apiKey;
+		var settings;
+		var token;
+
 		account[cApiKey] = apiKey;
+		account[cSvcPassword] = 'password';
+		account[cSvcUserName] = 'viewer';
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -48,73 +56,58 @@ define(function(require, exports, module)
 
 		this.init = function()
 		{
+			settings = lib.getCfgVal(idEnvironment) || {};
+
+			//dbg('isAnon = ' + isAnon + ', settings', settings);
+			cfg.isAnon = isAnon;
+
+
+			token = settings[cAcctTokenName];
+			if (token)
+			{
+				controller.notify(Account.InitComplete, { status: true, token: token });
+				return true;
+			}
+
+			// If not anonymous, add saved username/password to token request
 			if (!isAnon)
 			{
-				token = lib.getCfgVal(cAcctTokenName);
-				if (token)
-				{
-					return true;
-				}
-			}
-
-			attempts = 0;
-
-			if (isAnon)
-			{
-				token = lib.getCfgVal(cTokenName);
-				if (token)
-				{
-					return true;
-				}
-
-				token = lib.getCookie(cTokenName);
-				if (token)
-				{
-					lib.setCfgVal(cTokenName, token);
-					return true;
-				}
-			}
-			else
-			{
-				var u = lib.getCfgVal(cUserName);
-				var p = lib.getCfgVal(cPassword);
+				var u = settings[cUserName];
+				var p = settings[cPassword];
 
 				if (!u || !p)
 				{
-					createAccount();
+					controller.notify(Account.InitComplete, { status: false, error: 'no_account', errorDetail: 'No account exists for the current apiKey.' });
 					return false;
 				}
 
-				account.username = u;
-				account.password = p;
+				account[cSvcUserName] = u;
+				account[cSvcPassword] = p;
 			}
 
+			attempts = 0;
 			getNewToken();
 
 			return false;
 		};
 
-		this.handleExpiredToken = function()
+		this.generateToken = function()
 		{
-			dbg('>>>> EXPIRED anon=' + isAnon + ', token=' + token);
-			if (isAnon && token)
-			{
-				account[cAnonExchange] = token;
-			}
-
+			token = null;
+			attempts = 0;
 			getNewToken();
 		};
 
-		this.handleInvalidToken = function()
+		this.create = function()
 		{
-			dbg('>>>> INVALID anon=' + isAnon + ', token=' + token);
-			if (isAnon && token)
+			if (!isAnon)
 			{
-				token = null;
-				account[cAnonExchange] = undefined;
+				createAccount();
 			}
-
-			getNewToken();
+			else
+			{
+				dbg('Creating account failed, no API key available');
+			}
 		};
 
 
@@ -122,17 +115,16 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
+		function saveSettings()
+		{
+			lib.setCfgVal(idEnvironment, settings);
+		}
+
 		function getNewToken()
 		{
 			$.getJSON(urlLogin, account)
-			.done(function(data)
-			{
-				processLogin(data);
-			})
-			.fail(function(xOptions, status)
-			{
-				processLogin(null);
-			});
+				.done(processLogin)
+				.fail(processLogin);
 		}
 
 		function processLogin(data)
@@ -143,23 +135,35 @@ define(function(require, exports, module)
 
 			try
 			{
-				if (data && data.response && data.result === 'ok')
+				if (data && data.response)
 				{
-					token = data.response.access_token;
-
-					lib.setCfgVal((isAnon) ? cTokenName : cAcctTokenName, token);
-					if (cfg.anon)
+					if (data.result === 'ok')
 					{
-						lib.setCookie(cTokenName, token, 365);
+						token = data.response.access_token;
+
+						settings[cAcctTokenName] = token;
+						saveSettings();
+
+						//dbg('>> new token: ' + token);
+
+						result.status = true;
+						result.token = token;
+
+						controller.notify(Account.InitComplete, result);
+
+						return;
 					}
 
-					//dbg('>> new token: ' + token);
+					if (data.result === 'failure')
+					{
+						var meta = data.meta || {};
+						result.error = meta[cSvcError];
+						result.errorDetail = meta[cSvcErrorDetail];
 
-					result.status = true;
-					result.token = token;
+						controller.notify(Account.InitComplete, result);
 
-					controller.notify(Account.InitComplete, result);
-					return;
+						return;
+					}
 				}
 			}
 			catch (e)
@@ -181,21 +185,19 @@ define(function(require, exports, module)
 			}
 
 			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
-			result.info = { mode: 'login', status: 'max_attempts', lastResult: (data && data.result) };
+			result.info = { mode: 'login', status: 'max_attempts', lastResult: data };
 			controller.notify(Account.InitComplete, result);
 		}
 
 		function createAccount()
 		{
-			$.getJSON(urlCreate, account)
-			.done(function(data)
-			{
-				processCreateAccount(data);
-			})
-			.fail(function(xOptions, status)
-			{
-				processCreateAccount(null);
-			});
+			var opts = {};
+
+			opts[cApiKey] = account[cApiKey];
+
+			$.getJSON(urlCreate, opts)
+				.done(processCreateAccount)
+				.fail(processCreateAccount);
 		}
 
 		function processCreateAccount(data)
@@ -207,19 +209,28 @@ define(function(require, exports, module)
 			try
 			{
 				var resp = (data && data.response);
+
 				if (resp && data.result === 'ok')
 				{
 					var id = resp.id;
 					var pw = resp.password;
 
-					account.username = id;
-					account.password = pw;
-					lib.setCfgVal(cUserName, id);
-					lib.setCfgVal(cPassword, pw);
+					account[cSvcUserName] = id;
+					account[cSvcPassword] = pw;
+
+					settings[cUserName] = id;
+					settings[cPassword] = pw;
+					saveSettings();
 					//dbg('>> new account: ' + id + ' / ' + pw);
 
-					// Now, log in
+					result.status = true;
+					result.data = data;
+
+					controller.notify(Account.CreateStatus, result);
+
+					// Now, go ahead and get an authToken
 					attempts = 0;
+					token = null;
 					getNewToken();
 
 					return;
@@ -227,7 +238,7 @@ define(function(require, exports, module)
 			}
 			catch (e)
 			{
-				dbg('Error parsing create', e);
+				dbg('Error parsing ' + urlCreate, e);
 			}
 
 			//dbg('attempt: ' + attempts + ', last data', data);
@@ -244,13 +255,17 @@ define(function(require, exports, module)
 			}
 
 			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
-			result.info = { mode: 'create_account', status: 'max_attempts', lastResult: (data && data.result) };
-			controller.notify(Account.InitComplete, result);
+			result.info = { mode: 'create_account', status: 'max_attempts', lastResult: data };
+			controller.notify(Account.CreateStatus, result);
 		}
 	}
 
 	// Account defines
 	Account.InitComplete = 'AccountInitComplete';
+	Account.CreateStatus = 'AccountCreateStatus';
+	Account.EnvProduction = 'prod';
+	Account.EnvSandbox = 'sbox';
+
 
 
 	module.exports = Account;
