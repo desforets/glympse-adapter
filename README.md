@@ -417,6 +417,10 @@ The following is a description of the various notification messages (or Events, 
 using GA in host-mode) that are sent by the adapter (defined in the
 `GlympseAdapterDefines.MSG` object):
 
+- `AccountCreateStatus` / `{ status: bool }`: Indicates the account has been created or
+  creation failed with `error` message and `status: false`
+- `AccountInit` / `{ status: bool }`: `status: true` - Indicates the adapter successfully
+  logged in. `status: false` - Error occurred, property `error` has additional info about it
 - `AdapterInit` / `{ isCard: bool, t: string }`: Indicates the adapter is beginning
   its loading sequence with the passed card invite or the specified Glympse invite
   (indicated via the `t` parameter)
