@@ -397,7 +397,7 @@ define(function(require, exports, module)
 						}
 					}
 
-					sendEvent(m.LoggedIn, args);
+					sendEvent(m.AccountInit, args);
 
 					if (!initialized && args.status)
 					{
