@@ -112,7 +112,7 @@ var cfg =
 		, hideUpdates: *bool*
 		, initialize: *function*
 		, interfaces: { id0: callback0, ..., idN: callbackN }
-		, anon: *bool*
+		, apiKey: *string*|null|undefined
 		, sandbox: *bool*
 		, svcGlympse: *string*
 		, svcCards: *string*
@@ -134,8 +134,8 @@ var cfg =
   adapater via iframe interface. Can be null.
   - `interfaces`: Allows for local overrides/extensions of advertised Glympse viewer
   endpoints. More details can be found in *Custom Endpoints*. Can also be null,
-  - `anon`: Whether to use anonymous or real Glympse accounts when interacting with
-  either the Cards or Glympse API
+  - `apiKey`: Specifies the Core API key to use. If not set, the adapter will run in
+  anonymous mode, which will allow only for the viewing of Core API invites.
   - `sandbox`: Force usage of the sandbox environment for Cards/Glympses
   - `svcGlympse`: Override the default Glympse API datacenter. Default is
   `//api.glympse.com/v2/`.
