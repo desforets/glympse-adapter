@@ -58,13 +58,13 @@ define(function(require, exports, module)
 		{
 			switch (method)
 			{
-				case 'accountCreate':
+				case CoreController.AccountCreate:
 				{
 					createAccount();
 					break;
 				}
 
-				case 'generateToken':
+				case CoreController.GenerateToken:
 				{
 					account.generateToken();
 					break;
@@ -83,6 +83,8 @@ define(function(require, exports, module)
 		}
 	}
 
+	CoreController.AccountCreate = 'accountCreate';
+	CoreController.GenerateToken = 'generateToken';
 
 	module.exports = CoreController;
 });

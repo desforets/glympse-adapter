@@ -3,6 +3,8 @@ define(function(require, exports, module)
 {
     'use strict';
 
+	var CoreController = require('glympse-adapter/adapter/CoreController');
+
 	var Defines =
 	{
 		PORT: 'glympse'
@@ -78,7 +80,7 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			, REQUESTS_LOCAL: {
-				accountCreate: 'accountCreate'
+				accountCreate: CoreController.AccountCreate
 			}
 		}
 

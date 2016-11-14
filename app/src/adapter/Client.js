@@ -101,12 +101,12 @@ define(function(require, exports, module)
 					     { id: 'CORE', targ: coreController}
 					   ];
 
-			var intInterfaces = { map: { getInviteProperties: getInviteProperties
-									   , getInviteProperty: getInviteProperty
-									   }
-								, cards: {}
-								, core: {}
-								};
+			var intInterfaces = { map: {}, cards: {}, core: {} };
+
+			// Local overrides
+			// FIXME: This shouldn't go here
+			intInterfaces.map[ViewerMonitor.GetInviteProperties] = getInviteProperties;
+			intInterfaces.map[ViewerMonitor.GetInviteProperty] = getInviteProperty;
 
 			// Defines.SVC_ID.REQUESTS specifies the various API endpoints
 			// to expose to both client and host consumers:
@@ -325,7 +325,7 @@ define(function(require, exports, module)
 						// properly push the new token to controllers so they can continue.
 						if (inviteError && inviteError.error === 'oauth_token')
 						{
-							coreController.cmd('generateToken');
+							coreController.cmd(CoreController.GenerateToken, true);
 						}
 						else
 						{
