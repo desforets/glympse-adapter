@@ -159,7 +159,7 @@ define(function(require, exports, module)
 					type: 'GET',
 					dataType: 'JSON',
 					beforeSend: function (request) {
-						request.setRequestHeader('Authorization', 'Bearer ' + account.getToken());
+						request.setRequestHeader('Authorization', 'Bearer ' + authToken);
 					},
 					url: svr + 'cards',
 					processData: true

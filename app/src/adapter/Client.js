@@ -46,6 +46,7 @@ define(function(require, exports, module)
 		var connectedOasis = false;
 		var connectQueue = [];
 		var port;
+		var cardsMode = cfgAdapter.cardsMode;
 
 		var initialized = false;
 
@@ -76,7 +77,6 @@ define(function(require, exports, module)
 		this.init = function(settings)
 		{
 			var card = cfgAdapter.card;
-			var cardsMode = cfgAdapter.cardsMode;
 			var t = cfgAdapter.t;
 
 			var cfgClient = { consumers: { } };
@@ -291,15 +291,13 @@ define(function(require, exports, module)
 					}
 
 					//dbg('Card map', mapCardInvites);
-
 					// Real cards/invites to be loaded
-					//if (invitesGlympse.length > 0)
-					// {
+					if (invitesGlympse.length > 0)
+					{
 						//console.log('---> Loading invites: ' + invitesGlympse);
-					//FixMe: viewer can't be initialized w/o invite, so pass incorrect one for now
-					cfgViewer.t = invitesGlympse.join(';') || 'incorrect';
-					loadMap(cfgViewer);
-					//}
+						cfgViewer.t = invitesGlympse.join(';');
+						loadMap(cfgViewer);
+					}
 
 					break;
 				}
@@ -468,7 +466,7 @@ define(function(require, exports, module)
 			var g = cfgAdapter.g;		// Twitter topic (#) query
 
 			// Card vs Glympse Invite loading
-			if (invitesCard.length > 0)
+			if (invitesCard.length > 0 || cardsMode)
 			{
 				cardsController.init(invitesCard);
 				return;
@@ -513,6 +511,9 @@ define(function(require, exports, module)
 
 			if (cfgMonitor.viewer)
 			{
+				//FixMe: viewer can't be initialized w/o invite, so pass incorrect one for now
+				cfgViewer.t = cfgViewer.t || 'incorrect';
+
 				viewerMonitor.run();
 				$(cfgMonitor.viewer).glympser(cfgViewer);
 			}
