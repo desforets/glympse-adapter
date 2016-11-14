@@ -31,6 +31,10 @@ define(function(require, exports, module)
 			{
 				controller.notify(Account.InitComplete, { status: true, token: account.getToken() });
 			}
+			else
+			{
+				controller.notify(Account.CreateStatus, { status: false });
+			}
 		};
 
 		this.notify = function(msg, args)
