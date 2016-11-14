@@ -91,7 +91,8 @@ define(function(require, exports, module)
 
 		, MSG: {
 			  AccountCreateStatus:'AccountCreateStatus'
-			, AdapterInit: 'AdapterInit'
+		    , AccountInit: 'AccountInit'
+		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
 			, CardInit: 'CardInit'
 			, CardReady: 'CardReady'
@@ -104,7 +105,6 @@ define(function(require, exports, module)
 			, InviteInit: 'InviteInit'
 			, InviteReady: 'InviteReady'
 			, InviteRemoved: 'InviteRemoved'
-			, LoggedIn: 'LoggedIn'
 			, Progress: 'Progress'
 			, StateUpdate: 'StateUpdate'
 			, ViewerInit: 'ViewerInit'
