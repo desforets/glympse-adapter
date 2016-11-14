@@ -112,7 +112,7 @@ var cfg =
 		, hideUpdates: *bool*
 		, initialize: *function*
 		, interfaces: { id0: callback0, ..., idN: callbackN }
-		, anon: *bool*
+		, apiKey: *string*|null|undefined
 		, sandbox: *bool*
 		, svcGlympse: *string*
 		, svcCards: *string*
@@ -134,8 +134,8 @@ var cfg =
   adapater via iframe interface. Can be null.
   - `interfaces`: Allows for local overrides/extensions of advertised Glympse viewer
   endpoints. More details can be found in *Custom Endpoints*. Can also be null,
-  - `anon`: Whether to use anonymous or real Glympse accounts when interacting with
-  either the Cards or Glympse API
+  - `apiKey`: Specifies the Core API key to use. If not set, the adapter will run in
+  anonymous mode, which will allow only for the viewing of Core API invites.
   - `sandbox`: Force usage of the sandbox environment for Cards/Glympses
   - `svcGlympse`: Override the default Glympse API datacenter. Default is
   `//api.glympse.com/v2/`.
@@ -417,6 +417,10 @@ The following is a description of the various notification messages (or Events, 
 using GA in host-mode) that are sent by the adapter (defined in the
 `GlympseAdapterDefines.MSG` object):
 
+- `AccountCreateStatus` / `{ status: bool }`: Indicates the account has been created or
+  creation failed with `error` message and `status: false`
+- `AccountInit` / `{ status: bool }`: `status: true` - Indicates the adapter successfully
+  logged in. `status: false` - Error occurred, property `error` has additional info about it
 - `AdapterInit` / `{ isCard: bool, t: string }`: Indicates the adapter is beginning
   its loading sequence with the passed card invite or the specified Glympse invite
   (indicated via the `t` parameter)

@@ -3,6 +3,8 @@ define(function(require, exports, module)
 {
     'use strict';
 
+	var CoreController = require('glympse-adapter/adapter/CoreController');
+
 	var Defines =
 	{
 		PORT: 'glympse'
@@ -63,13 +65,34 @@ define(function(require, exports, module)
 			}
 		}
 
+		, CORE: {
+
+			/////////////////////////////////////////
+			// API Endpoints - host and client
+			/////////////////////////////////////////
+
+			REQUESTS: {
+			}
+
+
+			/////////////////////////////////////////
+			// API Endpoints: client-only
+			/////////////////////////////////////////
+
+			, REQUESTS_LOCAL: {
+				accountCreate: CoreController.AccountCreate
+			}
+		}
+
 
 		/////////////////////////////////////////
 		// Notification messages
 		/////////////////////////////////////////
 
 		, MSG: {
-			  AdapterInit: 'AdapterInit'
+			  AccountCreateStatus:'AccountCreateStatus'
+		    , AccountInit: 'AccountInit'
+		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
 			, CardInit: 'CardInit'
 			, CardReady: 'CardReady'

@@ -13,7 +13,7 @@ define(function(require, exports, module)
 	var cEtaTime = 'eta_ts';
 
 	// Exported class
-	function ViewerMonitor(controller, cfg)
+	function MapController(controller, cfg)
 	{
 		// consts
 		var glyEvents = window.glympse.events;
@@ -37,7 +37,7 @@ define(function(require, exports, module)
 		var cmdQueue = [];
 		var props = { };
 
-		var dbg = lib.dbg('ViewerMonitor', cfg.dbg);
+		var dbg = lib.dbg('MapController', cfg.dbg);
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -135,12 +135,12 @@ define(function(require, exports, module)
 
 			switch (cmd)
 			{
-				case 'getInviteProperties':
+				case MapController.GetInviteProperties:
 				{
 					return this.getCurrentProperties(args);
 				}
 
-				case 'getInviteProperty':
+				case MapController.GetInviteProperty:
 				{
 					// args = { idProperty: name_of_property_to_retrieve
 					//		  , idInvite:   glympse_invite_id --> can be null if first invite is targetted
@@ -377,6 +377,9 @@ define(function(require, exports, module)
 		}
 	}
 
+	MapController.GetInviteProperties = 'getInviteProperties';
+	MapController.GetInviteProperty = 'getInviteProperty';
 
-	module.exports = ViewerMonitor;
+
+	module.exports = MapController;
 });

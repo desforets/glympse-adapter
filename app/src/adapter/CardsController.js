@@ -22,10 +22,11 @@ define(function(require, exports, module)
 
 		// state
 		var that = this;
-		var account = new Account(this, cfg);
 		var cardInvites;
 		var cards;
 		var cardsReady = 0;
+		var initialized = false;
+		var authToken = cfg.authToken;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -36,13 +37,14 @@ define(function(require, exports, module)
 		{
 			cards = [];
 			cardInvites = cardsInvitesToLoad;
-
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
+			initialized = true;
+
 			controller.notify(m.CardsInitStart, cardInvites);
 
-			if (account.init())
+			if (authToken)
 			{
-				accountInitComplete(true);
+				accountInitComplete();
 			}
 		};
 
@@ -53,7 +55,8 @@ define(function(require, exports, module)
 			{
 				case Account.InitComplete:
 				{
-					accountInitComplete(args.status, args);
+					authToken = args.token;
+					accountInitComplete(args);
 					break;
 				}
 
@@ -87,24 +90,32 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function accountInitComplete(status, info)
+		function accountInitComplete(args)
 		{
-			if (!status)
+			var sig = '[accountInitComplete] - ';
+
+			if (!initialized)
 			{
-				dbg('Error during Account.Init()', info);
+				dbg(sig + 'not initialized', args);
+				return;
+			}
+
+			if (!authToken)
+			{
+				dbg(sig + 'authToken unavailable', args);
 				return;
 			}
 
 			//dbg('Auth token: ' + account.getToken() + ' -- ' + (info && info.token));
-			dbg('[' + ((cfg.anon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
+			dbg(sig + '[' + ((cfg.isAnon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				var card = new Card(that, cardInvites[i], account.getToken(), cfg);
+				var card = new Card(that, cardInvites[i], authToken, cfg);
 				if (!card.init())
 				{
-					dbg('Error starting card: ' + cardInvites[i]);
+					dbg(sig + 'error starting card: ' + cardInvites[i]);
 				}
 				else
 				{
