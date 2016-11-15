@@ -140,24 +140,23 @@ define(function(require, exports, module)
 
 		this.setAvatar = function (urlOrAvatarDataArray)
 		{
-			console.log('[account] set avatar', urlOrAvatarDataArray);
-
 			if(typeof urlOrAvatarDataArray === 'string')
 			{
 				var that = this;
-				var oReq = new XMLHttpRequest();
-				oReq.open("GET", urlOrAvatarDataArray, true);
-				oReq.responseType = "arraybuffer";
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", urlOrAvatarDataArray, true);
+				xhr.responseType = "arraybuffer";
 
-				oReq.onload = function()
+				xhr.onload = function()
 				{
-					var arrayBuffer = oReq.response; // Note: not oReq.responseText
+					var arrayBuffer = xhr.response;
 					if (arrayBuffer) {
 						that.setAvatar(arrayBuffer);
 					}
 				};
 
-				oReq.onerror = function (error) {
+				xhr.onerror = function (error)
+				{
 					var result = {
 						status: false,
 						errorDetail: 'Could not load image by url',
@@ -166,8 +165,7 @@ define(function(require, exports, module)
 					controller.notify(Account.UserAvatarUpdateStatus, result);
 				};
 
-
-				oReq.send(null);
+				xhr.send(null);
 				return;
 			}
 
