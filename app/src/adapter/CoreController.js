@@ -32,21 +32,22 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
-			switch (msg)
-			{
-				case Account.InitComplete:
-				case Account.CreateStatus:
-				{
-					controller.notify(msg, args);
-					break;
-				}
-
-				default:
-				{
-					dbg('Unknown msg: "' + msg + '"', args);
-					break;
-				}
-			}
+			controller.notify(msg, args);
+			// switch (msg)
+			// {
+			// 	case Account.InitComplete:
+			// 	case Account.CreateStatus:
+			// 	{
+			// 		controller.notify(msg, args);
+			// 		break;
+			// 	}
+            //
+			// 	default:
+			// 	{
+			// 		dbg('Unknown msg: "' + msg + '"', args);
+			// 		break;
+			// 	}
+			// }
 
 			return null;
 		};
@@ -57,13 +58,25 @@ define(function(require, exports, module)
 			{
 				case CoreController.AccountCreate:
 				{
-					createAccount();
+					account.create();
 					break;
 				}
 
 				case CoreController.GenerateToken:
 				{
 					account.generateToken();
+					break;
+				}
+
+				case CoreController.SetUserName:
+				{
+					account.setName(args);
+					break;
+				}
+
+				case CoreController.SetUserAvatar:
+				{
+					account.setAvatar(args);
 					break;
 				}
 			}
@@ -74,14 +87,12 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function createAccount()
-		{
-			account.create();
-		}
 	}
 
 	CoreController.AccountCreate = 'accountCreate';
 	CoreController.GenerateToken = 'generateToken';
+	CoreController.SetUserName = 'setUserName';
+	CoreController.SetUserAvatar = 'setUserAvatar';
 
 	module.exports = CoreController;
 });

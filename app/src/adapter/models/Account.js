@@ -110,6 +110,39 @@ define(function(require, exports, module)
 			}
 		};
 
+		this.setName = function (newName)
+		{
+			console.log('[account] set name');
+
+			var apiUrl = (svr + 'users/self/update');
+
+			$.getJSON(apiUrl, { oauth_token: token, name: newName })
+				.done(processUserNameResponse)
+				.fail(processUserNameResponse);
+
+			function processUserNameResponse(data){
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+					}
+					result.response = data.response;
+				}
+				controller.notify(Account.UserNameUpdateStatus, result);
+			}
+		};
+
+		this.setAvatar = function ()
+		{
+			console.log('[account] set avatar');
+			controller.notify(Account.UserAvatarUpdateStatus);
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
@@ -261,8 +294,13 @@ define(function(require, exports, module)
 	}
 
 	// Account defines
+	// Events
 	Account.InitComplete = 'AccountInitComplete';
 	Account.CreateStatus = 'AccountCreateStatus';
+	Account.UserNameUpdateStatus = 'UserNameUpdateStatus';
+	Account.UserAvatarUpdateStatus = 'UserAvatarUpdateStatus';
+
+	// Environment
 	Account.EnvProduction = 'prod';
 	Account.EnvSandbox = 'sbox';
 

@@ -4,6 +4,7 @@ define(function(require, exports, module)
     'use strict';
 
 	var CoreController = require('glympse-adapter/adapter/CoreController');
+	var Account = require('glympse-adapter/adapter/models/Account');
 
 	var Defines =
 	{
@@ -80,7 +81,9 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			, REQUESTS_LOCAL: {
-				accountCreate: CoreController.AccountCreate
+				  accountCreate: CoreController.AccountCreate
+				, setUserName: CoreController.SetUserName
+				, setUserAvatar: CoreController.SetUserAvatar
 			}
 		}
 
@@ -90,8 +93,12 @@ define(function(require, exports, module)
 		/////////////////////////////////////////
 
 		, MSG: {
-			  AccountCreateStatus:'AccountCreateStatus'
-		    , AccountInit: 'AccountInit'
+			//Account Events
+			  AccountCreateStatus: Account.CreateStatus
+		    , AccountInit: Account.InitComplete
+			, UserNameUpdateStatus: Account.UserNameUpdateStatus
+			, UserAvatarUpdateStatus: Account.UserAvatarUpdateStatus
+
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
 			, CardInit: 'CardInit'

@@ -409,8 +409,10 @@ define(function(require, exports, module)
 				}
 
 				case Account.CreateStatus:
+				case Account.UserNameUpdateStatus:
+				case Account.UserAvatarUpdateStatus:
 				{
-					sendEvent(m.AccountCreateStatus, args);
+					sendEvent(msg, args);
 					break;
 				}
 
