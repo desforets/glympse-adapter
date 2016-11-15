@@ -411,6 +411,7 @@ define(function(require, exports, module)
 				case Account.CreateStatus:
 				case Account.UserNameUpdateStatus:
 				case Account.UserAvatarUpdateStatus:
+				case Account.UserInfo:
 				{
 					sendEvent(msg, args);
 					break;

@@ -497,10 +497,13 @@ using GA in host-mode) that are sent by the adapter (defined in the
   - `Phase`
 - `UserNameUpdateStatus`: `{ status: bool, response: userData }`:
   - `status: true` - Indicates that user data has been changed, `response` includes new user's `name`
-  - `status: false` - Error occurred, details in `error` property
+  - `status: false` - Error occurred, details in `response` property
 - `UserAvatarUpdateStatus`: `{ status: bool, response: avatarObject }`:
   - `status: true` - Indicates that user avatar has been changed, `response` includes `url` to avatar
-  - `status: false` - Error occurred, details in `error` property
+  - `status: false` - Error occurred, details in `response` property
+- `UserInfo`: `{ status: bool, response: userData }`:
+  - `status: true` - Returns user's data
+  - `status: false` - Error occurred, details in `response` property
 - `ViewerInit` / `true`: Sent when the Glympse map viewer is beginning its
   initialization process, but is not yet ready.
 - `ViewerReady` / `Glympse_viewer_instance`: Generated once the Glympse map control is
@@ -637,6 +640,7 @@ The following APIs are only available to consumers of the GA when running in
 client-mode. These are also specifed in `GlympseAdapterDefines.CORE.REQUESTS_LOCAL`:
 
 - `accountCreate()`: Creates account, sends event `AccountCreateStatus` as a result.
+- `getUserInfo()`: Gets user data, sends event `UserInfo` with the result
 - `setUserAvatar(imageUrlOrArrayBuffer: string|arraybuffer)`: Sets avatar to user, sends `UserAvatarUpdateStatus`
 - `setUserName(name: string)`: Sets name to user, sends `UserAvatarUpdateStatus`
 

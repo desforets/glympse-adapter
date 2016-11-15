@@ -79,6 +79,12 @@ define(function(require, exports, module)
 					account.setAvatar(args);
 					break;
 				}
+
+				case CoreController.GetUserInfo:
+				{
+					account.getUserInfo();
+					break;
+				}
 			}
 		};
 
@@ -91,6 +97,7 @@ define(function(require, exports, module)
 
 	CoreController.AccountCreate = 'accountCreate';
 	CoreController.GenerateToken = 'generateToken';
+	CoreController.GetUserInfo = 'getUserInfo';
 	CoreController.SetUserName = 'setUserName';
 	CoreController.SetUserAvatar = 'setUserAvatar';
 

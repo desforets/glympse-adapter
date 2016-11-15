@@ -82,6 +82,7 @@ define(function(require, exports, module)
 
 			, REQUESTS_LOCAL: {
 				  accountCreate: CoreController.AccountCreate
+				, getUserInfo: CoreController.GetUserInfo
 				, setUserName: CoreController.SetUserName
 				, setUserAvatar: CoreController.SetUserAvatar
 			}
@@ -98,6 +99,7 @@ define(function(require, exports, module)
 		    , AccountInit: Account.InitComplete
 			, UserNameUpdateStatus: Account.UserNameUpdateStatus
 			, UserAvatarUpdateStatus: Account.UserAvatarUpdateStatus
+			, UserInfo: Account.UserInfo
 
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'

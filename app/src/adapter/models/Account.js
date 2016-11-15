@@ -112,8 +112,6 @@ define(function(require, exports, module)
 
 		this.setName = function (newName)
 		{
-			console.log('[account] set name');
-
 			var apiUrl = (svr + 'users/self/update');
 
 			$.getJSON(apiUrl, { oauth_token: token, name: newName })
@@ -160,7 +158,7 @@ define(function(require, exports, module)
 					var result = {
 						status: false,
 						errorDetail: 'Could not load image by url',
-						error: error
+						response: error
 					};
 					controller.notify(Account.UserAvatarUpdateStatus, result);
 				};
@@ -197,6 +195,32 @@ define(function(require, exports, module)
 					result.response = data.response;
 				}
 				controller.notify(Account.UserAvatarUpdateStatus, result);
+			}
+		};
+
+		this.getUserInfo = function ()
+		{
+			var apiUrl = (svr + 'users/self');
+
+			$.getJSON(apiUrl, { oauth_token: token })
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+					}
+					result.response = data.response;
+				}
+				controller.notify(Account.UserInfo, result);
 			}
 		};
 
@@ -354,6 +378,7 @@ define(function(require, exports, module)
 	// Events
 	Account.InitComplete = 'AccountInitComplete';
 	Account.CreateStatus = 'AccountCreateStatus';
+	Account.UserInfo = 'UserInfo';
 	Account.UserNameUpdateStatus = 'UserNameUpdateStatus';
 	Account.UserAvatarUpdateStatus = 'UserAvatarUpdateStatus';
 
