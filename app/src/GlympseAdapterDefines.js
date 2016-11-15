@@ -50,6 +50,7 @@ define(function(require, exports, module)
 
 			REQUESTS: {
 				getCards: 'getCards'
+				, setActiveCard: 'setActiveCard'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
 				//, removeInvites: 'removeInvites'
@@ -99,10 +100,10 @@ define(function(require, exports, module)
 			, CardReady: 'CardReady'
 			, CardsInitEnd: 'CardsInitEnd'
 			, CardsInitStart: 'CardsInitStart'
-			, CardMemberInviteAdded: 'CardMemberInviteAdded'
-			, CardMemberInviteRemoved: 'CardMemberInviteRemoved'
+			, CardUpdated: 'CardUpdated'
 			, CardAdded: 'CardAdded'
 			, CardRemoved: 'CardRemoved'
+			, ActiveCardSet: 'ActiveCardSet'
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'
 			, InviteClicked: 'InviteClicked'

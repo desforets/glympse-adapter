@@ -1,7 +1,7 @@
 // App entry point
-define(function(require, exports, module)
+define(function (require, exports, module)
 {
-    'use strict';
+	'use strict';
 
 	// imports
 	var lib = require('glympse-adapter/lib/utils');
@@ -29,12 +29,13 @@ define(function(require, exports, module)
 		// state
 		var that = this;
 		var cardsController;
-		var cfgMonitor = { dbg: cfgApp.dbg, viewer: elementViewer };
+		var cfgMonitor = {dbg: cfgApp.dbg, viewer: elementViewer};
+		var activeCard;
 		var invitesCard;
 		var invitesGlympse;
-		var invitesReferences = { };
+		var invitesReferences = {};
 		var glympseLoader;
-		var mapCardInvites = { };
+		var mapCardInvites = {};
 		var cardsInitialized = false;
 		var viewerMonitor;
 		var coreController;
@@ -74,23 +75,23 @@ define(function(require, exports, module)
 		 * Set up the client portion of the adapter
 		 * @param settings Object to advertise to any connecting adapter running in host-mode. This object is updated with all of the available interfaces/end-points.
 		 */
-		this.init = function(settings)
+		this.init = function (settings)
 		{
 			var card = cfgAdapter.card;
 			var t = cfgAdapter.t;
 
-			var cfgClient = { consumers: { } };
-			var events = { };
-			var requests = { };
+			var cfgClient = {consumers: {}};
+			var events = {};
+			var requests = {};
 
 			var cleanInvites = lib.cleanInvites;
 
-			invitesCard = (card) ? cleanInvites([ card ]) : [];
+			invitesCard = (card) ? cleanInvites([card]) : [];
 			invitesGlympse = cleanInvites(splitMulti(t));
 
 			events.setUserInfo = setUserInfo;	// Dummy/test
 
-			$.extend(settings, { invitesCard: invitesCard, invitesGlympse: invitesGlympse });
+			$.extend(settings, {invitesCard: invitesCard, invitesGlympse: invitesGlympse});
 
 
 			coreController = new CoreController(this, cfgAdapter);
@@ -98,12 +99,13 @@ define(function(require, exports, module)
 			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
 
 			// API namespaced endpoints
-			var svcs = [ { id: 'MAP', targ: viewerMonitor },
-						 { id: 'CARDS', targ: cardsController},
-					     { id: 'CORE', targ: coreController}
-					   ];
+			var svcs = [
+				{id: 'MAP', targ: viewerMonitor},
+				{id: 'CARDS', targ: cardsController},
+				{id: 'CORE', targ: coreController}
+			];
 
-			var intInterfaces = { map: {}, cards: {}, core: {} };
+			var intInterfaces = {map: {}, cards: {}, core: {}};
 
 			// Local overrides
 			// FIXME: This shouldn't go here
@@ -152,7 +154,7 @@ define(function(require, exports, module)
 			var customInterfaces = cfgAdapter.interfaces;
 			if (customInterfaces)
 			{
-				requests.ext = function(data)
+				requests.ext = function (data)
 				{
 					return customInterfaces[data.id](data.args);
 				};
@@ -167,28 +169,29 @@ define(function(require, exports, module)
 				settings.ext = extInterfaces;
 			}
 
-			connectQueue.push({ id: 'Connected', val: settings });
+			connectQueue.push({id: 'Connected', val: settings});
 
 			cfgClient.consumers[Defines.PORT] = Oasis.Consumer.extend(
-			{
-				initialize: oasisInitialize,
-				events: events,		// send data/notification --> necessary?
-				requests: requests	// request data
-			});
+				{
+					initialize: oasisInitialize,
+					events: events,		// send data/notification --> necessary?
+					requests: requests	// request data
+				});
 
 			oasisLocal.connect(cfgClient);
 
 			// Notify of invite loading status
-			var initSettings = { isCard: (card != null || cardsMode)
-								, t: invitesGlympse
-								, pg: splitMulti(cfgAdapter.pg)
-								, twt: splitMulti(cfgAdapter.twt)
-								, g: splitMulti(cfgAdapter.g)
-								};
+			var initSettings = {
+				isCard: (card != null || cardsMode)
+				, t: invitesGlympse
+				, pg: splitMulti(cfgAdapter.pg)
+				, twt: splitMulti(cfgAdapter.twt)
+				, g: splitMulti(cfgAdapter.g)
+			};
 
 			progressCurrent = 0;
 			progressTotal = (invitesCard.length > 0) ? (5 + 1 * 2) :
-							((invitesGlympse.length > 0) ? 3 : 0);
+				((invitesGlympse.length > 0) ? 3 : 0);
 
 			sendEvent(m.AdapterInit, initSettings);
 			updateProgress();
@@ -198,26 +201,27 @@ define(function(require, exports, module)
 			coreController.init();
 		};
 
-		this.loadViewer = function(cfgNew, newMapElement)
+		this.loadViewer = function (cfgNew, newMapElement)
 		{
 			loadMap(cfgNew, newMapElement);
 		};
 
-		this.infoUpdate = function(id, invite, owner, t, val)
+		this.infoUpdate = function (id, invite, owner, t, val)
 		{
-			var info = { id: id
-					   , invite: invite
-					   , owner: owner
-					   , card: mapCardInvites[invite]
-					   , t: t
-					   , val: val
-					   };
+			var info = {
+				id: id
+				, invite: invite
+				, owner: owner
+				, card: mapCardInvites[invite]
+				, t: t
+				, val: val
+			};
 
 			notifyApp(mStateUpdate, info, false);
 			sendOasisMessage(mStateUpdate, info);
 		};
 
-		this.notify = function(msg, args)
+		this.notify = function (msg, args)
 		{
 			var idCard, card;
 
@@ -302,20 +306,25 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case m.CardMemberInviteAdded:
-					dbg('start share', args);
-					if (cardsInitialized) {
-						invitesGlympse.push(args);
-						controller.map.addInvites(args);
-					}
+				case m.ActiveCardSet:
+					dbg('active card set', args);
+					activeCard = args;
+					controller.map.removeInvites('*');
+					controller.map.addInvites(args.getInvites().join(';'));
+					controller.map.updateSetting({id: 'userEverInteracted', val: false});
+					controller.map.updateSetting({id: 'viewLock', val: true});
 					sendEvent(msg, args);
 					break;
 
-				case m.CardMemberInviteRemoved:
-					dbg('stop share', args);
-					if (cardsInitialized) {
-						invitesGlympse.splice(invitesGlympse.indexOf(args), 1);
-						controller.map.removeInvites(args);
+				case m.CardUpdated:
+					dbg('start share', args);
+					if (cardsInitialized && activeCard === args)
+					{
+						//TODO: only if invites list changed
+						controller.map.removeInvites('*');
+						controller.map.addInvites(args.getInvites().join(';'));
+						controller.map.updateSetting({id: 'userEverInteracted', val: false});
+						controller.map.updateSetting({id: 'viewLock', val: true});
 					}
 					sendEvent(msg, args);
 					break;
@@ -499,7 +508,7 @@ define(function(require, exports, module)
 		{
 			dbg('loadMap!');
 			// Signal the cards/invites to load
-			sendEvent(m.AdapterReady, { cards: invitesCard, glympses: invitesGlympse });
+			sendEvent(m.AdapterReady, {cards: invitesCard, glympses: invitesGlympse});
 
 			//console.log('cfg.viewer=' + cfgMonitor.viewer);
 			$.extend(cfgViewer, cfgNew);
@@ -536,7 +545,7 @@ define(function(require, exports, module)
 
 		function generateTargAction(targ, id)
 		{
-			return function(data)
+			return function (data)
 			{
 				return (targ.cmd(id, data) || true);
 			};
@@ -544,7 +553,7 @@ define(function(require, exports, module)
 
 		function generateRequestAction(targ)
 		{
-			return function(data)
+			return function (data)
 			{
 				return (targ.cmd(data.id, data.args) || true);
 			};
@@ -553,9 +562,10 @@ define(function(require, exports, module)
 		function updateProgress()
 		{
 			sendEvent(m.Progress,
-					 { curr: Math.min(++progressCurrent, progressTotal)
-					 , total: progressTotal
-					 });
+				{
+					curr: Math.min(++progressCurrent, progressTotal)
+					, total: progressTotal
+				});
 		}
 
 		function notifyApp(msg, args, evtMsg)
@@ -612,7 +622,7 @@ define(function(require, exports, module)
 			}
 			else
 			{
-				connectQueue.push({ id: id, val: val });
+				connectQueue.push({id: id, val: val});
 			}
 		}
 
@@ -644,17 +654,17 @@ define(function(require, exports, module)
 			return viewerMonitor.getCurrentValue(cfgInvite.idProperty, cfgInvite.idInvite);
 		}
 
-/*		function requestPing(str)
-		{
-			return new Oasis.RSVP.Promise(function(resolve, reject)
-			{
-				var delay = 100;
-				setTimeout(function()
-				{
-					resolve('PONG - ' + str + ' (delayed ' + delay + 'ms)');
-				}, delay);
-			});
-		}*/
+		/*		function requestPing(str)
+		 {
+		 return new Oasis.RSVP.Promise(function(resolve, reject)
+		 {
+		 var delay = 100;
+		 setTimeout(function()
+		 {
+		 resolve('PONG - ' + str + ' (delayed ' + delay + 'ms)');
+		 }, delay);
+		 });
+		 }*/
 
 
 		///////////////////////////////////////////////////////////////////////////////
