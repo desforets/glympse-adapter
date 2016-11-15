@@ -120,7 +120,8 @@ define(function(require, exports, module)
 				.done(processUserNameResponse)
 				.fail(processUserNameResponse);
 
-			function processUserNameResponse(data){
+			function processUserNameResponse(data)
+			{
 				var result = {
 					status: false,
 					response: data
@@ -137,10 +138,68 @@ define(function(require, exports, module)
 			}
 		};
 
-		this.setAvatar = function ()
+		this.setAvatar = function (urlOrAvatarDataArray)
 		{
-			console.log('[account] set avatar');
-			controller.notify(Account.UserAvatarUpdateStatus);
+			console.log('[account] set avatar', urlOrAvatarDataArray);
+
+			if(typeof urlOrAvatarDataArray === 'string')
+			{
+				var that = this;
+				var oReq = new XMLHttpRequest();
+				oReq.open("GET", urlOrAvatarDataArray, true);
+				oReq.responseType = "arraybuffer";
+
+				oReq.onload = function()
+				{
+					var arrayBuffer = oReq.response; // Note: not oReq.responseText
+					if (arrayBuffer) {
+						that.setAvatar(arrayBuffer);
+					}
+				};
+
+				oReq.onerror = function (error) {
+					var result = {
+						status: false,
+						errorDetail: 'Could not load image by url',
+						error: error
+					};
+					controller.notify(Account.UserAvatarUpdateStatus, result);
+				};
+
+
+				oReq.send(null);
+				return;
+			}
+
+			//ToDo: need to resize image using utility helper (ENG-11495)
+
+			var apiUrl = (svr + 'users/self/upload_avatar?oauth_token=' + token);
+			$.ajax({
+				url: apiUrl,
+				type: 'POST',
+				contentType: 'image/png',
+				data: new Uint8Array(urlOrAvatarDataArray),
+				processData: false
+			})
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+					}
+					result.response = data.response;
+				}
+				controller.notify(Account.UserAvatarUpdateStatus, result);
+			}
 		};
 
 
