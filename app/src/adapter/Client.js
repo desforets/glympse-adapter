@@ -310,7 +310,10 @@ define(function (require, exports, module)
 					dbg('active card set', args);
 					activeCard = args;
 					controller.map.removeInvites('*');
-					controller.map.addInvites(args.getInvites().join(';'));
+					if (args.getInvites().length)
+					{
+						controller.map.addInvites(args.getInvites().join(';'));
+					}
 					controller.map.updateSetting({id: 'userEverInteracted', val: false});
 					controller.map.updateSetting({id: 'viewLock', val: true});
 					sendEvent(msg, args);
@@ -318,11 +321,16 @@ define(function (require, exports, module)
 
 				case m.CardUpdated:
 					dbg('start share', args);
-					if (cardsInitialized && activeCard === args)
+					if (cardsInitialized && activeCard === args.card)
 					{
-						//TODO: only if invites list changed
-						controller.map.removeInvites('*');
-						controller.map.addInvites(args.getInvites().join(';'));
+						switch (args.action) {
+							case 'invite_added':
+								controller.map.addInvites(args.invite);
+								break;
+							case 'invite_removed':
+								controller.map.removeInvites(args.invite);
+								break;
+						}
 						controller.map.updateSetting({id: 'userEverInteracted', val: false});
 						controller.map.updateSetting({id: 'viewLock', val: true});
 					}

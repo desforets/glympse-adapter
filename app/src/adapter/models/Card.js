@@ -14,7 +14,8 @@ define(function (require, exports, module)
 		// state
 		var data;
 		var loaded = false;
-		var members;
+		var members = [];
+		var membersIndex = {};
 		var currentlySharing = [];
 		var that = this;
 
@@ -64,7 +65,6 @@ define(function (require, exports, module)
 			return data;
 		};
 
-		//TODO: merge members & send CardUpdated event
 		this.setData = function (val)
 		{
 			loaded = true;
@@ -72,14 +72,28 @@ define(function (require, exports, module)
 			data = val;
 			lib.mapProps(this, props, data);
 
-			var mems = data.members;
-			var member, invite;
+			var mems = data.members || [];
+			var mem, member, invite;
+			var allMembersIds = [];
 			var allShares = [];
-			members = [];
-			for (var i = 0, len = ((mems && mems.length) || 0); i < len; i++)
+			for (var i = 0, len = mems.length; i < len; i++)
 			{
-				member = new Member(mems[i], cfg);
-				members.push(member);
+				mem = mems[i];
+				allMembersIds.push(mem.id);
+				if (membersIndex[mem.id]) {
+					member = membersIndex[mem.id];
+				} else {
+					member = new Member(mem, cfg);
+					membersIndex[mem.id] = member;
+					members.push(member);
+
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'member_added',
+						member: member
+					});
+				}
+
 				invite = member.getTicket().getInviteCode();
 				//console.log('  [' + j + ']: ' + invite);
 				if (invite)
@@ -88,8 +102,12 @@ define(function (require, exports, module)
 					if (currentlySharing.indexOf(invite) === -1)
 					{
 						currentlySharing.push(invite);
-						//TODO: fill data on what happened, e.g. invite added/removed
-						controller.notify(m.CardUpdated, that);
+
+						controller.notify(m.CardUpdated, {
+							card: that,
+							action: 'invite_added',
+							invite: invite
+						});
 					}
 				}
 			}
@@ -99,8 +117,25 @@ define(function (require, exports, module)
 				if (allShares.indexOf(invite) === -1)
 				{
 					currentlySharing.splice(i, 1);
-					//TODO: fill data on what happened, e.g. invite added/removed
-					controller.notify(m.CardUpdated, that);
+
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'invite_removed',
+						invite: invite
+					});
+				}
+			}
+			for (i = 0, len = members; i < len; i++) {
+				member = members[i];
+				if (allMembersIds.indexOf(member.getId()) === -1) {
+					members.splice(i, 1);
+					delete membersIndex[member.getId()];
+
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'member_removed',
+						member: member
+					});
 				}
 			}
 
