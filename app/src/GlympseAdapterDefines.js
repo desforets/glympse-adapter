@@ -49,7 +49,7 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			REQUESTS: {
-				getCards: 'getCards'
+				requestCards: 'requestCards'
 				, setActiveCard: 'setActiveCard'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
@@ -64,6 +64,7 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			, REQUESTS_LOCAL: {
+				getCards: 'getCards'
 			}
 		}
 

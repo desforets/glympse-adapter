@@ -110,7 +110,7 @@ define(function (require, exports, module)
 			var fn = this[cmd];
 			if (fn)
 			{
-				fn.call(this, args);
+				return fn.call(this, args);
 			}
 			else
 			{
@@ -118,8 +118,22 @@ define(function (require, exports, module)
 			}
 		};
 
-		this.getCards = getCards;
+		/**
+		 * force to get cards for the current user now
+		 */
+		this.requestCards = requestCards;
 
+		/**
+		 * Returns currently loaded cards
+		 */
+		this.getCards = function () {
+			return cards;
+		};
+
+		/**
+		 * Set active card (which is currently displayed on map)
+		 * @param idCard
+		 */
 		this.setActiveCard = function (idCard)
 		{
 			if (activeCardId !== idCard)
@@ -166,8 +180,8 @@ define(function (require, exports, module)
 
 			if (cardsMode)
 			{
-				getCards();
-				setInterval(getCards, pollInterval);
+				requestCards();
+				setInterval(requestCards, pollInterval);
 			}
 		}
 
@@ -187,7 +201,7 @@ define(function (require, exports, module)
 		// Cards API
 		//////////////////////
 
-		function getCards()
+		function requestCards()
 		{
 			$.ajax(
 				{
