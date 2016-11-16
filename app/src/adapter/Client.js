@@ -331,7 +331,7 @@ define(function(require, exports, module)
 						var inviteError = args.getError();
 						dbg('Invite error state', inviteError);
 
-						// Refetch a new token on token errors. Account.InitComplete should
+						// Refetch a new token on token errors. m.AccountInit should
 						// properly push the new token to controllers so they can continue.
 						if (inviteError && inviteError.error === 'oauth_token')
 						{
@@ -395,14 +395,14 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case Account.InitComplete:
+				case m.AccountInit:
 				{
 					if (args.status)
 					{
 						authToken = args.token;
 						cfgAdapter.authToken = authToken;
 						cfgViewer.authToken = authToken;
-						//dbg('Account.InitComplete', args);
+						//dbg('m.AccountInit', args);
 
 						if (glympseLoader)
 						{
@@ -426,10 +426,10 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case Account.CreateStatus:
-				case Account.UserNameUpdateStatus:
-				case Account.UserAvatarUpdateStatus:
-				case Account.UserInfoStatus:
+				case m.AccountCreateStatus:
+				case m.UserNameUpdateStatus:
+				case m.UserAvatarUpdateStatus:
+				case m.UserInfoStatus:
 				{
 					sendEvent(msg, args);
 					break;

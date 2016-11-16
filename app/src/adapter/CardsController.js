@@ -7,6 +7,8 @@ define(function(require, exports, module)
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 
 	var m = Defines.MSG;
+	var r = Defines.CARDS.REQUESTS;
+	var rl = Defines.CARDS.REQUESTS_LOCAL;
 
 	// Cards-specific
 	var Account = require('glympse-adapter/adapter/models/Account');
@@ -58,7 +60,7 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
-				case Account.InitComplete:
+				case m.AccountInit:
 				{
 					authToken = args.token;
 					accountInitComplete(args);
@@ -111,12 +113,12 @@ define(function(require, exports, module)
 				/**
 				 * Force to request cards for the current user now.
 				 */
-				case Defines.CARDS.REQUESTS.requestCards:
+				case r.requestCards:
 					return requestCards();
 				/**
 				 * Returns currently loaded cards
 				 */
-				case Defines.CARDS.REQUESTS_LOCAL.getCards:
+				case rl.getCards:
 					return cards;
 				default:
 					dbg('method not found', cmd);
