@@ -36,6 +36,9 @@ define(function(require, exports, module)
 			{
 				case Account.InitComplete:
 				case Account.CreateStatus:
+				case Account.UserNameUpdateStatus:
+				case Account.UserAvatarUpdateStatus:
+				case Account.UserInfoStatus:
 				{
 					controller.notify(msg, args);
 					break;
@@ -57,13 +60,31 @@ define(function(require, exports, module)
 			{
 				case CoreController.AccountCreate:
 				{
-					createAccount();
+					account.create();
 					break;
 				}
 
 				case CoreController.GenerateToken:
 				{
 					account.generateToken();
+					break;
+				}
+
+				case CoreController.SetUserName:
+				{
+					account.setName(args);
+					break;
+				}
+
+				case CoreController.SetUserAvatar:
+				{
+					account.setAvatar(args);
+					break;
+				}
+
+				case CoreController.GetUserInfo:
+				{
+					account.getUserInfo(args);
 					break;
 				}
 			}
@@ -74,14 +95,13 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function createAccount()
-		{
-			account.create();
-		}
 	}
 
 	CoreController.AccountCreate = 'accountCreate';
 	CoreController.GenerateToken = 'generateToken';
+	CoreController.GetUserInfo = 'getUserInfo';
+	CoreController.SetUserName = 'setUserName';
+	CoreController.SetUserAvatar = 'setUserAvatar';
 
 	module.exports = CoreController;
 });
