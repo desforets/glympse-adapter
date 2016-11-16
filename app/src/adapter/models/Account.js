@@ -110,7 +110,7 @@ define(function(require, exports, module)
 			}
 		};
 
-		this.setName = function (newName)
+		this.setName = function(newName)
 		{
 			var apiUrl = (svr + 'users/self/update');
 
@@ -136,14 +136,14 @@ define(function(require, exports, module)
 			}
 		};
 
-		this.setAvatar = function (urlOrAvatarDataArray)
+		this.setAvatar = function(urlOrAvatarDataArray)
 		{
-			if(typeof urlOrAvatarDataArray === 'string')
+			if (typeof urlOrAvatarDataArray === 'string')
 			{
 				var that = this;
 				var xhr = new XMLHttpRequest();
-				xhr.open("GET", urlOrAvatarDataArray, true);
-				xhr.responseType = "arraybuffer";
+				xhr.open('GET', urlOrAvatarDataArray, true);
+				xhr.responseType = 'arraybuffer';
 
 				xhr.onload = function()
 				{
@@ -153,7 +153,7 @@ define(function(require, exports, module)
 					}
 				};
 
-				xhr.onerror = function (error)
+				xhr.onerror = function(error)
 				{
 					var result = {
 						status: false,
@@ -198,9 +198,9 @@ define(function(require, exports, module)
 			}
 		};
 
-		this.getUserInfo = function ()
+		this.getUserInfo = function(userId)
 		{
-			var apiUrl = (svr + 'users/self');
+			var apiUrl = svr + 'users/' + (userId || 'self');
 
 			$.getJSON(apiUrl, { oauth_token: token })
 				.done(processResponse)
@@ -220,7 +220,7 @@ define(function(require, exports, module)
 					}
 					result.response = data.response;
 				}
-				controller.notify(Account.UserInfo, result);
+				controller.notify(Account.UserInfoStatus, result);
 			}
 		};
 
@@ -378,7 +378,7 @@ define(function(require, exports, module)
 	// Events
 	Account.InitComplete = 'AccountInitComplete';
 	Account.CreateStatus = 'AccountCreateStatus';
-	Account.UserInfo = 'UserInfo';
+	Account.UserInfoStatus = 'UserInfoStatus';
 	Account.UserNameUpdateStatus = 'UserNameUpdateStatus';
 	Account.UserAvatarUpdateStatus = 'UserAvatarUpdateStatus';
 

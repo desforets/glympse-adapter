@@ -99,7 +99,7 @@ define(function(require, exports, module)
 		    , AccountInit: Account.InitComplete
 			, UserNameUpdateStatus: Account.UserNameUpdateStatus
 			, UserAvatarUpdateStatus: Account.UserAvatarUpdateStatus
-			, UserInfo: Account.UserInfo
+			, UserInfoStatus: Account.UserInfoStatus
 
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'

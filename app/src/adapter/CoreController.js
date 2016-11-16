@@ -82,7 +82,7 @@ define(function(require, exports, module)
 
 				case CoreController.GetUserInfo:
 				{
-					account.getUserInfo();
+					account.getUserInfo(args);
 					break;
 				}
 			}
