@@ -1,4 +1,4 @@
-define(function (require, exports, module)
+define(function(require, exports, module)
 {
 	'use strict';
 
@@ -40,32 +40,32 @@ define(function (require, exports, module)
 
 		// NOTE: some properties created via lib.mapProps
 
-		this.getMembers = function ()
+		this.getMembers = function()
 		{
 			return members;
 		};
 
-		this.getMetaData = function ()
+		this.getMetaData = function()
 		{
 			return data.metadata;
 		};
 
-		this.isLoaded = function ()
+		this.isLoaded = function()
 		{
 			return loaded;
 		};
 
-		this.getIdCard = function ()
+		this.getIdCard = function()
 		{
 			return idCard;
 		};
 
-		this.getData = function ()
+		this.getData = function()
 		{
 			return data;
 		};
 
-		this.setData = function (val)
+		this.setData = function(val)
 		{
 			loaded = true;
 
@@ -80,9 +80,12 @@ define(function (require, exports, module)
 			{
 				mem = mems[i];
 				allMembersIds.push(mem.id);
-				if (membersIndex[mem.id]) {
+				if (membersIndex[mem.id])
+				{
 					member = membersIndex[mem.id];
-				} else {
+				}
+				else
+				{
 					member = new Member(mem, cfg);
 					membersIndex[mem.id] = member;
 					members.push(member);
@@ -125,9 +128,11 @@ define(function (require, exports, module)
 					});
 				}
 			}
-			for (i = 0, len = members; i < len; i++) {
+			for (i = 0, len = members; i < len; i++)
+			{
 				member = members[i];
-				if (allMembersIds.indexOf(member.getId()) === -1) {
+				if (allMembersIds.indexOf(member.getId()) === -1)
+				{
 					members.splice(i, 1);
 					delete membersIndex[member.getId()];
 
@@ -142,7 +147,8 @@ define(function (require, exports, module)
 			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
 		};
 
-		this.getInvites = function () {
+		this.getInvites = function()
+		{
 			return currentlySharing;
 		};
 
@@ -152,7 +158,7 @@ define(function (require, exports, module)
 		///////////////////////////////////////////////////////////////////////////////
 
 
-		this.toJSON = function ()
+		this.toJSON = function()
 		{
 			return data;
 		};

@@ -1,4 +1,4 @@
-define(function (require, exports, module)
+define(function(require, exports, module)
 {
 	'use strict';
 
@@ -18,13 +18,12 @@ define(function (require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('CardsController', cfg.dbg);
-		var svr = (cfg.svcCards || '//api.cards.sandbox.glympse.com/api/v1/');
+		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
 		var pollInterval = cfg.pollCards || 60000;
 		var cardsMode = cfg.cardsMode;
 
 		// state
 		var that = this;
-		var activeCardId;
 		var cardInvites;
 		var cards;
 		var cardsIndex;
@@ -37,7 +36,7 @@ define(function (require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.init = function (cardsInvitesToLoad)
+		this.init = function(cardsInvitesToLoad)
 		{
 			cards = [];
 			cardsIndex = {};
@@ -55,7 +54,7 @@ define(function (require, exports, module)
 		};
 
 
-		this.notify = function (msg, args)
+		this.notify = function(msg, args)
 		{
 			switch (msg)
 			{
@@ -105,41 +104,22 @@ define(function (require, exports, module)
 			return null;
 		};
 
-		this.cmd = function (cmd, args)
+		this.cmd = function(cmd, args)
 		{
-			var fn = this[cmd];
-			if (fn)
+			switch (cmd)
 			{
-				return fn.call(this, args);
-			}
-			else
-			{
-				dbg('method not found', cmd);
-			}
-		};
-
-		/**
-		 * force to get cards for the current user now
-		 */
-		this.requestCards = requestCards;
-
-		/**
-		 * Returns currently loaded cards
-		 */
-		this.getCards = function () {
-			return cards;
-		};
-
-		/**
-		 * Set active card (which is currently displayed on map)
-		 * @param idCard
-		 */
-		this.setActiveCard = function (idCard)
-		{
-			if (activeCardId !== idCard)
-			{
-				activeCardId = idCard;
-				controller.notify(m.ActiveCardSet, cardsIndex[idCard]);
+				/**
+				 * Force to request cards for the current user now.
+				 */
+				case Defines.CARDS.REQUESTS.requestCards:
+					return requestCards();
+				/**
+				 * Returns currently loaded cards
+				 */
+				case Defines.CARDS.REQUESTS_LOCAL.getCards:
+					return cards;
+				default:
+					dbg('method not found', cmd);
 			}
 		};
 
@@ -207,18 +187,18 @@ define(function (require, exports, module)
 				{
 					type: 'GET',
 					dataType: 'JSON',
-					beforeSend: function (request)
+					beforeSend: function(request)
 					{
 						request.setRequestHeader('Authorization', 'Bearer ' + authToken);
 					},
 					url: svr + 'cards',
 					processData: true
 				})
-				.done(function (data)
+				.done(function(data)
 				{
 					processCardsData(data);
 				})
-				.fail(function ()
+				.fail(function()
 				{
 					processCardsData();
 				});
@@ -276,7 +256,7 @@ define(function (require, exports, module)
 				{
 					type: 'GET',
 					dataType: 'JSON',
-					beforeSend: function (request)
+					beforeSend: function(request)
 					{
 						request.setRequestHeader('Authorization', 'Bearer ' + authToken);
 					},
@@ -284,11 +264,11 @@ define(function (require, exports, module)
 					data: {members: true},
 					processData: true
 				})
-				.done(function (data)
+				.done(function(data)
 				{
 					processCardData(card, data);
 				})
-				.fail(function ()
+				.fail(function()
 				{
 					processCardData(card, null);
 				});

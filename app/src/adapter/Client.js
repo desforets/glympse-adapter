@@ -1,5 +1,5 @@
 // App entry point
-define(function (require, exports, module)
+define(function(require, exports, module)
 {
 	'use strict';
 
@@ -30,7 +30,6 @@ define(function (require, exports, module)
 		var that = this;
 		var cardsController;
 		var cfgMonitor = {dbg: cfgApp.dbg, viewer: elementViewer};
-		var activeCard;
 		var invitesCard;
 		var invitesGlympse;
 		var invitesReferences = {};
@@ -75,7 +74,7 @@ define(function (require, exports, module)
 		 * Set up the client portion of the adapter
 		 * @param settings Object to advertise to any connecting adapter running in host-mode. This object is updated with all of the available interfaces/end-points.
 		 */
-		this.init = function (settings)
+		this.init = function(settings)
 		{
 			var card = cfgAdapter.card;
 			var t = cfgAdapter.t;
@@ -154,7 +153,7 @@ define(function (require, exports, module)
 			var customInterfaces = cfgAdapter.interfaces;
 			if (customInterfaces)
 			{
-				requests.ext = function (data)
+				requests.ext = function(data)
 				{
 					return customInterfaces[data.id](data.args);
 				};
@@ -201,12 +200,12 @@ define(function (require, exports, module)
 			coreController.init();
 		};
 
-		this.loadViewer = function (cfgNew, newMapElement)
+		this.loadViewer = function(cfgNew, newMapElement)
 		{
 			loadMap(cfgNew, newMapElement);
 		};
 
-		this.infoUpdate = function (id, invite, owner, t, val)
+		this.infoUpdate = function(id, invite, owner, t, val)
 		{
 			var info = {
 				id: id
@@ -221,7 +220,7 @@ define(function (require, exports, module)
 			sendOasisMessage(mStateUpdate, info);
 		};
 
-		this.notify = function (msg, args)
+		this.notify = function(msg, args)
 		{
 			var idCard, card;
 
@@ -306,34 +305,8 @@ define(function (require, exports, module)
 					break;
 				}
 
-				case m.ActiveCardSet:
-					dbg('active card set', args);
-					activeCard = args;
-					controller.map.removeInvites('*');
-					if (args.getInvites().length)
-					{
-						controller.map.addInvites(args.getInvites().join(';'));
-					}
-					controller.map.updateSetting({id: 'userEverInteracted', val: false});
-					controller.map.updateSetting({id: 'viewLock', val: true});
-					sendEvent(msg, args);
-					break;
-
 				case m.CardUpdated:
-					dbg('start share', args);
-					if (cardsInitialized && activeCard === args.card)
-					{
-						switch (args.action) {
-							case 'invite_added':
-								controller.map.addInvites(args.invite);
-								break;
-							case 'invite_removed':
-								controller.map.removeInvites(args.invite);
-								break;
-						}
-						controller.map.updateSetting({id: 'userEverInteracted', val: false});
-						controller.map.updateSetting({id: 'viewLock', val: true});
-					}
+					// dbg('card updated', args);
 					sendEvent(msg, args);
 					break;
 
@@ -553,7 +526,7 @@ define(function (require, exports, module)
 
 		function generateTargAction(targ, id)
 		{
-			return function (data)
+			return function(data)
 			{
 				return (targ.cmd(id, data) || true);
 			};
@@ -561,7 +534,7 @@ define(function (require, exports, module)
 
 		function generateRequestAction(targ)
 		{
-			return function (data)
+			return function(data)
 			{
 				return (targ.cmd(data.id, data.args) || true);
 			};
