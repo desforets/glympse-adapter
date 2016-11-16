@@ -12,7 +12,10 @@ define(function(require, exports, module)
 	var cSvcUserName = 'username';
 	var cSvcError = 'error';
 	var cSvcErrorDetail = 'error_detail';
+	var cAccountInfo = 'accountInfo';
 
+	var anonymousUserName = 'viewer';
+	var anonymousPassword = 'password';
 
 	// Exported class
 	function Account(controller, cfg)
@@ -32,13 +35,13 @@ define(function(require, exports, module)
 		// state
 		var attempts = 0;
 		var isAnon = !cfg.apiKey;
-		var settings;
 		var token;
 
-		account[cApiKey] = apiKey;
-		account[cSvcPassword] = 'password';
-		account[cSvcUserName] = 'viewer';
+		var settings;
+		var currentEnvKeys;
+		var currentKeySettings;
 
+		account[cApiKey] = apiKey;
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PROPERTIES
@@ -56,13 +59,15 @@ define(function(require, exports, module)
 
 		this.init = function()
 		{
-			settings = lib.getCfgVal(idEnvironment) || {};
+			settings = lib.getCfgVal(cAccountInfo) || {};
+
+			currentEnvKeys = settings[idEnvironment] || {};
+			currentKeySettings = currentEnvKeys[apiKey] || {};
 
 			//dbg('isAnon = ' + isAnon + ', settings', settings);
 			cfg.isAnon = isAnon;
 
-
-			token = settings[cAcctTokenName];
+			token = currentKeySettings[cAcctTokenName];
 			if (token)
 			{
 				controller.notify(Account.InitComplete, { status: true, token: token });
@@ -72,8 +77,8 @@ define(function(require, exports, module)
 			// If not anonymous, add saved username/password to token request
 			if (!isAnon)
 			{
-				var u = settings[cUserName];
-				var p = settings[cPassword];
+				var u = currentKeySettings[cUserName];
+				var p = currentKeySettings[cPassword];
 
 				if (!u || !p)
 				{
@@ -83,6 +88,11 @@ define(function(require, exports, module)
 
 				account[cSvcUserName] = u;
 				account[cSvcPassword] = p;
+			}
+			else
+			{
+				account[cSvcUserName] = anonymousUserName;
+				account[cSvcPassword] = anonymousPassword;
 			}
 
 			attempts = 0;
@@ -231,7 +241,9 @@ define(function(require, exports, module)
 
 		function saveSettings()
 		{
-			lib.setCfgVal(idEnvironment, settings);
+			currentEnvKeys[apiKey] = currentKeySettings;
+			settings[idEnvironment] = currentEnvKeys;
+			lib.setCfgVal(cAccountInfo, settings);
 		}
 
 		function getNewToken()
@@ -255,7 +267,7 @@ define(function(require, exports, module)
 					{
 						token = data.response.access_token;
 
-						settings[cAcctTokenName] = token;
+						currentKeySettings[cAcctTokenName] = token;
 						saveSettings();
 
 						//dbg('>> new token: ' + token);
@@ -332,8 +344,8 @@ define(function(require, exports, module)
 					account[cSvcUserName] = id;
 					account[cSvcPassword] = pw;
 
-					settings[cUserName] = id;
-					settings[cPassword] = pw;
+					currentKeySettings[cUserName] = id;
+					currentKeySettings[cPassword] = pw;
 					saveSettings();
 					//dbg('>> new account: ' + id + ' / ' + pw);
 
