@@ -5,8 +5,6 @@ define(function(require, exports, module)
 	var lib = require('glympse-adapter/lib/utils');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var m = Defines.MSG;
-	//var s = Defines.STATE;
-	//var r = Defines.REQUESTS;
 
 	// Glympse-specific
 	var Account = require('glympse-adapter/adapter/models/Account');
@@ -48,7 +46,7 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
-				case Account.InitComplete:
+				case m.AccountInit:
 				{
 					authToken = args.token;
 					accountInitComplete(authToken, args);

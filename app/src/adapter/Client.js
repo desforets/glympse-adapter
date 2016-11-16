@@ -1,7 +1,7 @@
 // App entry point
 define(function(require, exports, module)
 {
-    'use strict';
+	'use strict';
 
 	// imports
 	var lib = require('glympse-adapter/lib/utils');
@@ -29,12 +29,13 @@ define(function(require, exports, module)
 		// state
 		var that = this;
 		var cardsController;
-		var cfgMonitor = { dbg: cfgApp.dbg, viewer: elementViewer };
+		var cfgMonitor = {dbg: cfgApp.dbg, viewer: elementViewer};
 		var invitesCard;
 		var invitesGlympse;
-		var invitesReferences = { };
+		var invitesReferences = {};
 		var glympseLoader;
-		var mapCardInvites = { };
+		var mapCardInvites = {};
+		var cardsInitialized = false;
 		var viewerMonitor;
 		var coreController;
 		var authToken;
@@ -45,6 +46,7 @@ define(function(require, exports, module)
 		var connectedOasis = false;
 		var connectQueue = [];
 		var port;
+		var cardsMode = cfgAdapter.cardsMode;
 
 		var initialized = false;
 
@@ -77,18 +79,18 @@ define(function(require, exports, module)
 			var card = cfgAdapter.card;
 			var t = cfgAdapter.t;
 
-			var cfgClient = { consumers: { } };
-			var events = { };
-			var requests = { };
+			var cfgClient = {consumers: {}};
+			var events = {};
+			var requests = {};
 
 			var cleanInvites = lib.cleanInvites;
 
-			invitesCard = (card) ? cleanInvites([ card ]) : [];
+			invitesCard = (card) ? cleanInvites([card]) : [];
 			invitesGlympse = cleanInvites(splitMulti(t));
 
 			events.setUserInfo = setUserInfo;	// Dummy/test
 
-			$.extend(settings, { invitesCard: invitesCard, invitesGlympse: invitesGlympse });
+			$.extend(settings, {invitesCard: invitesCard, invitesGlympse: invitesGlympse});
 
 
 			coreController = new CoreController(this, cfgAdapter);
@@ -96,12 +98,13 @@ define(function(require, exports, module)
 			viewerMonitor = new ViewerMonitor(this, cfgMonitor);
 
 			// API namespaced endpoints
-			var svcs = [ { id: 'MAP', targ: viewerMonitor },
-						 { id: 'CARDS', targ: cardsController},
-					     { id: 'CORE', targ: coreController}
-					   ];
+			var svcs = [
+				{id: 'MAP', targ: viewerMonitor},
+				{id: 'CARDS', targ: cardsController},
+				{id: 'CORE', targ: coreController}
+			];
 
-			var intInterfaces = { map: {}, cards: {}, core: {} };
+			var intInterfaces = {map: {}, cards: {}, core: {}};
 
 			// Local overrides
 			// FIXME: This shouldn't go here
@@ -165,28 +168,29 @@ define(function(require, exports, module)
 				settings.ext = extInterfaces;
 			}
 
-			connectQueue.push({ id: 'Connected', val: settings });
+			connectQueue.push({id: 'Connected', val: settings});
 
 			cfgClient.consumers[Defines.PORT] = Oasis.Consumer.extend(
-			{
-				initialize: oasisInitialize,
-				events: events,		// send data/notification --> necessary?
-				requests: requests	// request data
-			});
+				{
+					initialize: oasisInitialize,
+					events: events,		// send data/notification --> necessary?
+					requests: requests	// request data
+				});
 
 			oasisLocal.connect(cfgClient);
 
 			// Notify of invite loading status
-			var initSettings = { isCard: (card != null)
-								, t: invitesGlympse
-								, pg: splitMulti(cfgAdapter.pg)
-								, twt: splitMulti(cfgAdapter.twt)
-								, g: splitMulti(cfgAdapter.g)
-								};
+			var initSettings = {
+				isCard: (card != null || cardsMode)
+				, t: invitesGlympse
+				, pg: splitMulti(cfgAdapter.pg)
+				, twt: splitMulti(cfgAdapter.twt)
+				, g: splitMulti(cfgAdapter.g)
+			};
 
 			progressCurrent = 0;
 			progressTotal = (invitesCard.length > 0) ? (5 + 1 * 2) :
-							((invitesGlympse.length > 0) ? 3 : 0);
+				((invitesGlympse.length > 0) ? 3 : 0);
 
 			sendEvent(m.AdapterInit, initSettings);
 			updateProgress();
@@ -203,13 +207,14 @@ define(function(require, exports, module)
 
 		this.infoUpdate = function(id, invite, owner, t, val)
 		{
-			var info = { id: id
-					   , invite: invite
-					   , owner: owner
-					   , card: mapCardInvites[invite]
-					   , t: t
-					   , val: val
-					   };
+			var info = {
+				id: id
+				, invite: invite
+				, owner: owner
+				, card: mapCardInvites[invite]
+				, t: t
+				, val: val
+			};
 
 			notifyApp(mStateUpdate, info, false);
 			sendOasisMessage(mStateUpdate, info);
@@ -217,7 +222,7 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
-			var idCard;
+			var idCard, card;
 
 			switch (msg)
 			{
@@ -246,10 +251,11 @@ define(function(require, exports, module)
 				{
 					sendEvent(msg, args);
 					invitesGlympse = [];
+					cardsInitialized = true;
 
 					for (var i = 0, cards = args, len = cards.length; i < len; i++)
 					{
-						var card = cards[i];
+						card = cards[i];
 						idCard = card.getIdCard();
 
 						if (!card.isLoaded())
@@ -288,7 +294,6 @@ define(function(require, exports, module)
 					}
 
 					//dbg('Card map', mapCardInvites);
-
 					// Real cards/invites to be loaded
 					if (invitesGlympse.length > 0)
 					{
@@ -299,6 +304,11 @@ define(function(require, exports, module)
 
 					break;
 				}
+
+				case m.CardUpdated:
+					// dbg('card updated', args);
+					sendEvent(msg, args);
+					break;
 
 				case m.InviteError:
 				{
@@ -321,7 +331,7 @@ define(function(require, exports, module)
 						var inviteError = args.getError();
 						dbg('Invite error state', inviteError);
 
-						// Refetch a new token on token errors. Account.InitComplete should
+						// Refetch a new token on token errors. m.AccountInit should
 						// properly push the new token to controllers so they can continue.
 						if (inviteError && inviteError.error === 'oauth_token')
 						{
@@ -349,9 +359,9 @@ define(function(require, exports, module)
 
 							progressTotal += (5 + 1 * 2) - 2;
 							invitesCard.push(idCard);
-							sendEvent(m.AdapterInit, { isCard: true });
+							//sendEvent(m.AdapterInit, { isCard: true });
 							updateProgress();
-							cardsController.init(invitesCard);
+							//cardsController.init(invitesCard);
 						}
 					}
 					else
@@ -367,6 +377,14 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case m.CardAdded:
+				case m.CardRemoved:
+				{
+					sendEvent(msg, args);
+					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
+					break;
+				}
+
 				case m.DataUpdate:
 				case m.InviteAdded:
 				case m.InviteRemoved:
@@ -377,14 +395,14 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case Account.InitComplete:
+				case m.AccountInit:
 				{
 					if (args.status)
 					{
 						authToken = args.token;
 						cfgAdapter.authToken = authToken;
 						cfgViewer.authToken = authToken;
-						//dbg('Account.InitComplete', args);
+						//dbg('m.AccountInit', args);
 
 						if (glympseLoader)
 						{
@@ -408,10 +426,10 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case Account.CreateStatus:
-				case Account.UserNameUpdateStatus:
-				case Account.UserAvatarUpdateStatus:
-				case Account.UserInfoStatus:
+				case m.AccountCreateStatus:
+				case m.UserNameUpdateStatus:
+				case m.UserAvatarUpdateStatus:
+				case m.UserInfoStatus:
 				{
 					sendEvent(msg, args);
 					break;
@@ -441,7 +459,7 @@ define(function(require, exports, module)
 			var g = cfgAdapter.g;		// Twitter topic (#) query
 
 			// Card vs Glympse Invite loading
-			if (invitesCard.length > 0)
+			if (invitesCard.length > 0 || cardsMode)
 			{
 				cardsController.init(invitesCard);
 				return;
@@ -474,7 +492,7 @@ define(function(require, exports, module)
 		{
 			dbg('loadMap!');
 			// Signal the cards/invites to load
-			sendEvent(m.AdapterReady, { cards: invitesCard, glympses: invitesGlympse });
+			sendEvent(m.AdapterReady, {cards: invitesCard, glympses: invitesGlympse});
 
 			//console.log('cfg.viewer=' + cfgMonitor.viewer);
 			$.extend(cfgViewer, cfgNew);
@@ -486,6 +504,9 @@ define(function(require, exports, module)
 
 			if (cfgMonitor.viewer)
 			{
+				//FixMe: viewer can't be initialized w/o invite, so pass incorrect one for now
+				cfgViewer.t = cfgViewer.t || 'incorrect';
+
 				viewerMonitor.run();
 				$(cfgMonitor.viewer).glympser(cfgViewer);
 			}
@@ -525,9 +546,10 @@ define(function(require, exports, module)
 		function updateProgress()
 		{
 			sendEvent(m.Progress,
-					 { curr: Math.min(++progressCurrent, progressTotal)
-					 , total: progressTotal
-					 });
+				{
+					curr: Math.min(++progressCurrent, progressTotal)
+					, total: progressTotal
+				});
 		}
 
 		function notifyApp(msg, args, evtMsg)
@@ -584,7 +606,7 @@ define(function(require, exports, module)
 			}
 			else
 			{
-				connectQueue.push({ id: id, val: val });
+				connectQueue.push({id: id, val: val});
 			}
 		}
 
@@ -616,17 +638,17 @@ define(function(require, exports, module)
 			return viewerMonitor.getCurrentValue(cfgInvite.idProperty, cfgInvite.idInvite);
 		}
 
-/*		function requestPing(str)
-		{
-			return new Oasis.RSVP.Promise(function(resolve, reject)
-			{
-				var delay = 100;
-				setTimeout(function()
-				{
-					resolve('PONG - ' + str + ' (delayed ' + delay + 'ms)');
-				}, delay);
-			});
-		}*/
+		/*		function requestPing(str)
+		 {
+		 return new Oasis.RSVP.Promise(function(resolve, reject)
+		 {
+		 var delay = 100;
+		 setTimeout(function()
+		 {
+		 resolve('PONG - ' + str + ' (delayed ' + delay + 'ms)');
+		 }, delay);
+		 });
+		 }*/
 
 
 		///////////////////////////////////////////////////////////////////////////////

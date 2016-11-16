@@ -3,6 +3,10 @@ define(function(require, exports, module)
     'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');
+	var Defines = require('glympse-adapter/GlympseAdapterDefines');
+
+	var m = Defines.MSG;
+
 	var cAcctTokenName = 't0';
 	var cApiKey = 'api_key';
 	var cMaxAttempts = 3;
@@ -65,7 +69,7 @@ define(function(require, exports, module)
 			token = settings[cAcctTokenName];
 			if (token)
 			{
-				controller.notify(Account.InitComplete, { status: true, token: token });
+				controller.notify(m.AccountInit, { status: true, token: token });
 				return true;
 			}
 
@@ -77,7 +81,7 @@ define(function(require, exports, module)
 
 				if (!u || !p)
 				{
-					controller.notify(Account.InitComplete, { status: false, error: 'no_account', errorDetail: 'No account exists for the current apiKey.' });
+					controller.notify(m.AccountInit, { status: false, error: 'no_account', errorDetail: 'No account exists for the current apiKey.' });
 					return false;
 				}
 
@@ -132,7 +136,7 @@ define(function(require, exports, module)
 					}
 					result.response = data.response;
 				}
-				controller.notify(Account.UserNameUpdateStatus, result);
+				controller.notify(m.UserNameUpdateStatus, result);
 			}
 		};
 
@@ -160,7 +164,7 @@ define(function(require, exports, module)
 						errorDetail: 'Could not load image by url',
 						response: error
 					};
-					controller.notify(Account.UserAvatarUpdateStatus, result);
+					controller.notify(m.UserAvatarUpdateStatus, result);
 				};
 
 				xhr.send(null);
@@ -194,7 +198,7 @@ define(function(require, exports, module)
 					}
 					result.response = data.response;
 				}
-				controller.notify(Account.UserAvatarUpdateStatus, result);
+				controller.notify(m.UserAvatarUpdateStatus, result);
 			}
 		};
 
@@ -220,7 +224,7 @@ define(function(require, exports, module)
 					}
 					result.response = data.response;
 				}
-				controller.notify(Account.UserInfoStatus, result);
+				controller.notify(m.UserInfoStatus, result);
 			}
 		};
 
@@ -263,7 +267,7 @@ define(function(require, exports, module)
 						result.status = true;
 						result.token = token;
 
-						controller.notify(Account.InitComplete, result);
+						controller.notify(m.AccountInit, result);
 
 						return;
 					}
@@ -274,7 +278,7 @@ define(function(require, exports, module)
 						result.error = meta[cSvcError];
 						result.errorDetail = meta[cSvcErrorDetail];
 
-						controller.notify(Account.InitComplete, result);
+						controller.notify(m.AccountInit, result);
 
 						return;
 					}
@@ -300,7 +304,7 @@ define(function(require, exports, module)
 
 			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
 			result.info = { mode: 'login', status: 'max_attempts', lastResult: data };
-			controller.notify(Account.InitComplete, result);
+			controller.notify(m.AccountInit, result);
 		}
 
 		function createAccount()
@@ -340,7 +344,7 @@ define(function(require, exports, module)
 					result.status = true;
 					result.data = data;
 
-					controller.notify(Account.CreateStatus, result);
+					controller.notify(m.AccountCreateStatus, result);
 
 					// Now, go ahead and get an authToken
 					attempts = 0;
@@ -370,17 +374,11 @@ define(function(require, exports, module)
 
 			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
 			result.info = { mode: 'create_account', status: 'max_attempts', lastResult: data };
-			controller.notify(Account.CreateStatus, result);
+			controller.notify(m.AccountCreateStatus, result);
 		}
 	}
 
 	// Account defines
-	// Events
-	Account.InitComplete = 'AccountInitComplete';
-	Account.CreateStatus = 'AccountCreateStatus';
-	Account.UserInfoStatus = 'UserInfoStatus';
-	Account.UserNameUpdateStatus = 'UserNameUpdateStatus';
-	Account.UserAvatarUpdateStatus = 'UserAvatarUpdateStatus';
 
 	// Environment
 	Account.EnvProduction = 'prod';

@@ -3,9 +3,6 @@ define(function(require, exports, module)
 {
     'use strict';
 
-	var CoreController = require('glympse-adapter/adapter/CoreController');
-	var Account = require('glympse-adapter/adapter/models/Account');
-
 	var Defines =
 	{
 		PORT: 'glympse'
@@ -50,6 +47,7 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			REQUESTS: {
+				requestCards: 'requestCards'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
 				//, removeInvites: 'removeInvites'
@@ -63,6 +61,7 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			, REQUESTS_LOCAL: {
+				getCards: 'getCards'
 			}
 		}
 
@@ -81,10 +80,10 @@ define(function(require, exports, module)
 			/////////////////////////////////////////
 
 			, REQUESTS_LOCAL: {
-				  accountCreate: CoreController.AccountCreate
-				, getUserInfo: CoreController.GetUserInfo
-				, setUserName: CoreController.SetUserName
-				, setUserAvatar: CoreController.SetUserAvatar
+				accountCreate: 'accountCreate'
+				, getUserInfo: 'getUserInfo'
+				, setUserName: 'setUserName'
+				, setUserAvatar: 'setUserAvatar'
 			}
 		}
 
@@ -95,11 +94,11 @@ define(function(require, exports, module)
 
 		, MSG: {
 			//Account Events
-			  AccountCreateStatus: Account.CreateStatus
-		    , AccountInit: Account.InitComplete
-			, UserNameUpdateStatus: Account.UserNameUpdateStatus
-			, UserAvatarUpdateStatus: Account.UserAvatarUpdateStatus
-			, UserInfoStatus: Account.UserInfoStatus
+			  AccountCreateStatus: 'AccountCreateStatus'
+		    , AccountInit: 'AccountInitComplete'
+			, UserNameUpdateStatus: 'UserNameUpdateStatus'
+			, UserAvatarUpdateStatus: 'UserAvatarUpdateStatus'
+			, UserInfoStatus: 'UserInfoStatus'
 
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
@@ -107,6 +106,9 @@ define(function(require, exports, module)
 			, CardReady: 'CardReady'
 			, CardsInitEnd: 'CardsInitEnd'
 			, CardsInitStart: 'CardsInitStart'
+			, CardUpdated: 'CardUpdated'
+			, CardAdded: 'CardAdded'
+			, CardRemoved: 'CardRemoved'
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'
 			, InviteClicked: 'InviteClicked'

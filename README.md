@@ -445,6 +445,10 @@ using GA in host-mode) that are sent by the adapter (defined in the
 - `CardsInitStart` / `[ card_invite0, ..., card_inviteN ]`: Notification sent
   just before Card data is loaded. The passed array is a list of the Card invite
   codes that will be loaded.
+- `CardAdded` / `card`: Notification sent when new card is added and loaded.
+- `CardRemoved` / `card`: Notification sent when card is removed.
+- `CardUpdated` / `card`: Notification sent when card is updated (e.g. members' list changed).
+- `ActiveCardSet` / `card`: Notification sent when active card (card which is currently displayed on the map) is changed.
 - `DataUpdate` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id, data: [ property_0, ..., propertyM ] }`:
   Event passed from the Glympse API for a given Glympse invite code, for unknown/custom
   properties found in the Glympse's data stream. The format of property elements
@@ -654,7 +658,9 @@ specified in `GlympseAdapterDefines.CARDS.REQUESTS`.
 Access to these endpoints can be made via the `cards` property of the adapter instance
 (i.e. `var val = myAdapter.cards.someMethod(some_val)`).
 
-- Currently, no Cards-related endpoints are available for the GA
+- `requestCards()`: Request cards for the current user. No return value - `CardAdded`/`CardRemoved` events will be generated.
+- `getCards()`: Returns currently loaded cards synchronously.
+- `setActiveCard(idCard)`: Set currently loaded card (the card which is displayed on map).
 
 
 ### GlympseAdapter.cards.* endpoints (client-mode-only):

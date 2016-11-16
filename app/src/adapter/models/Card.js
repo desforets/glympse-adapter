@@ -1,6 +1,6 @@
 define(function(require, exports, module)
 {
-    'use strict';
+	'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');
 	var Member = require('glympse-adapter/adapter/models/Member');
@@ -9,31 +9,29 @@ define(function(require, exports, module)
 
 
 	// Exported class
-	function Card(controller, idCard, token, cfg)
+	function Card(controller, idCard, cfg)
 	{
 		// state
-		var attempts = 0;
 		var data;
 		var loaded = false;
-		var members;
+		var members = [];
+		var membersIndex = {};
+		var currentlySharing = [];
 		var that = this;
 
-		// consts
+		// constants
 		var dbg = lib.dbg('Card', cfg.dbg);
-		var svr = (cfg.svcCards || '//api.cards.sandbox.glympse.com/api/v1/');
-		var cardUrl = (svr + 'cards/invites/' + idCard);
-		var cardParams = { members: true };
-		var cMaxAttempts = 3;
 
 		// TODO: Just map data props directly??
 		//	---> Only want immediate non-Objects/Arrays
-		var props = [ 'name'
-					, 'type_id'
-					, 'last_modified'
-					, 'created_time'
-					, 'id'
-					, 'metadata_etag'
-					];
+		var props = [
+			'name'
+			, 'type_id'
+			, 'last_modified'
+			, 'created_time'
+			, 'id'
+			, 'metadata_etag'
+		];
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -69,17 +67,89 @@ define(function(require, exports, module)
 
 		this.setData = function(val)
 		{
+			loaded = true;
+
 			data = val;
 			lib.mapProps(this, props, data);
 
-			var mems = data.members;
-			members = [];
-			for (var i = 0, len = ((mems && mems.length) || 0); i < len; i++)
+			var mems = data.members || [];
+			var mem, member, invite;
+			var allMembersIds = [];
+			var allShares = [];
+			for (var i = 0, len = mems.length; i < len; i++)
 			{
-				members.push(new Member(mems[i], cfg));
+				mem = mems[i];
+				allMembersIds.push(mem.id);
+				if (membersIndex[mem.id])
+				{
+					member = membersIndex[mem.id];
+				}
+				else
+				{
+					member = new Member(mem, cfg);
+					membersIndex[mem.id] = member;
+					members.push(member);
+
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'member_added',
+						member: member
+					});
+				}
+
+				invite = member.getTicket().getInviteCode();
+				//console.log('  [' + j + ']: ' + invite);
+				if (invite)
+				{
+					allShares.push(invite);
+					if (currentlySharing.indexOf(invite) === -1)
+					{
+						currentlySharing.push(invite);
+
+						controller.notify(m.CardUpdated, {
+							card: that,
+							action: 'invite_added',
+							invite: invite
+						});
+					}
+				}
+			}
+			for (i = 0, len = currentlySharing.length; i < len; i++)
+			{
+				invite = currentlySharing[i];
+				if (allShares.indexOf(invite) === -1)
+				{
+					currentlySharing.splice(i, 1);
+
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'invite_removed',
+						invite: invite
+					});
+				}
+			}
+			for (i = 0, len = members; i < len; i++)
+			{
+				member = members[i];
+				if (allMembersIds.indexOf(member.getId()) === -1)
+				{
+					members.splice(i, 1);
+					delete membersIndex[member.getId()];
+
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'member_removed',
+						member: member
+					});
+				}
 			}
 
 			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
+		};
+
+		this.getInvites = function()
+		{
+			return currentlySharing;
 		};
 
 
@@ -87,19 +157,6 @@ define(function(require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.init = function()
-		{
-			if (!idCard || !token)
-			{
-				return false;
-			}
-
-			// Kick off card load
-			attempts = 0;
-			loadCard();
-
-			return true;
-		};
 
 		this.toJSON = function()
 		{
@@ -110,85 +167,6 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
-
-		function loadCard()
-		{
-			controller.notify(m.CardInit, idCard);
-
-			$.ajax(
-			{
-				type: 'GET',
-				dataType: 'JSON',
-				beforeSend: function(request)
-				{
-					request.setRequestHeader('Authorization', 'Bearer ' + token);
-				},
-				url: cardUrl,
-				data: cardParams,
-				processData: true
-			})
-			//$.getJSON(cardUrl, cardParams)
-			.done(function(data)
-			{
-				processCardData(data);
-			})
-			.fail(function(xOptions, status)
-			{
-				processCardData(null);
-			});
-		}
-
-		function processCardData(resp)
-		{
-			attempts++;
-
-			try
-			{
-				if (resp)
-				{
-					if (resp.response && resp.result === 'ok')
-					{
-						//dbg('Got card data', resp);
-						loaded = true;
-						that.setData(resp.response);
-						controller.notify(m.CardReady, idCard);
-						return;
-					}
-					else if (resp.meta && resp.meta.error)
-					{
-						// Invite is invalid or has been revoked, in
-						// either case, we cannot continue loading this
-						// card, so bail immediately
-						if (resp.meta.error === 'failed_to_decode')
-						{
-							loaded = false;
-							controller.notify(m.CardReady, idCard);
-							return;
-						}
-					}
-				}
-			}
-			catch (e)
-			{
-				dbg('Error parsing card', e);
-			}
-
-			//dbg('attempt: ' + attempts + ', last data', data);
-
-			if (attempts < cMaxAttempts)
-			{
-				setTimeout(function()
-				{
-					loadCard();
-				}, attempts * (500 + Math.round(1000 * Math.random()))	// Incremental + random offset delay between retry in case of short availability outage
-				);
-
-				return;
-			}
-
-			dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
-			controller.notify(m.CardReady, idCard);
-		}
 
 
 		///////////////////////////////////////////////////////////////////////////////

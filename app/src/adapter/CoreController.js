@@ -5,9 +5,9 @@ define(function(require, exports, module)
 	// defines
 	var lib = require('glympse-adapter/lib/utils');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
+
 	var m = Defines.MSG;
-	var s = Defines.STATE;
-	var r = Defines.REQUESTS;
+	var rl = Defines.CORE.REQUESTS;
 
 	var Account = require('glympse-adapter/adapter/models/Account');
 
@@ -34,11 +34,11 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
-				case Account.InitComplete:
-				case Account.CreateStatus:
-				case Account.UserNameUpdateStatus:
-				case Account.UserAvatarUpdateStatus:
-				case Account.UserInfoStatus:
+				case m.AccountInit:
+				case m.AccountCreateStatus:
+				case m.UserNameUpdateStatus:
+				case m.UserAvatarUpdateStatus:
+				case m.UserInfoStatus:
 				{
 					controller.notify(msg, args);
 					break;
@@ -58,7 +58,7 @@ define(function(require, exports, module)
 		{
 			switch (method)
 			{
-				case CoreController.AccountCreate:
+				case rl.accountCreate:
 				{
 					account.create();
 					break;
@@ -70,19 +70,19 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case CoreController.SetUserName:
+				case rl.setUserName:
 				{
 					account.setName(args);
 					break;
 				}
 
-				case CoreController.SetUserAvatar:
+				case rl.setUserAvatar:
 				{
 					account.setAvatar(args);
 					break;
 				}
 
-				case CoreController.GetUserInfo:
+				case rl.getUserInfo:
 				{
 					account.getUserInfo(args);
 					break;
@@ -97,11 +97,7 @@ define(function(require, exports, module)
 
 	}
 
-	CoreController.AccountCreate = 'accountCreate';
 	CoreController.GenerateToken = 'generateToken';
-	CoreController.GetUserInfo = 'getUserInfo';
-	CoreController.SetUserName = 'setUserName';
-	CoreController.SetUserAvatar = 'setUserAvatar';
 
 	module.exports = CoreController;
 });

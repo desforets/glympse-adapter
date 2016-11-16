@@ -1,13 +1,14 @@
 define(function(require, exports, module)
 {
-    'use strict';
+	'use strict';
 
 	// defines
 	var lib = require('glympse-adapter/lib/utils');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
+
 	var m = Defines.MSG;
-	var s = Defines.STATE;
-	var r = Defines.REQUESTS;
+	var r = Defines.CARDS.REQUESTS;
+	var rl = Defines.CARDS.REQUESTS_LOCAL;
 
 	// Cards-specific
 	var Account = require('glympse-adapter/adapter/models/Account');
@@ -19,11 +20,15 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('CardsController', cfg.dbg);
+		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
+		var pollInterval = cfg.pollCards || 60000;
+		var cardsMode = cfg.cardsMode;
 
 		// state
 		var that = this;
 		var cardInvites;
 		var cards;
+		var cardsIndex;
 		var cardsReady = 0;
 		var initialized = false;
 		var authToken = cfg.authToken;
@@ -36,7 +41,9 @@ define(function(require, exports, module)
 		this.init = function(cardsInvitesToLoad)
 		{
 			cards = [];
-			cardInvites = cardsInvitesToLoad;
+			cardsIndex = {};
+			cardInvites = cardsInvitesToLoad || [];
+
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
 			initialized = true;
 
@@ -53,7 +60,7 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
-				case Account.InitComplete:
+				case m.AccountInit:
 				{
 					authToken = args.token;
 					accountInitComplete(args);
@@ -61,19 +68,33 @@ define(function(require, exports, module)
 				}
 
 				case m.CardInit:
+				{
+					controller.notify(msg, args);
+
+					break;
+				}
+
 				case m.CardReady:
 				{
 					controller.notify(msg, args);
-					if (msg === m.CardReady)
+
+					var card = cardsIndex[args];
+					if (cards.indexOf(card) === -1)
 					{
-						if (--cardsReady === 0)
-						{
-							controller.notify(m.CardsInitEnd, cards);
-						}
+						cards.push(card);
+						controller.notify(m.CardAdded, card);
+					}
+					if (--cardsReady === 0)
+					{
+						controller.notify(m.CardsInitEnd, cards);
 					}
 
 					break;
 				}
+
+				case m.CardUpdated:
+					controller.notify(msg, args);
+					break;
 
 				default:
 				{
@@ -83,6 +104,25 @@ define(function(require, exports, module)
 			}
 
 			return null;
+		};
+
+		this.cmd = function(cmd, args)
+		{
+			switch (cmd)
+			{
+				/**
+				 * Force to request cards for the current user now.
+				 */
+				case r.requestCards:
+					return requestCards();
+				/**
+				 * Returns currently loaded cards
+				 */
+				case rl.getCards:
+					return cards;
+				default:
+					dbg('method not found', cmd);
+			}
 		};
 
 
@@ -112,15 +152,159 @@ define(function(require, exports, module)
 			// Now load card(s)
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				var card = new Card(that, cardInvites[i], authToken, cfg);
-				if (!card.init())
+				loadCard(cardInvites[i]);
+			}
+
+			if (!cardInvites.length)
+			{
+				controller.notify(m.CardsInitEnd, []);
+			}
+
+			if (cardsMode)
+			{
+				requestCards();
+				setInterval(requestCards, pollInterval);
+			}
+		}
+
+		function loadCard(cardInvite)
+		{
+			if (!cardsIndex[cardInvite])
+			{
+				cardsIndex[cardInvite] = new Card(that, cardInvite, cfg);
+			}
+
+			var card = cardsIndex[cardInvite];
+
+			getCard(card);
+		}
+
+		//////////////////////
+		// Cards API
+		//////////////////////
+
+		function requestCards()
+		{
+			$.ajax(
 				{
-					dbg(sig + 'error starting card: ' + cardInvites[i]);
-				}
-				else
+					type: 'GET',
+					dataType: 'JSON',
+					beforeSend: function(request)
+					{
+						request.setRequestHeader('Authorization', 'Bearer ' + authToken);
+					},
+					url: svr + 'cards',
+					processData: true
+				})
+				.done(function(data)
 				{
-					cards.push(card);
+					processCardsData(data);
+				})
+				.fail(function()
+				{
+					processCardsData();
+				});
+		}
+
+		function processCardsData(resp)
+		{
+			if (resp && resp.response && resp.result === 'ok')
+			{
+				var i, card, len, cardId, allCardIds = [];
+				// add new cards
+				for (i = 0, len = resp.response.length; i < len; i++)
+				{
+					card = resp.response[i];
+					allCardIds.push(card.id);
+					if (cardInvites.indexOf(card.id) === -1)
+					{
+						cardInvites.push(card.id);
+					}
 				}
+				// cleanup deleted cards
+				for (i = 0, len = cardInvites.length; i < len; i++)
+				{
+					cardId = cardInvites[i];
+					if (allCardIds.indexOf(cardId) === -1)
+					{
+						cardInvites.splice(i, 1);
+						card = cardsIndex[cardId];
+						cards.splice(cards.indexOf(card), 1);
+						delete cardsIndex[cardId];
+						controller.notify(m.CardRemoved, card);
+					}
+				}
+				// refresh existing cards
+				for (i = 0, len = cardInvites.length; i < len; i++)
+				{
+					loadCard(cardInvites[i]);
+				}
+			}
+			else
+			{
+				dbg('failed to load cards');
+			}
+		}
+
+		function getCard(card)
+		{
+			var idCard = card.getIdCard();
+
+			controller.notify(m.CardInit, idCard);
+
+			var cardUrl = (svr + 'cards/' + idCard);
+
+			$.ajax(
+				{
+					type: 'GET',
+					dataType: 'JSON',
+					beforeSend: function(request)
+					{
+						request.setRequestHeader('Authorization', 'Bearer ' + authToken);
+					},
+					url: cardUrl,
+					data: {members: true},
+					processData: true
+				})
+				.done(function(data)
+				{
+					processCardData(card, data);
+				})
+				.fail(function()
+				{
+					processCardData(card, null);
+				});
+		}
+
+		function processCardData(card, resp)
+		{
+			try
+			{
+				if (resp)
+				{
+					var idCard = card.getIdCard();
+
+					if (resp.response && resp.result === 'ok')
+					{
+						//dbg('Got card data', resp);
+						card.setData(resp.response);
+						that.notify(m.CardReady, idCard);
+					}
+					else if (resp.meta && resp.meta.error)
+					{
+						// Invite is invalid or has been revoked, in
+						// either case, we cannot continue loading this
+						// card, so bail immediately
+						if (resp.meta.error === 'failed_to_decode')
+						{
+							that.notify(m.CardReady, idCard);
+						}
+					}
+				}
+			}
+			catch (e)
+			{
+				dbg('Error parsing card', e);
 			}
 		}
 	}
