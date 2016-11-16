@@ -32,27 +32,24 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
-			controller.notify(msg, args);
-			// NOTE: Use this block when you need to parse args before notifying parent controller
-			// for now it is not necessary, just sending notification up
-			// switch (msg)
-			// {
-			// 	case Account.InitComplete:
-			// 	case Account.CreateStatus:
-			//  case Account.UserNameUpdateStatus:
-			//  case Account.UserAvatarUpdateStatus:
-			//  case Account.UserInfoStatus:
-			// 	{
-			// 		controller.notify(msg, args);
-			// 		break;
-			// 	}
-            //
-			// 	default:
-			// 	{
-			// 		dbg('Unknown msg: "' + msg + '"', args);
-			// 		break;
-			// 	}
-			// }
+			switch (msg)
+			{
+				case Account.InitComplete:
+				case Account.CreateStatus:
+				case Account.UserNameUpdateStatus:
+				case Account.UserAvatarUpdateStatus:
+				case Account.UserInfoStatus:
+				{
+					controller.notify(msg, args);
+					break;
+				}
+
+				default:
+				{
+					dbg('Unknown msg: "' + msg + '"', args);
+					break;
+				}
+			}
 
 			return null;
 		};
