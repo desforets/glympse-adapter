@@ -499,6 +499,15 @@ using GA in host-mode) that are sent by the adapter (defined in the
   - `Name`
   - `NoInvites` (seen if no Glympse invites are successfully loaded in the map)
   - `Phase`
+- `UserNameUpdateStatus`: `{ status: bool, response: userData }`:
+  - `status: true` - Indicates that user data has been changed, `response` includes new user's `name`
+  - `status: false` - Error occurred, details in `response` property
+- `UserAvatarUpdateStatus`: `{ status: bool, response: avatarObject }`:
+  - `status: true` - Indicates that user avatar has been changed, `response` includes `url` to avatar
+  - `status: false` - Error occurred, details in `response` property
+- `UserInfoStatus`: `{ status: bool, response: userData }`:
+  - `status: true` - Returns user's data
+  - `status: false` - Error occurred, details in `response` property
 - `ViewerInit` / `true`: Sent when the Glympse map viewer is beginning its
   initialization process, but is not yet ready.
 - `ViewerReady` / `Glympse_viewer_instance`: Generated once the Glympse map control is
@@ -538,6 +547,7 @@ environment.
 
 Endpoints are broken out on the following components:
   - `map`: Glympse Viewer endpoints accessiable via `adapter_instance.map.*`
+  - `core`: Glympse Core endpoints accessiable via `adapter_instance.core.*`
   - `card`: Glympse Card endpoints accessiable via `adapter_instance.card.*`
   - `ext`: Custom client-app-included endpoints accessiable via `adapter_instance.ext.*`
 
@@ -628,6 +638,16 @@ client-mode. These are also specifed in `GlympseAdapterDefines.MAP.REQUESTS_LOCA
 - `ignoreDestinations(bool)`: Hides current invite destinations. Returns a list of all
   affected destination objects.
 
+### GlympseAdapter.core.* endpoints (client-mode-only):
+
+The following APIs are only available to consumers of the GA when running in
+client-mode. These are also specifed in `GlympseAdapterDefines.CORE.REQUESTS_LOCAL`:
+
+- `accountCreate()`: Creates account, sends event `AccountCreateStatus` as a result.
+- `getUserInfo(userId: string)`: Gets info for the current logged in user (name, avatar URL, etc.).
+ If the optional `userId` param is non-null, info is retrieved for the specified user instead.
+- `setUserAvatar(imageUrlOrArrayBuffer: string|arraybuffer)`: Sets avatar to user, sends `UserAvatarUpdateStatus`
+- `setUserName(name: string)`: Sets name to user, sends `UserAvatarUpdateStatus`
 
 ### GlympseAdapter.cards.* endpoints (host/client-mode):
 

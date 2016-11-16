@@ -110,6 +110,120 @@ define(function(require, exports, module)
 			}
 		};
 
+		this.setName = function(newName)
+		{
+			var apiUrl = (svr + 'users/self/update');
+
+			$.getJSON(apiUrl, { oauth_token: token, name: newName })
+				.done(processUserNameResponse)
+				.fail(processUserNameResponse);
+
+			function processUserNameResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+					}
+					result.response = data.response;
+				}
+				controller.notify(Account.UserNameUpdateStatus, result);
+			}
+		};
+
+		this.setAvatar = function(urlOrAvatarDataArray)
+		{
+			if (typeof urlOrAvatarDataArray === 'string')
+			{
+				var that = this;
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', urlOrAvatarDataArray, true);
+				xhr.responseType = 'arraybuffer';
+
+				xhr.onload = function()
+				{
+					var arrayBuffer = xhr.response;
+					if (arrayBuffer) {
+						that.setAvatar(arrayBuffer);
+					}
+				};
+
+				xhr.onerror = function(error)
+				{
+					var result = {
+						status: false,
+						errorDetail: 'Could not load image by url',
+						response: error
+					};
+					controller.notify(Account.UserAvatarUpdateStatus, result);
+				};
+
+				xhr.send(null);
+				return;
+			}
+
+			//ToDo: need to resize image using utility helper (ENG-11495)
+
+			var apiUrl = (svr + 'users/self/upload_avatar?oauth_token=' + token);
+			$.ajax({
+				url: apiUrl,
+				type: 'POST',
+				contentType: 'image/png',
+				data: new Uint8Array(urlOrAvatarDataArray),
+				processData: false
+			})
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+					}
+					result.response = data.response;
+				}
+				controller.notify(Account.UserAvatarUpdateStatus, result);
+			}
+		};
+
+		this.getUserInfo = function(userId)
+		{
+			var apiUrl = svr + 'users/' + (userId || 'self');
+
+			$.getJSON(apiUrl, { oauth_token: token })
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+					}
+					result.response = data.response;
+				}
+				controller.notify(Account.UserInfoStatus, result);
+			}
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
@@ -261,8 +375,14 @@ define(function(require, exports, module)
 	}
 
 	// Account defines
+	// Events
 	Account.InitComplete = 'AccountInitComplete';
 	Account.CreateStatus = 'AccountCreateStatus';
+	Account.UserInfoStatus = 'UserInfoStatus';
+	Account.UserNameUpdateStatus = 'UserNameUpdateStatus';
+	Account.UserAvatarUpdateStatus = 'UserAvatarUpdateStatus';
+
+	// Environment
 	Account.EnvProduction = 'prod';
 	Account.EnvSandbox = 'sbox';
 
