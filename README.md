@@ -117,6 +117,9 @@ var cfg =
 		, svcGlympse: *string*
 		, svcCards: *string*
 		, dbg: *bool*
+		, loaderEnvironment: *string*
+        , loaderPath: *string*
+        , loaderVersion: *string*
 	}
 };
 ```
@@ -143,6 +146,9 @@ var cfg =
   `//api.cards.glympse.com/api/v1/`.
   - `dbg`: Enable debugging state. Defaults to `false`.
   - `card`, `t`, `g`, `twt`, `pg`: Standard Cards/Glympse invite types.
+  - `loaderEnvironment`: Environment for the viewer's loader: "prod" (glympse.com) | "sandbox" (dev.glympse.com). Default is "prod".
+  - `loaderVersion`: Version of the viewer's loader. Default is "latest".
+  - `loaderPath`: Arbitrary URL to the loader (overrides `loaderEnvironment` and `loaderVersion`). Default is NULL.
 
 
 ### Custom Marker Configuration
