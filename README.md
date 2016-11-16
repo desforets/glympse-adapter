@@ -640,8 +640,8 @@ The following APIs are only available to consumers of the GA when running in
 client-mode. These are also specifed in `GlympseAdapterDefines.CORE.REQUESTS_LOCAL`:
 
 - `accountCreate()`: Creates account, sends event `AccountCreateStatus` as a result.
-- `getUserInfo(userId: string)`: Gets user data by `userId`, if it is not defined or empty
- then getting info for authorized user, sends event `UserInfoStatus` with the result
+- `getUserInfo(userId: string)`: Gets info for the current logged in user (name, avatar URL, etc.).
+ If the optional `userId` param is non-null, info is retrieved for the specified user instead.
 - `setUserAvatar(imageUrlOrArrayBuffer: string|arraybuffer)`: Sets avatar to user, sends `UserAvatarUpdateStatus`
 - `setUserName(name: string)`: Sets name to user, sends `UserAvatarUpdateStatus`
 
