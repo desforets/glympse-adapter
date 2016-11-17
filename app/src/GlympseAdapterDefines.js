@@ -62,6 +62,19 @@ define(function(require, exports, module)
 
 			, REQUESTS_LOCAL: {
 				getCards: 'getCards'
+				, joinRequest: 'joinRequest'
+			}
+
+			/////////////////////////////////////////
+			// API Endpoints: client-only
+			/////////////////////////////////////////
+
+			, REQUEST_TYPES: {
+				LINK: 'link'
+				, CLIPBOARD: 'clipboard'
+				, SMS: 'sms'
+				, EMAIL: 'email'
+				, ACCOUNT: 'account'
 			}
 		}
 
@@ -102,6 +115,8 @@ define(function(require, exports, module)
 
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
+
+			//Card events
 			, CardInit: 'CardInit'
 			, CardReady: 'CardReady'
 			, CardsInitEnd: 'CardsInitEnd'
@@ -109,6 +124,8 @@ define(function(require, exports, module)
 			, CardUpdated: 'CardUpdated'
 			, CardAdded: 'CardAdded'
 			, CardRemoved: 'CardRemoved'
+			, CardsJoinRequestStatus: 'CardsJoinRequestStatus'
+
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'
 			, InviteClicked: 'InviteClicked'

@@ -430,6 +430,7 @@ define(function(require, exports, module)
 				case m.UserNameUpdateStatus:
 				case m.UserAvatarUpdateStatus:
 				case m.UserInfoStatus:
+				case m.CardsJoinRequestStatus:
 				{
 					sendEvent(msg, args);
 					break;
