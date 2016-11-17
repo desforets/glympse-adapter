@@ -669,7 +669,7 @@ Access to these endpoints can be made via the `cards` property of the adapter in
 The following APIs are only available to consumers of the GA when running in
 client-mode. These are also specifed in `GlympseAdapterDefines.CARDS.REQUESTS_LOCAL`:
 
-- `joinRequest(request_config: [RequestConfig](https://developer.glympse.com/docs/core/api/reference/cards/requests/post#request))`:
+- `joinRequest(requestConfig)`: [RequestConfig docs](https://developer.glympse.com/docs/core/api/reference/cards/requests/post#request), 
  Sends a request to join a card, sends `CardsJoinRequestStatus` with result of the API call
 
 
