@@ -56,7 +56,6 @@ define(function(require, exports, module)
 
 		this.cmd = function(method, args)
 		{
-			debugger;
 			switch (method)
 			{
 				case rl.accountCreate:
