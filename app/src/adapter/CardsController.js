@@ -227,9 +227,9 @@ define(function(require, exports, module)
 							cardInvites.push(card.id);
 						}
 					}
-					// cleanup deleted cards
-					for (i = 0, len = cardInvites.length; i < len; i++)
-					{
+					// cleanup deleted cards (use while to allow deleting in the loop)
+					i = cardInvites.length;
+					while (i--) {
 						cardId = cardInvites[i];
 						if (allCardIds.indexOf(cardId) === -1)
 						{
@@ -443,6 +443,8 @@ define(function(require, exports, module)
 					{
 						result.status = true;
 						result.response = data.response;
+
+						requestCards();
 					}
 					else
 					{
