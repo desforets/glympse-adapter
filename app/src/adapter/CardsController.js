@@ -284,21 +284,19 @@ define(function(require, exports, module)
 				})
 				.done(function(data)
 				{
-					processCardData(card, data);
+					processCardData(data);
 				})
 				.fail(function()
 				{
-					processCardData(card, null);
+					processCardData(null);
 				});
 
-			function processCardData(card, resp)
+			function processCardData(resp)
 			{
 				try
 				{
 					if (resp)
 					{
-						var idCard = card.getIdCard();
-
 						if (resp.response && resp.result === 'ok')
 						{
 							//dbg('Got card data', resp);
