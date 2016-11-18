@@ -42,50 +42,66 @@ define(function(require, exports, module)
 		}
 
 		, domain: window.location.hostname
-		, getCookie: function(cName)
+		, getCookie: function(cookieName)
 		{
-			var c, i, idx, x, y;
-			var cookies = document.cookie.split(';');
-
-			for (i = 0; i < cookies.length; i++)
+			if (window.localStorage)
 			{
-				c = cookies[i];
-				idx = c.indexOf('=');
-				x = c.substr(0, idx);
-				y = c.substr(idx + 1);
+				return window.localStorage.getItem(cookieName);
+			}
+			else
+			{
+				var c, i, idx, x, y;
+				var cookies = document.cookie.split(';');
 
-				if (x.replace(/^\s+|\s+$/g, '') === cName)
+				for (i = 0; i < cookies.length; i++)
 				{
-					return window.unescape(y);
+					c = cookies[i];
+					idx = c.indexOf('=');
+					x = c.substr(0, idx);
+					y = c.substr(idx + 1);
+
+					if (x.replace(/^\s+|\s+$/g, '') === cookieName)
+					{
+						return window.unescape(y);
+					}
 				}
 			}
 
 			return null;
 		}
 
-		, setCookie: function(cName, value, daysExpire)
+		, setCookie: function(cookieName, cookieValue, daysExpire)
 		{
-			var d = new Date();
-			d.setTime(d.getTime() + (daysExpire || 365) * 24 * 3600 * 1000);
-			document.cookie = cName + '=' + (value + '; expires=' + d.toGMTString() + '; domain=' + utils.domain + '; path=/');
+			if (window.localStorage)
+			{
+				window.localStorage.setItem(cookieName, cookieValue);
+			}
+			else
+			{
+				var d = new Date();
+				d.setTime(d.getTime() + (daysExpire || 365) * 24 * 3600 * 1000);
+				document.cookie = cookieName + '=' + (cookieValue + '; expires=' + d.toGMTString() + '; domain=' + utils.domain + '; path=/');
+			}
 		}
 
-		, getCfgVal: function(name, idCfg)
+		, getCfgVal: function(propertyName, idCfg)
 		{
-			var cookie = utils.getCookie(idCfg || defCfg);
+			var cookieName = idCfg || defCfg;
+
+			var cookieValue = utils.getCookie(cookieName);
 			//console.log('cookie = ' + cookie + ' -- ' + name + ' -- ' + (JSON.parse(cookie))[name]);
-			return (cookie) ? (JSON.parse(cookie))[name] : null;
+			return (cookieValue) ? (JSON.parse(cookieValue))[propertyName] : null;
 		}
 
-		, setCfgVal: function(name, value, idCfg, daysExpire)
+		, setCfgVal: function(propertyName, newValue, idCfg, daysExpire)
 		{
-			var cfg = (idCfg || defCfg);
-			var cookie = utils.getCookie(cfg);
+			var cookieName = (idCfg || defCfg);
+			var cookieValue = utils.getCookie(cookieName);
 
-			cookie = (cookie) ? JSON.parse(cookie) : {};
-			cookie[name] = value;
+			cookieValue = (cookieValue) ? JSON.parse(cookieValue) : {};
+			cookieValue[propertyName] = newValue;
 
-			utils.setCookie(cfg, JSON.stringify(cookie), daysExpire);
+			utils.setCookie(cookieName, JSON.stringify(cookieValue), daysExpire);
 		}
 
 		, capFirst: function(str)
