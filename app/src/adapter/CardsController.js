@@ -33,6 +33,7 @@ define(function(require, exports, module)
 		var cardsReady = 0;
 		var initialized = false;
 		var authToken = cfg.authToken;
+		var accountId = cfg.accountId;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -64,6 +65,7 @@ define(function(require, exports, module)
 				case m.AccountInit:
 				{
 					authToken = args.token;
+					accountId = args.id;
 					accountInitComplete(args);
 					break;
 				}
@@ -390,21 +392,32 @@ define(function(require, exports, module)
 		{
 			if (!config || !config.cardId)
 			{
-				dbg('CardId param is mandatory!', 3);
+				dbg('CardId param is mandatory!', config, 3);
 				return;
 			}
 
 			var memberId = config.memberId;
-			var card, currentUserId;
+			var card;
 			if (!memberId)
 			{
 				card = cardsIndex[config.cardId];
 				if (!card)
 				{
-					dbg('card not found for CardId=' + config.cardId, 3);
+					dbg('card not found for CardId=', config.cardId, 3);
 					return;
 				}
-				//TODO:
+				var members = card.getMembers();
+				for (var i = 0, len = members.length, member; i < len; i++) {
+					member = members[i];
+					if (member.getUserId() === accountId) {
+						memberId = member.getId();
+						break;
+					}
+				}
+				if (!memberId) {
+					dbg('current member not found for card=', card.toJSON(), 3);
+					return;
+				}
 			}
 
 			$.ajax({
