@@ -532,7 +532,7 @@ define(function(require, exports, module)
 		{
 			return function(data)
 			{
-				return (targ.cmd(id, data) || true);
+				return targ.cmd(id, data);
 			};
 		}
 

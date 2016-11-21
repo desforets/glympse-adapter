@@ -654,6 +654,8 @@ client-mode. These are also specifed in `GlympseAdapterDefines.CORE.REQUESTS_LOC
 - `accountCreate()`: Creates account, sends event `AccountCreateStatus` as a result.
 - `getUserInfo(userId: string)`: Gets info for the current logged in user (name, avatar URL, etc.).
  If the optional `userId` param is non-null, info is retrieved for the specified user instead.
+- `hasAccount()`: Checks if the adapter has credentials for the currently configured API key.
+ Synchronous method. Returns `false` for anonymous mode
 - `setUserAvatar(imageUrlOrArrayBuffer: string|arraybuffer)`: Sets avatar to user, sends `UserAvatarUpdateStatus`
 - `setUserName(name: string)`: Sets name to user, sends `UserAvatarUpdateStatus`
 

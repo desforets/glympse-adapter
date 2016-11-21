@@ -87,6 +87,11 @@ define(function(require, exports, module)
 					account.getUserInfo(args);
 					break;
 				}
+
+				case rl.hasAccount:
+				{
+					return account.hasAccount();
+				}
 			}
 		};
 
