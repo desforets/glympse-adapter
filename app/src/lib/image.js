@@ -8,7 +8,10 @@ define(function(require, exports, module)
 		imageScale: function(imgData, config, callback)
 		{
 			//create a canvas
-			this.imageInfo(imgData, function(image) {
+			this.imageInfo(imgData, gettingImageInfoCallback);
+
+			function gettingImageInfoCallback(image)
+			{
 				var width = image.width;
 				var height = image.height;
 				var startX = 0, startY = 0,
@@ -67,7 +70,7 @@ define(function(require, exports, module)
 
 				callback(ab);
 				canvas.remove();
-			});
+			}
 		},
 		imageInfo: function(imgData, callback)
 		{
