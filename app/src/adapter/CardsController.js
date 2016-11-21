@@ -326,6 +326,13 @@ define(function(require, exports, module)
 			}
 		}
 
+		/**
+		 * Request a card member / all card members to share its / their locations
+		 *
+		 * @param {Object} config Configuration
+		 * @param {string} config.cardId Card id to remove a member
+		 * @param {string} config.memberList List of member ids. If no ids is given, all card members will receive this request.
+		 */
 		function request(config)
 		{
 			if (!config.cardId)
