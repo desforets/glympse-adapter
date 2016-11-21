@@ -170,6 +170,15 @@ define(function(require, exports, module)
 		window.glympse = {};
 	}
 
+	if (!window.glympse.broadcastTypes)
+	{
+		window.glympse.broadcastTypes = {
+			DATA: 'DATA',
+			ETA: 'ETA',
+			INVITE_STATUS: 'INVITE_STATUS'
+		};
+	}
+
 	if (!window.glympse.GlympseAdapterDefines)
 	{
 		window.glympse.GlympseAdapterDefines = Defines;
