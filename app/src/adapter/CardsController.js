@@ -333,6 +333,7 @@ define(function(require, exports, module)
 			}
 			requestConfig.send = requestConfig.send || 'server';
 
+			//Todo: This should be centralized as this call pattern will be identical for nearly all authenticated calls in the adapter.
 			$.ajax({
 				url: url,
 				method: 'POST',
