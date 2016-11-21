@@ -143,8 +143,12 @@ define(function(require, exports, module)
 					if (data.result === 'ok')
 					{
 						result.status = true;
+						result.response = data.response;
 					}
-					result.response = data.response;
+					else
+					{
+						result.response = data.meta;
+					}
 				}
 				controller.notify(m.UserNameUpdateStatus, result);
 			}
@@ -205,8 +209,12 @@ define(function(require, exports, module)
 					if (data.result === 'ok')
 					{
 						result.status = true;
+						result.response = data.response;
 					}
-					result.response = data.response;
+					else
+					{
+						result.response = data.meta;
+					}
 				}
 				controller.notify(m.UserAvatarUpdateStatus, result);
 			}
@@ -231,8 +239,12 @@ define(function(require, exports, module)
 					if (data.result === 'ok')
 					{
 						result.status = true;
+						result.response = data.response;
 					}
-					result.response = data.response;
+					else
+					{
+						result.response = data.meta;
+					}
 				}
 				controller.notify(m.UserInfoStatus, result);
 			}

@@ -9,6 +9,7 @@ define(function(require, exports, module)
 	var m = Defines.MSG;
 	var r = Defines.CARDS.REQUESTS;
 	var rl = Defines.CARDS.REQUESTS_LOCAL;
+	var REQUEST_TYPES = Defines.CARDS.REQUEST_TYPES;
 
 	// Cards-specific
 	var Account = require('glympse-adapter/adapter/models/Account');
@@ -120,6 +121,9 @@ define(function(require, exports, module)
 				 */
 				case rl.getCards:
 					return cards;
+
+				case rl.joinRequest:
+					return joinRequest(args);
 				default:
 					dbg('method not found', cmd);
 			}
@@ -305,6 +309,64 @@ define(function(require, exports, module)
 			catch (e)
 			{
 				dbg('Error parsing card', e);
+			}
+		}
+
+		function joinRequest(requestConfig)
+		{
+			// {
+			// 	type: "${request_type}",
+			// 	name: ${requestee_name},
+			// 	address: ${requestee_address},
+			// 	send: "${send_type}",
+			// 	locale: "${locale}",
+			// 	region: "${region}"
+			// }
+			var url = svr + 'cards/requests';
+
+			if (!requestConfig.type ||
+				(!requestConfig.address && requestConfig.type !== REQUEST_TYPES.CLIPBOARD && requestConfig.type !== REQUEST_TYPES.LINK))
+			{
+				dbg('Need to provide type (Defines.CARDS.REQUEST_TYPES: LINK, CLIPBOARD, SMS, EMAIL, ACCOUNT) ' +
+					'and address (except LINK and CLIPBOARD types) to join a card');
+				return;
+			}
+			requestConfig.send = requestConfig.send || 'server';
+
+			//Todo: This should be centralized as this call pattern will be identical for nearly all authenticated calls in the adapter.
+			$.ajax({
+				url: url,
+				method: 'POST',
+				beforeSend: function(request)
+				{
+					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
+				},
+				dataType: 'json',
+				data: JSON.stringify(requestConfig),
+				contentType: 'application/json'
+			})
+				.done(processRequest)
+				.fail(processRequest);
+
+			function processRequest(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+						result.response = data.response;
+					}
+					else
+					{
+						result.response = data.meta;
+					}
+				}
+				controller.notify(m.CardsJoinRequestStatus, result);
 			}
 		}
 	}

@@ -7,7 +7,7 @@ define(function(require, exports, module)
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 
 	var m = Defines.MSG;
-	var rl = Defines.CORE.REQUESTS;
+	var rl = Defines.CORE.REQUESTS_LOCAL;
 
 	var Account = require('glympse-adapter/adapter/models/Account');
 
