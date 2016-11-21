@@ -35,27 +35,7 @@ define(function(require, exports, module)
 		var oasisLocal;
 		var that = this;
 
-		var loader = $.Deferred();
-		if ($.fn.glympser)
-		{
-			dbg('glympser loader is already included in the page - use existing.');
-			loader.resolve();
-		}
-		else
-		{
-			var loaderUrl = getLoaderUrl(cfgAdapter);
-			dbg('loading glympser loader from', loaderUrl);
-			$.getScript(loaderUrl)
-				.done(function()
-				{
-					loader.resolve();
-				})
-				.fail(function()
-				{
-					dbg('Failed to load Loader script:', arguments, 3);
-					loader.reject();
-				});
-		}
+		var glympserLoader = null;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -84,9 +64,14 @@ define(function(require, exports, module)
 
 		this.loadViewer = function(cfgNew, mapHtmlElement)
 		{
-			loader.done(function()
+			if (!glympserLoader)
 			{
-				(client && client.loadViewer(cfgNew, mapHtmlElement));
+				dbg('adapter must be initialized in in client mode first', null, 3);
+				return;
+			}
+			glympserLoader.done(function()
+			{
+				client.loadViewer(cfgNew, mapHtmlElement);
 			});
 		};
 
@@ -110,7 +95,9 @@ define(function(require, exports, module)
 				return;
 			}
 
-			loader.done(function()
+			glympserLoader = loadGlympser();
+
+			glympserLoader.done(function()
 			{
 				client = new Client(that
 					, oasisLocal
@@ -131,15 +118,41 @@ define(function(require, exports, module)
 		// INTERNAL
 		///////////////////////////////////////////////////////////////////////////////
 
-		function getLoaderUrl(cfg)
+		function loadGlympser()
 		{
-			if (cfg.loaderPath)
+			var loader = $.Deferred();
+			if ($.fn.glympser)
 			{
-				return cfg.loaderPath;
+				dbg('glympser loader is already included in the page - use existing.');
+				loader.resolve();
+			}
+			else
+			{
+				var loaderUrl = getGlympserLoaderUrl();
+				dbg('loading glympser loader from', loaderUrl);
+				$.getScript(loaderUrl)
+					.done(function()
+					{
+						loader.resolve();
+					})
+					.fail(function()
+					{
+						dbg('Failed to load Loader script:', arguments, 3);
+						loader.reject();
+					});
+			}
+			return loader;
+		}
+
+		function getGlympserLoaderUrl()
+		{
+			if (cfgAdapter.loaderPath)
+			{
+				return cfgAdapter.loaderPath;
 			}
 
-			var env = (cfg.loaderEnvironment === 'sandbox' ? 'dev.' : '');
-			var version = (cfg.loaderVersion || 'latest');
+			var env = (cfgAdapter.loaderEnvironment === 'sandbox' ? 'dev.' : '');
+			var version = (cfgAdapter.loaderVersion || 'latest');
 
 			return '//' + env + 'glympse.com/js/loader/' + version + '/jquery.glympser.min.js';
 		}
