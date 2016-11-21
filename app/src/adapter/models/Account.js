@@ -70,7 +70,7 @@ define(function(require, exports, module)
 			token = currentKeySettings[cAcctTokenName];
 			if (token)
 			{
-				controller.notify(m.AccountInit, { status: true, token: token });
+				controller.notify(m.AccountInit, { status: true, token: token, id: currentKeySettings[cUserName] });
 				return true;
 			}
 
@@ -298,10 +298,7 @@ define(function(require, exports, module)
 
 						//dbg('>> new token: ' + token);
 
-						result.status = true;
-						result.token = token;
-
-						controller.notify(m.AccountInit, result);
+						controller.notify(m.AccountInit, { status: true, token: token, id: account[cSvcUserName] });
 
 						return;
 					}

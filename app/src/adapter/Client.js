@@ -400,8 +400,8 @@ define(function(require, exports, module)
 					if (args.status)
 					{
 						authToken = args.token;
-						cfgAdapter.authToken = authToken;
-						cfgViewer.authToken = authToken;
+						cfgAdapter.accountId = cfgViewer.accountId = args.id;
+						cfgAdapter.authToken = cfgViewer.authToken = authToken;
 						//dbg('m.AccountInit', args);
 
 						if (glympseLoader)
@@ -431,6 +431,7 @@ define(function(require, exports, module)
 				case m.UserAvatarUpdateStatus:
 				case m.UserInfoStatus:
 				case m.CardsJoinRequestStatus:
+				case m.CardRemoveMemberStatus:
 				{
 					sendEvent(msg, args);
 					break;

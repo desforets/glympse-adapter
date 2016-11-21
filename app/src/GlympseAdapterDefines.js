@@ -48,6 +48,8 @@ define(function(require, exports, module)
 
 			REQUESTS: {
 				requestCards: 'requestCards'
+				, joinRequest: 'joinRequest'
+				, removeMember: 'removeMember'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
 				//, removeInvites: 'removeInvites'
@@ -62,7 +64,6 @@ define(function(require, exports, module)
 
 			, REQUESTS_LOCAL: {
 				getCards: 'getCards'
-				, joinRequest: 'joinRequest'
 			}
 
 			/////////////////////////////////////////
@@ -126,6 +127,7 @@ define(function(require, exports, module)
 			, CardAdded: 'CardAdded'
 			, CardRemoved: 'CardRemoved'
 			, CardsJoinRequestStatus: 'CardsJoinRequestStatus'
+			, CardRemoveMemberStatus: 'CardRemoveMemberStatus'
 
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'

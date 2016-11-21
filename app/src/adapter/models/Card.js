@@ -114,7 +114,9 @@ define(function(require, exports, module)
 					}
 				}
 			}
-			for (i = 0, len = currentlySharing.length; i < len; i++)
+			// (use while to allow deleting in the loop)
+			i = currentlySharing.length;
+			while (i--)
 			{
 				invite = currentlySharing[i];
 				if (allShares.indexOf(invite) === -1)
@@ -128,7 +130,8 @@ define(function(require, exports, module)
 					});
 				}
 			}
-			for (i = 0, len = members; i < len; i++)
+			i = members.length;
+			while (i--)
 			{
 				member = members[i];
 				if (allMembersIds.indexOf(member.getId()) === -1)

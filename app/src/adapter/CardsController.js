@@ -33,6 +33,7 @@ define(function(require, exports, module)
 		var cardsReady = 0;
 		var initialized = false;
 		var authToken = cfg.authToken;
+		var accountId = cfg.accountId;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -64,6 +65,7 @@ define(function(require, exports, module)
 				case m.AccountInit:
 				{
 					authToken = args.token;
+					accountId = args.id;
 					accountInitComplete(args);
 					break;
 				}
@@ -111,18 +113,16 @@ define(function(require, exports, module)
 		{
 			switch (cmd)
 			{
-				/**
-				 * Force to request cards for the current user now.
-				 */
 				case r.requestCards:
 					return requestCards();
-				/**
-				 * Returns currently loaded cards
-				 */
-				case rl.getCards:
-					return cards;
 
-				case rl.joinRequest:
+				case rl.getCards:
+					return getCards();
+
+				case r.removeMember:
+					return removeMember(args);
+
+				case r.joinRequest:
 					return joinRequest(args);
 				default:
 					dbg('method not found', cmd);
@@ -187,6 +187,9 @@ define(function(require, exports, module)
 		// Cards API
 		//////////////////////
 
+		/**
+		 * Requests cards for the current user.
+		 */
 		function requestCards()
 		{
 			$.ajax(
@@ -208,46 +211,55 @@ define(function(require, exports, module)
 				{
 					processCardsData();
 				});
+
+			function processCardsData(resp)
+			{
+				if (resp && resp.response && resp.result === 'ok')
+				{
+					var i, card, len, cardId, allCardIds = [];
+					// add new cards
+					for (i = 0, len = resp.response.length; i < len; i++)
+					{
+						card = resp.response[i];
+						allCardIds.push(card.id);
+						if (cardInvites.indexOf(card.id) === -1)
+						{
+							cardInvites.push(card.id);
+						}
+					}
+					// cleanup deleted cards (use while to allow deleting in the loop)
+					i = cardInvites.length;
+					while (i--) {
+						cardId = cardInvites[i];
+						if (allCardIds.indexOf(cardId) === -1)
+						{
+							cardInvites.splice(i, 1);
+							card = cardsIndex[cardId];
+							cards.splice(cards.indexOf(card), 1);
+							delete cardsIndex[cardId];
+							controller.notify(m.CardRemoved, card);
+						}
+					}
+					// refresh existing cards
+					for (i = 0, len = cardInvites.length; i < len; i++)
+					{
+						loadCard(cardInvites[i]);
+					}
+				}
+				else
+				{
+					dbg('failed to load cards');
+				}
+			}
+
 		}
 
-		function processCardsData(resp)
+		/**
+		 * Returns currently loaded cards
+		 */
+		function getCards()
 		{
-			if (resp && resp.response && resp.result === 'ok')
-			{
-				var i, card, len, cardId, allCardIds = [];
-				// add new cards
-				for (i = 0, len = resp.response.length; i < len; i++)
-				{
-					card = resp.response[i];
-					allCardIds.push(card.id);
-					if (cardInvites.indexOf(card.id) === -1)
-					{
-						cardInvites.push(card.id);
-					}
-				}
-				// cleanup deleted cards
-				for (i = 0, len = cardInvites.length; i < len; i++)
-				{
-					cardId = cardInvites[i];
-					if (allCardIds.indexOf(cardId) === -1)
-					{
-						cardInvites.splice(i, 1);
-						card = cardsIndex[cardId];
-						cards.splice(cards.indexOf(card), 1);
-						delete cardsIndex[cardId];
-						controller.notify(m.CardRemoved, card);
-					}
-				}
-				// refresh existing cards
-				for (i = 0, len = cardInvites.length; i < len; i++)
-				{
-					loadCard(cardInvites[i]);
-				}
-			}
-			else
-			{
-				dbg('failed to load cards');
-			}
+			return cards;
 		}
 
 		function getCard(card)
@@ -272,43 +284,41 @@ define(function(require, exports, module)
 				})
 				.done(function(data)
 				{
-					processCardData(card, data);
+					processCardData(data);
 				})
 				.fail(function()
 				{
-					processCardData(card, null);
+					processCardData(null);
 				});
-		}
 
-		function processCardData(card, resp)
-		{
-			try
+			function processCardData(resp)
 			{
-				if (resp)
+				try
 				{
-					var idCard = card.getIdCard();
-
-					if (resp.response && resp.result === 'ok')
+					if (resp)
 					{
-						//dbg('Got card data', resp);
-						card.setData(resp.response);
-						that.notify(m.CardReady, idCard);
-					}
-					else if (resp.meta && resp.meta.error)
-					{
-						// Invite is invalid or has been revoked, in
-						// either case, we cannot continue loading this
-						// card, so bail immediately
-						if (resp.meta.error === 'failed_to_decode')
+						if (resp.response && resp.result === 'ok')
 						{
+							//dbg('Got card data', resp);
+							card.setData(resp.response);
 							that.notify(m.CardReady, idCard);
+						}
+						else if (resp.meta && resp.meta.error)
+						{
+							// Invite is invalid or has been revoked, in
+							// either case, we cannot continue loading this
+							// card, so bail immediately
+							if (resp.meta.error === 'failed_to_decode')
+							{
+								that.notify(m.CardReady, idCard);
+							}
 						}
 					}
 				}
-			}
-			catch (e)
-			{
-				dbg('Error parsing card', e);
+				catch (e)
+				{
+					dbg('Error parsing card', e);
+				}
 			}
 		}
 
@@ -367,6 +377,82 @@ define(function(require, exports, module)
 					}
 				}
 				controller.notify(m.CardsJoinRequestStatus, result);
+			}
+		}
+
+		/**
+		 * Removes a member from a given card
+		 *
+		 * @param {Object} config Configuration
+		 * @param {string} config.cardId Card id to remove a member
+		 * @param {string} config.memberId Member id of the member to remove. If no memberId is given, the current user is removed.
+		 */
+		function removeMember(config)
+		{
+			if (!config || !config.cardId)
+			{
+				dbg('CardId param is mandatory!', config, 3);
+				return;
+			}
+
+			var memberId = config.memberId;
+			var card;
+			if (!memberId)
+			{
+				card = cardsIndex[config.cardId];
+				if (!card)
+				{
+					dbg('card not found for CardId=', config.cardId, 3);
+					return;
+				}
+				var members = card.getMembers();
+				for (var i = 0, len = members.length, member; i < len; i++) {
+					member = members[i];
+					if (member.getUserId() === accountId) {
+						memberId = member.getId();
+						break;
+					}
+				}
+				if (!memberId) {
+					dbg('current member not found for card=', card.toJSON(), 3);
+					return;
+				}
+			}
+
+			$.ajax({
+				url: (svr + 'cards/' + config.cardId + '/members/' + memberId),
+				method: 'DELETE',
+				beforeSend: function(request)
+				{
+					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
+				},
+				dataType: 'json',
+				contentType: 'application/json'
+			})
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+						result.response = data.response;
+
+						requestCards();
+					}
+					else
+					{
+						result.response = data.meta;
+					}
+				}
+				controller.notify(m.CardRemoveMemberStatus, result);
 			}
 		}
 	}
