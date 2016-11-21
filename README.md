@@ -457,7 +457,7 @@ using GA in host-mode) that are sent by the adapter (defined in the
 - `CardsJoinRequestStatus`: Indicates that Card join request has been created or
   creation failed with `response.error` message and `status: false`
 - `CardRemoveMemberStatus`: Indicates that Card member was removed or removing failed with `response.error` message and `status: false`
-- `ActiveCardSet` / `card`: Notification sent when active card (card which is currently displayed on the map) is changed.
+- `CardsLocationRequestStatus`: Indicates that location request was created or creation failed with `response.error` message and `status: false`
 - `DataUpdate` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id, data: [ property_0, ..., propertyM ] }`:
   Event passed from the Glympse API for a given Glympse invite code, for unknown/custom
   properties found in the Glympse's data stream. The format of property elements
@@ -673,8 +673,11 @@ Access to these endpoints can be made via the `cards` property of the adapter in
 - `joinRequest(requestConfig)`: [RequestConfig docs](https://developer.glympse.com/docs/core/api/reference/cards/requests/post#request), 
  Sends a request to join a card, sends `CardsJoinRequestStatus` with result of the API call
 - `removeMember(config)`: Removes a member from a given card. Sends `CardRemoveMemberStatus` with result of the API call.
-  - `config.card_id`: Card id to remove a member
-  - `config.member_id`: Member id of the member to remove. If no member_id is given, the current user is removed.
+  - `config.cardId`: Card id to remove a member
+  - `config.memberId`: Member id of the member to remove. If no member_id is given, the current user is removed.
+- `request(config)`: Sends location request to a card member or all card members. Sends `CardsLocationRequestStatus` with result of the API call.
+  - `config.cardId`: Card id to send request
+  - `config.memberList`: List of member_ids to send requests. Not used if scope = "all".
 
 ### GlympseAdapter.cards.* endpoints (client-mode-only):
 

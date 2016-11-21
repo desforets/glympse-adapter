@@ -432,6 +432,7 @@ define(function(require, exports, module)
 				case m.UserInfoStatus:
 				case m.CardsJoinRequestStatus:
 				case m.CardRemoveMemberStatus:
+				case m.CardsLocationRequestStatus:
 				{
 					sendEvent(msg, args);
 					break;

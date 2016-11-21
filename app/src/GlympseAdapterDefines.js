@@ -48,6 +48,7 @@ define(function(require, exports, module)
 
 			REQUESTS: {
 				requestCards: 'requestCards'
+				, request: 'request'
 				, joinRequest: 'joinRequest'
 				, removeMember: 'removeMember'
 				//  addInvites: 'addInvites'
@@ -128,6 +129,7 @@ define(function(require, exports, module)
 			, CardRemoved: 'CardRemoved'
 			, CardsJoinRequestStatus: 'CardsJoinRequestStatus'
 			, CardRemoveMemberStatus: 'CardRemoveMemberStatus'
+			, CardsLocationRequestStatus: 'CardsLocationRequestStatus'
 
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'

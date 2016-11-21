@@ -119,6 +119,9 @@ define(function(require, exports, module)
 				case rl.getCards:
 					return getCards();
 
+				case r.request:
+					return request(args);
+
 				case r.removeMember:
 					return removeMember(args);
 
@@ -229,7 +232,8 @@ define(function(require, exports, module)
 					}
 					// cleanup deleted cards (use while to allow deleting in the loop)
 					i = cardInvites.length;
-					while (i--) {
+					while (i--)
+					{
 						cardId = cardInvites[i];
 						if (allCardIds.indexOf(cardId) === -1)
 						{
@@ -322,6 +326,75 @@ define(function(require, exports, module)
 			}
 		}
 
+		function request(config)
+		{
+			if (!config.cardId)
+			{
+				dbg('cardId config params must be passed', config, 3);
+				return;
+			}
+
+			var url = svr + 'cards/' + config.cardId + '/request';
+
+			//TODO: generate invite code
+			var inviteCode = 'B0T-001';
+
+			var data = {
+				invite_code: inviteCode,
+				invitees: {}
+			};
+
+			if (config.memberList && config.memberList.length)
+			{
+				var members = [];
+				for (var i = 0, len = config.memberList.length; i < len; i++)
+				{
+					members.push({member_id: config.memberList[i]});
+				}
+				data.invitees.type = 'list';
+				data.invitees.list = members;
+			}
+			else
+			{
+				data.invitees.type = 'all';
+			}
+
+			$.ajax({
+				url: url,
+				method: 'POST',
+				beforeSend: function(request)
+				{
+					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
+				},
+				dataType: 'json',
+				data: JSON.stringify(data),
+				contentType: 'application/json'
+			})
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+						result.response = data.response;
+					}
+					else
+					{
+						result.response = data.meta;
+					}
+				}
+				controller.notify(m.CardsLocationRequestStatus, result);
+			}
+		}
+
 		function joinRequest(requestConfig)
 		{
 			// {
@@ -338,7 +411,7 @@ define(function(require, exports, module)
 				(!requestConfig.address && requestConfig.type !== REQUEST_TYPES.CLIPBOARD && requestConfig.type !== REQUEST_TYPES.LINK))
 			{
 				dbg('Need to provide type (Defines.CARDS.REQUEST_TYPES: LINK, CLIPBOARD, SMS, EMAIL, ACCOUNT) ' +
-					'and address (except LINK and CLIPBOARD types) to join a card');
+					'and address (except LINK and CLIPBOARD types) to join a card', requestConfig, 3);
 				return;
 			}
 			requestConfig.send = requestConfig.send || 'server';
@@ -406,14 +479,17 @@ define(function(require, exports, module)
 					return;
 				}
 				var members = card.getMembers();
-				for (var i = 0, len = members.length, member; i < len; i++) {
+				for (var i = 0, len = members.length, member; i < len; i++)
+				{
 					member = members[i];
-					if (member.getUserId() === accountId) {
+					if (member.getUserId() === accountId)
+					{
 						memberId = member.getId();
 						break;
 					}
 				}
-				if (!memberId) {
+				if (!memberId)
+				{
 					dbg('current member not found for card=', card.toJSON(), 3);
 					return;
 				}
