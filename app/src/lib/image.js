@@ -4,6 +4,45 @@
 
 define(function(require, exports, module)
 {
+	function getImageType(arrayBuffer)
+	{
+		var type = '';
+		var dv = new DataView(arrayBuffer, 0, 5);
+		var nume1 = dv.getUint8(0, true);
+		var nume2 = dv.getUint8(1, true);
+		var hex = nume1.toString(16) + nume2.toString(16);
+
+		switch (hex)
+		{
+			case '8950':
+			{
+				type = 'image/png';
+				break;
+			}
+			case '4749':
+			{
+				type = 'image/gif';
+				break;
+			}
+			case '424d':
+			{
+				type = 'image/bmp';
+				break;
+			}
+			case 'ffd8':
+			{
+				type = 'image/jpeg';
+				break;
+			}
+			default:
+			{
+				type = null;
+				break;
+			}
+		}
+		return type;
+	}
+
 	var imageProcessing = {
 		imageScale: function(imgData, config, callback)
 		{
@@ -87,6 +126,7 @@ define(function(require, exports, module)
 				callback({
 					width: $(img).width(),
 					height: $(img).height(),
+					type: getImageType(imgData),
 					img: img
 				});
 				img.remove();
