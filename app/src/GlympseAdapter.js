@@ -66,7 +66,7 @@ define(function(require, exports, module)
 		{
 			if (!glympserLoader)
 			{
-				dbg('adapter must be initialized in in client mode first', null, 3);
+				dbg('adapter must be initialized in client mode first', null, 3);
 				return;
 			}
 			glympserLoader.done(function()
