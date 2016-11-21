@@ -63,12 +63,8 @@ define(function(require, exports, module)
 
 		this.init = function()
 		{
-			settings = lib.getCfgVal(cAccountInfo) || {};
+			getSettings();
 
-			currentEnvKeys = settings[idEnvironment] || {};
-			currentKeySettings = currentEnvKeys[apiKey] || {};
-
-			//dbg('isAnon = ' + isAnon + ', settings', settings);
 			cfg.isAnon = isAnon;
 
 			token = currentKeySettings[cAcctTokenName];
@@ -250,6 +246,13 @@ define(function(require, exports, module)
 			}
 		};
 
+		this.hasAccount = function()
+		{
+			getSettings();
+
+			return !!(!isAnon && currentKeySettings[cUserName] && currentKeySettings[cPassword]);
+		};
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
@@ -260,6 +263,13 @@ define(function(require, exports, module)
 			currentEnvKeys[apiKey] = currentKeySettings;
 			settings[idEnvironment] = currentEnvKeys;
 			lib.setCfgVal(cAccountInfo, settings);
+		}
+
+		function getSettings()
+		{
+			settings = lib.getCfgVal(cAccountInfo) || {};
+			currentEnvKeys = settings[idEnvironment] || {};
+			currentKeySettings = currentEnvKeys[apiKey] || {};
 		}
 
 		function getNewToken()

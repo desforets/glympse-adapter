@@ -97,6 +97,7 @@ define(function(require, exports, module)
 				, getUserInfo: 'getUserInfo'
 				, setUserName: 'setUserName'
 				, setUserAvatar: 'setUserAvatar'
+				, hasAccount: 'hasAccount'
 			}
 		}
 
