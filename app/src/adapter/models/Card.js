@@ -116,7 +116,8 @@ define(function(require, exports, module)
 			}
 			// (use while to allow deleting in the loop)
 			i = currentlySharing.length;
-			while (i--) {
+			while (i--)
+			{
 				invite = currentlySharing[i];
 				if (allShares.indexOf(invite) === -1)
 				{
@@ -130,7 +131,8 @@ define(function(require, exports, module)
 				}
 			}
 			i = members.length;
-			while (i--) {
+			while (i--)
+			{
 				member = members[i];
 				if (allMembersIds.indexOf(member.getId()) === -1)
 				{
