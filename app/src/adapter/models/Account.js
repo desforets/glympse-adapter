@@ -246,7 +246,7 @@ define(function(require, exports, module)
 			}
 		};
 
-		this.hasAccount = function ()
+		this.hasAccount = function()
 		{
 			getSettings();
 
