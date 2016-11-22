@@ -4,6 +4,7 @@ define(function(require, exports, module)
 
 	var lib = require('glympse-adapter/lib/utils');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
+	var imageProcessing = require('glympse-adapter/lib/image');
 
 	var m = Defines.MSG;
 	var REQUEST_TYPES = Defines.CARDS.REQUEST_TYPES;
@@ -27,6 +28,7 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('Account', cfg.dbg);
+
 		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
 		var sandbox = cfg.sandbox;
 		var idEnvironment = (sandbox) ? Account.EnvSandbox : Account.EnvProduction;
@@ -153,48 +155,56 @@ define(function(require, exports, module)
 
 		this.setAvatar = function(urlOrAvatarDataArray)
 		{
+			var that = this;
+			var avatarCfg = cfg.avatar || {};
+
 			if (typeof urlOrAvatarDataArray === 'string')
 			{
-				var that = this;
-				var xhr = new XMLHttpRequest();
-				xhr.open('GET', urlOrAvatarDataArray, true);
-				xhr.responseType = 'arraybuffer';
-
-				xhr.onload = function()
-				{
-					var arrayBuffer = xhr.response;
-					if (arrayBuffer)
-					{
-						that.setAvatar(arrayBuffer);
-					}
-				};
-
-				xhr.onerror = function(error)
-				{
-					var result = {
-						status: false,
-						errorDetail: 'Could not load image by url',
-						response: error
-					};
-					controller.notify(m.UserAvatarUpdateStatus, result);
-				};
-
-				xhr.send(null);
-				return;
+				imageProcessing.loadDataArrayByUrl(urlOrAvatarDataArray, loadImageCallback);
+				return false;
 			}
 
-			//ToDo: need to resize image using utility helper (ENG-11495)
+			var imageScaleConfig = {
+				minSize: [
+					avatarCfg.minSize || 120,
+					avatarCfg.minSize || 120
+				],
+				maxSize: [
+					avatarCfg.maxSize || 512,
+					avatarCfg.maxSize || 512
+				],
+				maintainAspectRatio: true,
+				sidebandFill: '#fff',
+				convertAlpha: '#fff'
+			};
 
-			var apiUrl = (svr + 'users/self/upload_avatar?oauth_token=' + token);
-			$.ajax({
-				url: apiUrl,
-				type: 'POST',
-				contentType: 'image/png',
-				data: new Uint8Array(urlOrAvatarDataArray),
-				processData: false
-			})
-				.done(processResponse)
-				.fail(processResponse);
+			imageProcessing.imageScale(urlOrAvatarDataArray, imageScaleConfig, imageScaleCallback);
+
+			function loadImageCallback(dataArray, error)
+			{
+				if (dataArray)
+				{
+					that.setAvatar(dataArray);
+				}
+				else
+				{
+					controller.notify(m.UserAvatarUpdateStatus, error);
+				}
+			}
+
+			function imageScaleCallback(dataArray)
+			{
+				var apiUrl = (svr + 'users/self/upload_avatar?oauth_token=' + token);
+				$.ajax({
+					url: apiUrl,
+					type: 'POST',
+					contentType: 'image/jpeg',
+					data: new Uint8Array(dataArray),
+					processData: false
+				})
+					.done(processResponse)
+					.fail(processResponse);
+			}
 
 			function processResponse(data)
 			{

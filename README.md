@@ -94,7 +94,7 @@ object. `messageData` can be a number of different types, depending on the value
 each message type.
 
 GA client-mode  configuration format has two main components -- one for the Glympse
-Viewer, and one for the adapater itself:
+Viewer, and one for the adapter itself:
 
 ```javascript
 var cfg =
@@ -120,6 +120,10 @@ var cfg =
 		, loaderEnvironment: *string*
         , loaderPath: *string*
         , loaderVersion: *string*
+        , avatar: {
+              minSize: *number* //in pixels
+            , maxSize: *number* //in pixels
+        }
 	}
 };
 ```
@@ -149,6 +153,9 @@ var cfg =
   - `loaderEnvironment`: Environment for the viewer's loader: "prod" (glympse.com) | "sandbox" (dev.glympse.com). Default is "prod".
   - `loaderVersion`: Version of the viewer's loader. Default is "latest".
   - `loaderPath`: Arbitrary URL to the loader (overrides `loaderEnvironment` and `loaderVersion`). Default is NULL.
+  - `avatar` - configuration for Image processing for `core.setUserAvatar` API endpoint
+    - `minSize`: Min size for avatar image scaling
+    - `maxSize`: Max size for avatar image scaling
 
 
 ### Custom Marker Configuration
