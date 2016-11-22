@@ -427,6 +427,7 @@ define(function(require, exports, module)
 				}
 
 				case m.AccountCreateStatus:
+				case m.CreateRequestStatus:
 				case m.UserNameUpdateStatus:
 				case m.UserAvatarUpdateStatus:
 				case m.UserInfoStatus:

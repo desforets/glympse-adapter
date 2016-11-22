@@ -100,6 +100,7 @@ define(function(require, exports, module)
 				, setUserName: 'setUserName'
 				, setUserAvatar: 'setUserAvatar'
 				, hasAccount: 'hasAccount'
+				, createRequest: 'createRequest'
 			}
 		}
 
@@ -115,6 +116,7 @@ define(function(require, exports, module)
 			, UserNameUpdateStatus: 'UserNameUpdateStatus'
 			, UserAvatarUpdateStatus: 'UserAvatarUpdateStatus'
 			, UserInfoStatus: 'UserInfoStatus'
+			, CreateRequestStatus: 'CreateRequestStatus'
 
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
