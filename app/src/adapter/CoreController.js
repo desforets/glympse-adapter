@@ -39,6 +39,7 @@ define(function(require, exports, module)
 				case m.UserNameUpdateStatus:
 				case m.UserAvatarUpdateStatus:
 				case m.UserInfoStatus:
+				case m.CreateRequestStatus:
 				{
 					controller.notify(msg, args);
 					break;
@@ -91,6 +92,11 @@ define(function(require, exports, module)
 				case rl.hasAccount:
 				{
 					return account.hasAccount();
+				}
+
+				case rl.createRequest:
+				{
+					return account.createRequest(args);
 				}
 			}
 		};

@@ -48,6 +48,7 @@ define(function(require, exports, module)
 
 			REQUESTS: {
 				requestCards: 'requestCards'
+				, request: 'request'
 				, joinRequest: 'joinRequest'
 				, removeMember: 'removeMember'
 				//  addInvites: 'addInvites'
@@ -99,6 +100,7 @@ define(function(require, exports, module)
 				, setUserName: 'setUserName'
 				, setUserAvatar: 'setUserAvatar'
 				, hasAccount: 'hasAccount'
+				, createRequest: 'createRequest'
 			}
 		}
 
@@ -114,6 +116,7 @@ define(function(require, exports, module)
 			, UserNameUpdateStatus: 'UserNameUpdateStatus'
 			, UserAvatarUpdateStatus: 'UserAvatarUpdateStatus'
 			, UserInfoStatus: 'UserInfoStatus'
+			, CreateRequestStatus: 'CreateRequestStatus'
 
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
@@ -128,6 +131,7 @@ define(function(require, exports, module)
 			, CardRemoved: 'CardRemoved'
 			, CardsJoinRequestStatus: 'CardsJoinRequestStatus'
 			, CardRemoveMemberStatus: 'CardRemoveMemberStatus'
+			, CardsLocationRequestStatus: 'CardsLocationRequestStatus'
 
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'
