@@ -63,25 +63,25 @@ define(function(require, exports, module)
 
 				if (scaleSize[0] >= scaleSize[1])
 				{
-					if(scaleSize[0] > config.maxSize[0])
+					if (scaleSize[0] > config.maxSize[0])
 					{
 						scaleSize[0] = config.maxSize[0];
 						scaleSize[1] = height * config.maxSize[0] / width;
 					}
 
-					if(scaleSize[0] < config.minSize[0])
+					if (scaleSize[0] < config.minSize[0])
 					{
 						scaleSize[0] = config.minSize[0];
 						scaleSize[1] = height * config.minSize[0] / width;
 					}
 				}
 				else {
-					if(scaleSize[1] > config.maxSize[1])
+					if (scaleSize[1] > config.maxSize[1])
 					{
 						scaleSize[0] = width * config.maxSize[1] / height;
 						scaleSize[1] = config.maxSize[1];
 					}
-					if(scaleSize[1] < config.minSize[1])
+					if (scaleSize[1] < config.minSize[1])
 					{
 						scaleSize[0] = width * config.minSize[1] / height;
 						scaleSize[1] = config.minSize[1];
@@ -89,7 +89,8 @@ define(function(require, exports, module)
 				}
 
 				//we need to get square image
-				if(scaleSize[0] !== scaleSize[1]){
+				if (scaleSize[0] !== scaleSize[1])
+				{
 					scaleSize[0] = Math.max(scaleSize[0], scaleSize[1]);
 					scaleSize[1] = Math.max(scaleSize[0], scaleSize[1]);
 				}

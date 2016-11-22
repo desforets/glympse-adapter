@@ -166,7 +166,7 @@ define(function(require, exports, module)
 			var imageScaleConfig = {
 				minSize: [
 					avatarCfg.minSize || 120,
-					avatarCfg.minSize || 120,
+					avatarCfg.minSize || 120
 				],
 				maxSize: [
 					avatarCfg.maxSize || 512,
