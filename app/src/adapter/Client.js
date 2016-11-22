@@ -431,6 +431,7 @@ define(function(require, exports, module)
 				case m.UserAvatarUpdateStatus:
 				case m.UserInfoStatus:
 				case m.CardsJoinRequestStatus:
+				case m.CardsJoinRequestCancelStatus:
 				case m.CardRemoveMemberStatus:
 				{
 					sendEvent(msg, args);
