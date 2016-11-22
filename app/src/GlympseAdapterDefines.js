@@ -48,7 +48,10 @@ define(function(require, exports, module)
 
 			REQUESTS: {
 				requestCards: 'requestCards'
+				, request: 'request'
 				, joinRequest: 'joinRequest'
+				, joinRequestCancel: 'joinRequestCancel'
+				, getActiveJoinRequests: 'getActiveJoinRequests'
 				, removeMember: 'removeMember'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
@@ -99,6 +102,7 @@ define(function(require, exports, module)
 				, setUserName: 'setUserName'
 				, setUserAvatar: 'setUserAvatar'
 				, hasAccount: 'hasAccount'
+				, createRequest: 'createRequest'
 			}
 		}
 
@@ -114,6 +118,7 @@ define(function(require, exports, module)
 			, UserNameUpdateStatus: 'UserNameUpdateStatus'
 			, UserAvatarUpdateStatus: 'UserAvatarUpdateStatus'
 			, UserInfoStatus: 'UserInfoStatus'
+			, CreateRequestStatus: 'CreateRequestStatus'
 
 		    , AdapterInit: 'AdapterInit'
 			, AdapterReady: 'AdapterReady'
@@ -127,7 +132,10 @@ define(function(require, exports, module)
 			, CardAdded: 'CardAdded'
 			, CardRemoved: 'CardRemoved'
 			, CardsJoinRequestStatus: 'CardsJoinRequestStatus'
+			, CardsJoinRequestCancelStatus: 'CardsJoinRequestCancelStatus'
+			, CardsActiveJoinRequestsStatus: 'CardsActiveJoinRequestsStatus'
 			, CardRemoveMemberStatus: 'CardRemoveMemberStatus'
+			, CardsLocationRequestStatus: 'CardsLocationRequestStatus'
 
 			, DataUpdate: 'DataUpdate'
 			, InviteAdded: 'InviteAdded'

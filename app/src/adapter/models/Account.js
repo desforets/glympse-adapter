@@ -7,6 +7,7 @@ define(function(require, exports, module)
 	var imageProcessing = require('glympse-adapter/lib/image');
 
 	var m = Defines.MSG;
+	var REQUEST_TYPES = Defines.CARDS.REQUEST_TYPES;
 
 	var cAcctTokenName = 't0';
 	var cApiKey = 'api_key';
@@ -262,6 +263,66 @@ define(function(require, exports, module)
 			getSettings();
 
 			return !!(!isAnon && currentKeySettings[cUserName] && currentKeySettings[cPassword]);
+		};
+
+		/**
+		 * Allow logged in user to generate a sharing request.
+		 * @param {Object} config endpoint options
+		 * request_params format:
+		 * {
+         *  type: string,     // Type of request -- email|sms|link|account|app ---> only accepts/uses "link" for now
+         *  subtype: string,  // [OPTIONAL] Subtype of "app" types (50 char max) --> unused for now
+         *  address: string,  // [OPTIONAL] Address of recipient for some types of requests (256 char max) --> unused for now
+         *  name: string,     // [OPTIONAL] A friendly display name to be associated with the requestee. (150 char max)
+         *  text: string,     // [OPTIONAL] Message to send --> unused for now
+         *  send: string,     // [OPTIONAL] Values server|client --> unused for now
+         *  locale: string,   // [OPTIONAL] Locale for localized resources --> unused for now
+         *  brand: string,    // [OPTIONAL] Defines any sub-brand customization for the invite --> unused for now
+         * }
+		 */
+		this.createRequest = function(config)
+		{
+			if (!config || !config.type || config.type !== REQUEST_TYPES.LINK)
+			{
+				dbg('"type" must be provided (NOTE: only Defines.CARDS.REQUEST_TYPES.LINK type is supported for now)', config, 3);
+				return;
+			}
+
+			var url = svr + 'users/self/create_request?' + $.param(config);
+
+			$.ajax({
+				url: url,
+				method: 'POST',
+				beforeSend: function(request)
+				{
+					request.setRequestHeader('Authorization', 'Bearer ' + token);
+				},
+				dataType: 'json',
+				contentType: 'application/json'
+			})
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+						result.response = data.response;
+					}
+					else
+					{
+						result.response = data.meta;
+					}
+				}
+				controller.notify(m.CreateRequestStatus, result);
+			}
 		};
 
 

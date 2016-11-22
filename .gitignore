@@ -13,6 +13,7 @@ node_modules
 #################
 dist
 .tmp
+*.tmp.*
 app/lib
 .yo-rc.json
 .idea
