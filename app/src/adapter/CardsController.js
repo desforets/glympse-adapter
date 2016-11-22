@@ -131,6 +131,9 @@ define(function(require, exports, module)
 				case r.joinRequestCancel:
 					return joinRequestCancel(args);
 
+				case r.getActiveJoinRequests:
+					return getActiveJoinRequests();
+
 				default:
 					dbg('method not found', cmd);
 			}
@@ -495,7 +498,8 @@ define(function(require, exports, module)
 					if (data.result === 'ok')
 					{
 						result.status = true;
-						result.response = data.response;
+						result.response = data.response || {};
+						result.response.id = requestId;
 					}
 					else
 					{
@@ -503,6 +507,45 @@ define(function(require, exports, module)
 					}
 				}
 				controller.notify(m.CardsJoinRequestCancelStatus, result);
+			}
+		}
+
+		function getActiveJoinRequests()
+		{
+			var url = svr + 'cards/requests';
+
+			$.ajax({
+				url: url,
+				method: 'GET',
+				beforeSend: function(request)
+				{
+					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
+				},
+				dataType: 'json',
+				contentType: 'application/json'
+			})
+				.done(processRequest)
+				.fail(processRequest);
+
+			function processRequest(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+						result.response = data.response || {};
+					}
+					else
+					{
+						result.response = data.meta;
+					}
+				}
+				controller.notify(m.CardsActiveJoinRequestsStatus, result);
 			}
 		}
 
