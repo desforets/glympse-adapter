@@ -127,6 +127,10 @@ define(function(require, exports, module)
 
 				case r.joinRequest:
 					return joinRequest(args);
+
+				case r.joinRequestCancel:
+					return joinRequestCancel(args);
+
 				default:
 					dbg('method not found', cmd);
 			}
@@ -460,6 +464,45 @@ define(function(require, exports, module)
 					}
 				}
 				controller.notify(m.CardsJoinRequestStatus, result);
+			}
+		}
+
+		function joinRequestCancel(requestId)
+		{
+			var url = svr + 'cards/requests/' + requestId;
+
+			$.ajax({
+				url: url,
+				method: 'DELETE',
+				beforeSend: function(request)
+				{
+					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
+				},
+				dataType: 'json',
+				contentType: 'application/json'
+			})
+				.done(processRequest)
+				.fail(processRequest);
+
+			function processRequest(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+						result.response = data.response;
+					}
+					else
+					{
+						result.response = data.meta;
+					}
+				}
+				controller.notify(m.CardsJoinRequestCancelStatus, result);
 			}
 		}
 

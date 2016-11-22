@@ -458,6 +458,8 @@ using GA in host-mode) that are sent by the adapter (defined in the
 - `CardUpdated` / `card`: Notification sent when card is updated (e.g. members' list changed).
 - `CardsJoinRequestStatus`: Indicates that Card join request has been created or
   creation failed with `response.error` message and `status: false`
+- `CardsJoinRequestCancelStatus`: Indicates that Card join request has been cancelled or
+  cancelling failed with `response.error` message and `status: false`
 - `CardRemoveMemberStatus`: Indicates that Card member was removed or removing failed with `response.error` message and `status: false`
 - `CardsLocationRequestStatus`: Indicates that location request was created or creation failed with `response.error` message and `status: false`
 - `DataUpdate` / `{ id: glympse_invite_code, owner: glympse_user_account_id, card: card_id, data: [ property_0, ..., propertyM ] }`:
@@ -688,6 +690,7 @@ Access to these endpoints can be made via the `cards` property of the adapter in
 - `requestCards()`: Request cards for the current user. No return value - `CardAdded`/`CardRemoved` events will be generated.
 - `joinRequest(requestConfig)`: [RequestConfig docs](https://developer.glympse.com/docs/core/api/reference/cards/requests/post#request), 
  Sends a request to join a card, sends `CardsJoinRequestStatus` with result of the API call
+- `joinRequestCancel(requestId)`: Cancels a request to join a card, sends `CardsJoinRequestCancelStatus` with result of the API call
 - `removeMember(config)`: Removes a member from a given card. Sends `CardRemoveMemberStatus` with result of the API call.
   - `config.cardId`: Card id to remove a member
   - `config.memberId`: Member id of the member to remove. If no member_id is given, the current user is removed.

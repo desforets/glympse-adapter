@@ -50,6 +50,7 @@ define(function(require, exports, module)
 				requestCards: 'requestCards'
 				, request: 'request'
 				, joinRequest: 'joinRequest'
+				, joinRequestCancel: 'joinRequestCancel'
 				, removeMember: 'removeMember'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
@@ -130,6 +131,7 @@ define(function(require, exports, module)
 			, CardAdded: 'CardAdded'
 			, CardRemoved: 'CardRemoved'
 			, CardsJoinRequestStatus: 'CardsJoinRequestStatus'
+			, CardsJoinRequestCancelStatus: 'CardsJoinRequestCancelStatus'
 			, CardRemoveMemberStatus: 'CardRemoveMemberStatus'
 			, CardsLocationRequestStatus: 'CardsLocationRequestStatus'
 
