@@ -164,7 +164,6 @@ define(function(require, exports, module)
 			var imageScaleConfig = {
 				minSize: [120, 120],
 				maxSize: [512, 512],
-				scaleSize: [160, 160],
 				maintainAspectRatio: true,
 				sidebandFill: '#fff',//'rgba(255,255,255,1)', //#ffffff
 				convertAlpha: '#FFF'

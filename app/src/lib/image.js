@@ -53,17 +53,56 @@ define(function(require, exports, module)
 			{
 				var width = image.width;
 				var height = image.height;
+
 				var startX = 0, startY = 0,
 					scaleX, scaleY,
 					resultImageWidth, resultImageHeight;
 				var persistRatio = config.maintainAspectRatio;
 
+				var scaleSize = [width, height];
+
+				if (scaleSize[0] >= scaleSize[1])
+				{
+					if(scaleSize[0] > config.maxSize[0])
+					{
+						scaleSize[0] = config.maxSize[0];
+						scaleSize[1] = height * config.maxSize[0] / width;
+					}
+
+					if(scaleSize[0] < config.minSize[0])
+					{
+						scaleSize[0] = config.minSize[0];
+						scaleSize[1] = height * config.minSize[0] / width;
+					}
+				}
+				else {
+					if(scaleSize[1] > config.maxSize[1])
+					{
+						scaleSize[0] = width * config.maxSize[1] / height;
+						scaleSize[1] = config.maxSize[1];
+					}
+					if(scaleSize[1] < config.minSize[1])
+					{
+						scaleSize[0] = width * config.minSize[1] / height;
+						scaleSize[1] = config.minSize[1];
+					}
+				}
+
+				//we need to get square image
+				if(scaleSize[0] !== scaleSize[1]){
+					scaleSize[0] = Math.max(scaleSize[0], scaleSize[1]);
+					scaleSize[1] = Math.max(scaleSize[0], scaleSize[1]);
+				}
+
 				var canvas = document.createElement('canvas');
 
 				canvas.id = 'glympse-adapter-image-processing';
 
-				canvas.width = config.scaleSize[0];
-				canvas.height = config.scaleSize[1];
+				canvas.width = scaleSize[0];
+				canvas.height = scaleSize[1];
+
+				//uncomment it for debugging
+				//canvas.style = 'position:fixed; top:0; left:0';
 
 				document.body.appendChild(canvas);
 
@@ -72,8 +111,8 @@ define(function(require, exports, module)
 				context.fillStyle = config.convertAlpha || '#FFFFFF';
 				context.fillRect(0, 0, canvas.width, canvas.height);
 
-				scaleX = width / config.scaleSize[0];
-				scaleY = height / config.scaleSize[1];
+				scaleX = width / scaleSize[0];
+				scaleY = height / scaleSize[1];
 
 				if (persistRatio)
 				{
@@ -94,7 +133,7 @@ define(function(require, exports, module)
 				context.fillRect(0, startY + resultImageHeight, canvas.width, canvas.height);
 
 				context.drawImage(image.img, startX, startY, resultImageWidth, resultImageHeight);
-				//var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
 				var dataURI = canvas.toDataURL('image/jpeg');
 
 				var byteString = atob(dataURI.split(',')[1]);
