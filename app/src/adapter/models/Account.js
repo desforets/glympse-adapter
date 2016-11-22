@@ -27,6 +27,7 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('Account', cfg.dbg);
+
 		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
 		var sandbox = cfg.sandbox;
 		var idEnvironment = (sandbox) ? Account.EnvSandbox : Account.EnvProduction;
@@ -154,6 +155,7 @@ define(function(require, exports, module)
 		this.setAvatar = function(urlOrAvatarDataArray)
 		{
 			var that = this;
+			var avatarCfg = cfg.avatar || {};
 
 			if (typeof urlOrAvatarDataArray === 'string')
 			{
@@ -162,11 +164,17 @@ define(function(require, exports, module)
 			}
 
 			var imageScaleConfig = {
-				minSize: [120, 120],
-				maxSize: [512, 512],
+				minSize: [
+					avatarCfg.minSize || 120,
+					avatarCfg.minSize || 120,
+				],
+				maxSize: [
+					avatarCfg.maxSize || 512,
+					avatarCfg.maxSize || 512
+				],
 				maintainAspectRatio: true,
-				sidebandFill: '#fff',//'rgba(255,255,255,1)', //#ffffff
-				convertAlpha: '#FFF'
+				sidebandFill: '#fff',
+				convertAlpha: '#fff'
 			};
 
 			imageProcessing.imageScale(urlOrAvatarDataArray, imageScaleConfig, imageScaleCallback);
