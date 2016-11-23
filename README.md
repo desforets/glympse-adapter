@@ -434,6 +434,8 @@ using GA in host-mode) that are sent by the adapter (defined in the
   creation failed with `error` message and `status: false`
 - `AccountLoginStatus` / `{ status: bool }`: `status: true` - Indicates the adapter successfully
   logged in. `status: false` - Error occurred, property `error` has additional info about it
+- `AccountDeleteStatus` / `{ status: bool }`: `status: true` - Indicates the adapter successfully
+  removed current credentials.
 - `AdapterInit` / `{ isCard: bool, t: string }`: Indicates the adapter is beginning
   its loading sequence with the passed card invite or the specified Glympse invite
   (indicated via the `t` parameter)
@@ -665,6 +667,7 @@ The following APIs are only available to consumers of the GA when running in
 client-mode. These are also specifed in `GlympseAdapterDefines.CORE.REQUESTS_LOCAL`:
 
 - `accountCreate()`: Creates account, sends event `AccountCreateStatus` as a result.
+- `accountDelete()`: Removes account, sends event `AccountDeleteStatus` as a result.
 - `getUserInfo(userId: string)`: Gets info for the current logged in user (name, avatar URL, etc.).
  If the optional `userId` param is non-null, info is retrieved for the specified user instead.
 - `hasAccount()`: Checks if the adapter has credentials for the currently configured API key.

@@ -98,6 +98,7 @@ define(function(require, exports, module)
 
 			, REQUESTS_LOCAL: {
 				accountCreate: 'accountCreate'
+				, accountDelete: 'accountDelete'
 				, generateAuthToken: 'generateAuthToken'
 				, getUserInfo: 'getUserInfo'
 				, setUserName: 'setUserName'
@@ -115,6 +116,7 @@ define(function(require, exports, module)
 		, MSG: {
 			//Account Events
 			  AccountCreateStatus: 'AccountCreateStatus'
+			, AccountDeleteStatus: 'AccountDeleteStatus'
 		    , AccountLoginStatus: 'AccountLoginStatus'
 			, UserNameUpdateStatus: 'UserNameUpdateStatus'
 			, UserAvatarUpdateStatus: 'UserAvatarUpdateStatus'

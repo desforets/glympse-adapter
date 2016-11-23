@@ -325,6 +325,12 @@ define(function(require, exports, module)
 			}
 		};
 
+		this.delete = function() {
+			//delete all storages for this account
+			deleteSettings();
+
+			controller.notify(m.AccountDeleteStatus, { status: true });
+		};
 
 		///////////////////////////////////////////////////////////////////////////////
 		// UTILITY
@@ -342,6 +348,12 @@ define(function(require, exports, module)
 			settings = lib.getCfgVal(cAccountInfo) || {};
 			currentEnvKeys = settings[idEnvironment] || {};
 			currentKeySettings = currentEnvKeys[apiKey] || {};
+		}
+
+		function deleteSettings() {
+			getSettings();
+			currentKeySettings = {};
+			saveSettings();
 		}
 
 		function getNewToken()
