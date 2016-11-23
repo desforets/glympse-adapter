@@ -98,6 +98,7 @@ define(function(require, exports, module)
 
 			, REQUESTS_LOCAL: {
 				accountCreate: 'accountCreate'
+				, generateAuthToken: 'generateAuthToken'
 				, getUserInfo: 'getUserInfo'
 				, setUserName: 'setUserName'
 				, setUserAvatar: 'setUserAvatar'
@@ -114,7 +115,7 @@ define(function(require, exports, module)
 		, MSG: {
 			//Account Events
 			  AccountCreateStatus: 'AccountCreateStatus'
-		    , AccountInit: 'AccountInitComplete'
+		    , AccountLoginStatus: 'AccountLoginStatus'
 			, UserNameUpdateStatus: 'UserNameUpdateStatus'
 			, UserAvatarUpdateStatus: 'UserAvatarUpdateStatus'
 			, UserInfoStatus: 'UserInfoStatus'

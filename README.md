@@ -432,7 +432,7 @@ using GA in host-mode) that are sent by the adapter (defined in the
 
 - `AccountCreateStatus` / `{ status: bool }`: Indicates the account has been created or
   creation failed with `error` message and `status: false`
-- `AccountInit` / `{ status: bool }`: `status: true` - Indicates the adapter successfully
+- `AccountLoginStatus` / `{ status: bool }`: `status: true` - Indicates the adapter successfully
   logged in. `status: false` - Error occurred, property `error` has additional info about it
 - `AdapterInit` / `{ isCard: bool, t: string }`: Indicates the adapter is beginning
   its loading sequence with the passed card invite or the specified Glympse invite

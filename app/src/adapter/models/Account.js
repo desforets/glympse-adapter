@@ -73,7 +73,7 @@ define(function(require, exports, module)
 			token = currentKeySettings[cAcctTokenName];
 			if (token)
 			{
-				controller.notify(m.AccountInit, { status: true, token: token, id: currentKeySettings[cUserName] });
+				controller.notify(m.AccountLoginStatus, { status: true, token: token, id: currentKeySettings[cUserName] });
 				return true;
 			}
 
@@ -85,7 +85,7 @@ define(function(require, exports, module)
 
 				if (!u || !p)
 				{
-					controller.notify(m.AccountInit, { status: false, error: 'no_account', errorDetail: 'No account exists for the current apiKey.' });
+					controller.notify(m.AccountLoginStatus, { status: false, error: 'no_account', errorDetail: 'No account exists for the current apiKey.' });
 					return false;
 				}
 
@@ -370,7 +370,7 @@ define(function(require, exports, module)
 
 						//dbg('>> new token: ' + token);
 
-						controller.notify(m.AccountInit, { status: true, token: token, id: account[cSvcUserName] });
+						controller.notify(m.AccountLoginStatus, { status: true, token: token, id: account[cSvcUserName] });
 
 						return;
 					}
@@ -381,7 +381,7 @@ define(function(require, exports, module)
 						result.error = meta[cSvcError];
 						result.errorDetail = meta[cSvcErrorDetail];
 
-						controller.notify(m.AccountInit, result);
+						controller.notify(m.AccountLoginStatus, result);
 
 						return;
 					}
@@ -407,7 +407,7 @@ define(function(require, exports, module)
 
 			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
 			result.info = { mode: 'login', status: 'max_attempts', lastResult: data };
-			controller.notify(m.AccountInit, result);
+			controller.notify(m.AccountLoginStatus, result);
 		}
 
 		function createAccount()
