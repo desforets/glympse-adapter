@@ -395,7 +395,7 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case m.AccountInit:
+				case m.AccountLoginStatus:
 				{
 					if (args.status)
 					{
@@ -415,7 +415,7 @@ define(function(require, exports, module)
 						}
 					}
 
-					sendEvent(m.AccountInit, args);
+					sendEvent(m.AccountLoginStatus, args);
 
 					if (!initialized && args.status)
 					{

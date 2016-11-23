@@ -62,7 +62,7 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
-				case m.AccountInit:
+				case m.AccountLoginStatus:
 				{
 					authToken = args.token;
 					accountId = args.id;

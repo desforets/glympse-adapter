@@ -34,7 +34,7 @@ define(function(require, exports, module)
 		{
 			switch (msg)
 			{
-				case m.AccountInit:
+				case m.AccountLoginStatus:
 				case m.AccountCreateStatus:
 				case m.UserNameUpdateStatus:
 				case m.UserAvatarUpdateStatus:
@@ -65,7 +65,7 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case CoreController.GenerateToken:
+				case rl.generateAuthToken:
 				{
 					account.generateToken();
 					break;
@@ -107,8 +107,6 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////////////////////////////////
 
 	}
-
-	CoreController.GenerateToken = 'generateToken';
 
 	module.exports = CoreController;
 });
