@@ -132,6 +132,7 @@ define(function(require, exports, module)
 			, CardUpdated: 'CardUpdated'
 			, CardAdded: 'CardAdded'
 			, CardRemoved: 'CardRemoved'
+			, CardsRequestStatus: 'CardsRequestStatus'
 			, CardsJoinRequestStatus: 'CardsJoinRequestStatus'
 			, CardsJoinRequestCancelStatus: 'CardsJoinRequestCancelStatus'
 			, CardsActiveJoinRequestsStatus: 'CardsActiveJoinRequestsStatus'

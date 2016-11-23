@@ -224,43 +224,57 @@ define(function(require, exports, module)
 
 			function processCardsData(resp)
 			{
-				if (resp && resp.response && resp.result === 'ok')
+				var result = {
+					status: false,
+					response: resp
+				};
+				if (resp && resp.response)
 				{
-					var i, card, len, cardId, allCardIds = [];
-					// add new cards
-					for (i = 0, len = resp.response.length; i < len; i++)
+					if (resp.result === 'ok')
 					{
-						card = resp.response[i];
-						allCardIds.push(card.id);
-						if (cardInvites.indexOf(card.id) === -1)
+						var i, card, len, cardId, allCardIds = [];
+						// add new cards
+						for (i = 0, len = resp.response.length; i < len; i++)
 						{
-							cardInvites.push(card.id);
+							card = resp.response[i];
+							allCardIds.push(card.id);
+							if (cardInvites.indexOf(card.id) === -1)
+							{
+								cardInvites.push(card.id);
+							}
 						}
-					}
-					// cleanup deleted cards (use while to allow deleting in the loop)
-					i = cardInvites.length;
-					while (i--)
-					{
-						cardId = cardInvites[i];
-						if (allCardIds.indexOf(cardId) === -1)
+						// cleanup deleted cards (use while to allow deleting in the loop)
+						i = cardInvites.length;
+						while (i--)
 						{
-							cardInvites.splice(i, 1);
-							card = cardsIndex[cardId];
-							cards.splice(cards.indexOf(card), 1);
-							delete cardsIndex[cardId];
-							controller.notify(m.CardRemoved, card);
+							cardId = cardInvites[i];
+							if (allCardIds.indexOf(cardId) === -1)
+							{
+								cardInvites.splice(i, 1);
+								card = cardsIndex[cardId];
+								cards.splice(cards.indexOf(card), 1);
+								delete cardsIndex[cardId];
+								controller.notify(m.CardRemoved, card);
+							}
 						}
+						// refresh existing cards
+						for (i = 0, len = cardInvites.length; i < len; i++)
+						{
+							loadCard(cardInvites[i]);
+						}
+						result.status = true;
+						result.response = resp.response;
 					}
-					// refresh existing cards
-					for (i = 0, len = cardInvites.length; i < len; i++)
+					else
 					{
-						loadCard(cardInvites[i]);
+						result.response = resp.meta;
 					}
 				}
 				else
 				{
 					dbg('failed to load cards');
 				}
+				controller.notify(m.CardsRequestStatus, result);
 			}
 
 		}
