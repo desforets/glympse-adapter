@@ -629,7 +629,9 @@ define(function(require, exports, module)
 					if (data.result === 'ok')
 					{
 						result.status = true;
-						result.response = data.response;
+						result.response = data.response || {};
+						result.response.cardId = config.cardId;
+						result.response.memberId = memberId;
 
 						requestCards();
 					}
