@@ -49,7 +49,17 @@ define(function(require, exports, module)
 				case m.AccountLoginStatus:
 				{
 					authToken = args.token;
-					accountInitComplete(authToken, args);
+					accountInitComplete(args);
+					break;
+				}
+
+				case m.AccountDeleteStatus:
+				{
+					authToken = null;
+					if (invite)
+					{
+						invite.setToken(authToken);
+					}
 					break;
 				}
 
@@ -96,7 +106,7 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function accountInitComplete(token, info)
+		function accountInitComplete(info)
 		{
 			var sig = '[accountInitComplete] - ';
 

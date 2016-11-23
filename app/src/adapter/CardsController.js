@@ -15,7 +15,6 @@ define(function(require, exports, module)
 	var Account = require('glympse-adapter/adapter/models/Account');
 	var Card = require('glympse-adapter/adapter/models/Card');
 
-
 	// Exported class
 	function CardsController(controller, cfg)
 	{
@@ -23,6 +22,7 @@ define(function(require, exports, module)
 		var dbg = lib.dbg('CardsController', cfg.dbg);
 		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
 		var pollInterval = cfg.pollCards || 60000;
+		var pollingInterval;
 		var cardsMode = cfg.cardsMode;
 
 		// state
@@ -67,6 +67,12 @@ define(function(require, exports, module)
 					authToken = args.token;
 					accountId = args.id;
 					accountInitComplete(args);
+					break;
+				}
+
+				case m.AccountDeleteStatus:
+				{
+					accountDeleteComplete();
 					break;
 				}
 
@@ -177,7 +183,17 @@ define(function(require, exports, module)
 			if (cardsMode)
 			{
 				requestCards();
-				setInterval(requestCards, pollInterval);
+				pollingInterval = setInterval(requestCards, pollInterval);
+			}
+		}
+
+		function accountDeleteComplete(){
+			authToken = null;
+			accountId = null;
+			if (pollingInterval)
+			{
+				clearInterval(pollingInterval);
+				pollingInterval = null;
 			}
 		}
 

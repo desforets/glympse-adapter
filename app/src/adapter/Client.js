@@ -415,7 +415,7 @@ define(function(require, exports, module)
 						}
 					}
 
-					sendEvent(m.AccountLoginStatus, args);
+					sendEvent(msg, args);
 
 					if (!initialized && args.status)
 					{
@@ -425,6 +425,22 @@ define(function(require, exports, module)
 
 					break;
 				}
+
+				case m.AccountDeleteStatus:
+
+					if (glympseLoader)
+					{
+						glympseLoader.notify(msg, args);
+					}
+
+					if (cardsController)
+					{
+						cardsController.notify(msg, args);
+					}
+
+					sendEvent(msg, args);
+
+					break;
 
 				case m.AccountCreateStatus:
 				case m.CreateRequestStatus:

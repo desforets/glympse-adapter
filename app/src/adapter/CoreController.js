@@ -35,6 +35,7 @@ define(function(require, exports, module)
 			switch (msg)
 			{
 				case m.AccountLoginStatus:
+				case m.AccountDeleteStatus:
 				case m.AccountCreateStatus:
 				case m.UserNameUpdateStatus:
 				case m.UserAvatarUpdateStatus:
@@ -96,7 +97,14 @@ define(function(require, exports, module)
 
 				case rl.createRequest:
 				{
-					return account.createRequest(args);
+					account.createRequest(args);
+					break;
+				}
+
+				case rl.accountDelete:
+				{
+					account.delete();
+					break;
 				}
 			}
 		};
