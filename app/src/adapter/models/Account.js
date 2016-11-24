@@ -462,9 +462,12 @@ define(function(require, exports, module)
 					controller.notify(m.AccountCreateStatus, result);
 
 					// Now, go ahead and get an authToken
-					attempts = 0;
-					token = null;
-					getNewToken();
+					if (isAnon)
+					{
+						attempts = 0;
+						token = null;
+						getNewToken();
+					}
 
 					return;
 				}
