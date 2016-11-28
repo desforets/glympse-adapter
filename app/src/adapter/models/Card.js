@@ -83,6 +83,7 @@ define(function(require, exports, module)
 				if (membersIndex[mem.id])
 				{
 					member = membersIndex[mem.id];
+					member.setData(mem);
 				}
 				else
 				{
