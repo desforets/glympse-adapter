@@ -461,14 +461,9 @@ define(function(require, exports, module)
 
 					controller.notify(m.AccountCreateStatus, result);
 
-					// Now, go ahead and get an authToken
-					if (isAnon)
-					{
-						attempts = 0;
-						token = null;
-						getNewToken();
-					}
-
+					// AuthToken will be loaded on next request requiring authentication
+					// ---> Avoids race conditions if app reacts to AccountCreateStatus without
+					//      waiting for AccountLoginStatus
 					return;
 				}
 			}
