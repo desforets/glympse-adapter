@@ -457,7 +457,7 @@ define(function(require, exports, module)
 					//dbg('>> new account: ' + id + ' / ' + pw);
 
 					result.status = true;
-					result.data = data;
+					result.response = resp;
 
 					controller.notify(m.AccountCreateStatus, result);
 
