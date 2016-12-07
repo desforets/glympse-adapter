@@ -207,6 +207,7 @@ define(function(require, exports, module)
 
 		this.infoUpdate = function(id, invite, owner, t, val)
 		{
+			invite = lib.normalizeInvite(invite);
 			var info = {
 				id: id
 				, invite: invite
@@ -307,6 +308,14 @@ define(function(require, exports, module)
 
 				case m.CardUpdated:
 					// dbg('card updated', args);
+
+					switch (args.action) {
+						case 'invite_added':
+						case 'invite_removed':
+							mapCardInvites[args.invite] = args.card.getId();
+							break;
+					}
+
 					sendEvent(msg, args);
 					break;
 
