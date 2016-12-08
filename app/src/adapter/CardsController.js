@@ -182,6 +182,10 @@ define(function(require, exports, module)
 
 			if (cardsMode)
 			{
+				if (pollingInterval)
+				{
+					clearInterval(pollingInterval);
+				}
 				requestCards();
 				pollingInterval = setInterval(requestCards, pollInterval);
 			}
