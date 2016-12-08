@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.0   | 2016/12/?? | [ Many updates pending for release ]
 1.4.2   | 2016/11/12 | *InviteClicked* event propagation fix
 1.4.1   | 2016/11/09 | Add *InviteClicked* event
 1.4.0   | 2016/11/08 | Remove `adapter.getViewer()`, add client-only `adapter.map.getMapContainer()` method
