@@ -17,6 +17,7 @@ define(function(require, exports, module)
 		//	---> Only want immediate non-Objects/Arrays
 		var props = [ 'invite_code'
 					, 'ticket_id'
+					, 'created_time'
 					];
 
 
