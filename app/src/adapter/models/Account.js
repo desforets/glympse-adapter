@@ -70,13 +70,6 @@ define(function(require, exports, module)
 
 			cfg.isAnon = isAnon;
 
-			token = currentKeySettings[cAcctTokenName];
-			if (token)
-			{
-				controller.notify(m.AccountLoginStatus, { status: true, token: token, id: currentKeySettings[cUserName] });
-				return true;
-			}
-
 			// If not anonymous, add saved username/password to token request
 			if (!isAnon)
 			{
@@ -96,6 +89,15 @@ define(function(require, exports, module)
 			{
 				account[cSvcUserName] = anonymousUserName;
 				account[cSvcPassword] = anonymousPassword;
+			}
+
+			// check for token after checking for user/password as they are required for getting new token (after expiration or smth)
+			token = currentKeySettings[cAcctTokenName];
+			if (token)
+			{
+				// validate token before sending init event
+				getUserInfo(null, true);
+				return true;
 			}
 
 			attempts = 0;
@@ -228,35 +230,7 @@ define(function(require, exports, module)
 			}
 		};
 
-		this.getUserInfo = function(userId)
-		{
-			var apiUrl = svr + 'users/' + (userId || 'self');
-
-			$.getJSON(apiUrl, { oauth_token: token })
-				.done(processResponse)
-				.fail(processResponse);
-
-			function processResponse(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
-					{
-						result.status = true;
-						result.response = data.response;
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.UserInfoStatus, result);
-			}
-		};
+		this.getUserInfo = getUserInfo;
 
 		this.hasAccount = function()
 		{
@@ -356,14 +330,17 @@ define(function(require, exports, module)
 			saveSettings();
 		}
 
-		function getNewToken()
+		function getNewToken(callback)
 		{
 			$.getJSON(urlLogin, account)
-				.done(processLogin)
+				.done(function(data)
+				{
+					processLogin(data, callback);
+				})
 				.fail(processLogin);
 		}
 
-		function processLogin(data)
+		function processLogin(data, callback)
 		{
 			var result = { status: false };
 
@@ -383,6 +360,11 @@ define(function(require, exports, module)
 						//dbg('>> new token: ' + token);
 
 						controller.notify(m.AccountLoginStatus, { status: true, token: token, id: account[cSvcUserName] });
+
+						if (callback)
+						{
+							callback();
+						}
 
 						return;
 					}
@@ -420,6 +402,57 @@ define(function(require, exports, module)
 			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
 			result.info = { mode: 'login', status: 'max_attempts', lastResult: data };
 			controller.notify(m.AccountLoginStatus, result);
+		}
+
+		function getUserInfo(userId, checkToken)
+		{
+			var apiUrl = svr + 'users/' + (userId || 'self');
+
+			$.getJSON(apiUrl, { oauth_token: token })
+				.done(processResponse)
+				.fail(processResponse);
+
+			function processResponse(data)
+			{
+				var result = {
+					status: false,
+					response: data
+				};
+				if (data && data.response)
+				{
+					if (data.result === 'ok')
+					{
+						result.status = true;
+						result.response = data.response;
+						result.response.id = userId;
+					}
+					else if (data.meta && data.meta.error === 'oauth_token')
+					{
+						getNewToken(function()
+						{
+							getUserInfo(userId);
+						});
+						// do not send failure -> get new token and retry
+						return;
+					}
+					else
+					{
+						result.response = data.meta;
+					}
+				}
+				if (checkToken)
+				{
+					controller.notify(m.AccountLoginStatus, {
+						status: true,
+						token: token,
+						id: currentKeySettings[cUserName]
+					});
+				}
+				else
+				{
+					controller.notify(m.UserInfoStatus, result);
+				}
+			}
 		}
 
 		function createAccount()
