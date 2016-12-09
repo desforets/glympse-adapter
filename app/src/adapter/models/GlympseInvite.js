@@ -3,6 +3,7 @@ define(function(require, exports, module)
     'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');
+	var ajax = require('glympse-adapter/lib/ajax');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var m = Defines.MSG;
 	var cOauthToken = 'oauth_token';
@@ -126,70 +127,31 @@ define(function(require, exports, module)
 		{
 			controller.notify(m.InviteInit, idInvite);
 
-			$.ajax(
-			{
-				type: 'GET',
-				dataType: 'JSON',
-				url: inviteUrl,
-				data: inviteParams,
-				processData: true
-			})
-			.done(function(data)
-			{
-				processInviteData(data);
-			})
-			.fail(function(xOptions, status)
-			{
-				processInviteData(null);
-			});
-		}
-
-		function processInviteData(data)
-		{
-			attempts++;
-
-			//dbg('invite data: ', data);
-			try
-			{
-				if (data)
+			ajax.get(inviteUrl, inviteParams)
+				.then(function(result)
 				{
-					var result = data.result;
-					if (result === 'ok')
+					if (result.status)
 					{
 						loaded = true;
 						that.setData(data.response);
 					}
+					// max attempts
+					else if (result.info)
+					{
+						// left as it was before for now
+						error = {
+							error: 'load_failure',
+							error_detail: 'Failed ' + cMaxAttempts + ' attempts'
+						};
+					}
 					else
 					{
-						error = data.meta || {};
+						error = result.response;
 						error.id = lib.normalizeInvite(idInvite);
 					}
 
 					controller.notify(m.InviteReady, that);
-					return;
-				}
-			}
-			catch (e)
-			{
-				dbg('Error parsing invite', e);
-			}
-
-			if (attempts < cMaxAttempts)
-			{
-				setTimeout(function()
-				{
-					loadInvite();
-				}, attempts * (500 + Math.round(1000 * Math.random()))	// Incremental + random offset delay between retry in case of short availability outage
-				);
-
-				return;
-			}
-
-			error = { 'error': 'load_failure'
-					, 'error_detail': 'Failed ' + cMaxAttempts + ' attempts'
-					};
-
-			controller.notify(m.InviteReady, that);
+				});
 		}
 
 

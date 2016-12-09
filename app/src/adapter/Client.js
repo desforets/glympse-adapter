@@ -342,6 +342,7 @@ define(function(require, exports, module)
 
 						// Refetch a new token on token errors. m.AccountInit should
 						// properly push the new token to controllers so they can continue.
+						//FixMe: [oauth_token] dealing with expired/invalid tokens should go to another place
 						if (inviteError && inviteError.error === 'oauth_token')
 						{
 							coreController.cmd(CoreController.GenerateToken, true);
