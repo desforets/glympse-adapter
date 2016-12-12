@@ -521,10 +521,16 @@ define(function(require, exports, module)
 		}
 
 		function getCardActivity(config) {
+			if (!config || !config.cardId)
+			{
+				dbg('CardId param is mandatory!', config, 3);
+				return;
+			}
+
 			var cardId = config.cardId,
 				card = cardsIndex[cardId],
-				fromTS = config.from_ts,
-				toTS = config.to_ts;
+				fromTS = config.fromTS,
+				toTS = config.toTS;
 
 			if (card)
 			{
