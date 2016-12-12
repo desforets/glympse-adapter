@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	function processResponse()
 	{
-		var context = this;
+		var that = this;
 
 		return function(data)
 		{
@@ -35,7 +35,7 @@ define(function(require, exports, module)
 				response: {}
 			};
 
-			context.attempts--;
+			that.attempts--;
 
 			if (data && data.response)
 			{
@@ -44,7 +44,7 @@ define(function(require, exports, module)
 					result.status = true;
 					result.response = data.response;
 
-					context.request.resolve(result);
+					that.request.resolve(result);
 
 					return;
 				}
@@ -62,22 +62,22 @@ define(function(require, exports, module)
 
 					result.response = meta;
 					// check if we need them, left for now for backward compatibility
-					result.error = meta['error'];
-					result.errorDetail = meta['error_detail'];
+					result.error = meta.error;
+					result.errorDetail = meta.error_detail;
 
-					context.request.resolve(result);
+					that.request.resolve(result);
 
 					return;
 				}
 			}
 
-			if (context.retry && context.attempts > 0)
+			if (that.retry && that.attempts > 0)
 			{
-				var attempt = (MAX_ATTEMPTS - context.attempts);
+				var attempt = (MAX_ATTEMPTS - that.attempts);
 				setTimeout(
 					function()
 					{
-						context.retry();
+						that.retry();
 					},
 					// Incremental + random offset delay between retry in case of short availability outage
 					(attempt * (500 + Math.round(1000 * Math.random())))
@@ -85,15 +85,15 @@ define(function(require, exports, module)
 
 				result.info = { attempt: attempt, result: data };
 
-				context.request.notify(result);
+				that.request.notify(result);
 
 				return;
 			}
 
 			result.info = { status: 'max_attempts', lastResult: data };
 
-			context.request.resolve(result);
-		}
+			that.request.resolve(result);
+		};
 	}
 
 	var api = {
@@ -112,7 +112,7 @@ define(function(require, exports, module)
 				options.beforeSend = function(request)
 				{
 					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				}
+				};
 			}
 
 			var context = {
@@ -134,7 +134,7 @@ define(function(require, exports, module)
 		/**
 		 * @function ajax.get
 		 */
-		get: function get(url, data, authToken, jqOptions, retryOnError)
+		get: function reqGet(url, data, authToken, jqOptions, retryOnError)
 		{
 			var options = $.extend(
 				{
@@ -150,7 +150,7 @@ define(function(require, exports, module)
 		/**
 		 * @function ajax.post
 		 */
-		post: function get(url, data, authToken, jqOptions, retryOnError)
+		post: function reqPost(url, data, authToken, jqOptions, retryOnError)
 		{
 			var options = $.extend(
 				{
@@ -163,9 +163,29 @@ define(function(require, exports, module)
 
 			if (data)
 			{
-				options.data = JSON.stringify(data);
+				if (options.contentType === 'application/json')
+				{
+					data = JSON.stringify(data);
+				}
+				options.data = data;
 			}
 
+			return api.makeRequest(options, authToken, retryOnError);
+		},
+
+		/**
+		 * @function ajax.delete
+		 */
+		delete: function reqDelete(url, authToken, jqOptions, retryOnError)
+		{
+			var options = $.extend(
+				{
+					url: url,
+					type: 'DELETE'
+				},
+				DEFAULT_OPTIONS.POST,
+				jqOptions
+			);
 			return api.makeRequest(options, authToken, retryOnError);
 		}
 

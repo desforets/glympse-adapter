@@ -181,9 +181,8 @@ define(function(require, exports, module)
 			{
 				var apiUrl = (svr + 'users/self/upload_avatar?oauth_token=' + token);
 
-				ajax.post(apiUrl, null, null, {
+				ajax.post(apiUrl, new Uint8Array(dataArray), null, {
 					contentType: 'image/jpeg',
-					data: new Uint8Array(dataArray),
 					processData: false
 				})
 					.then(function(result)
@@ -282,7 +281,7 @@ define(function(require, exports, module)
 				{
 					if (result.status)
 					{
-						token = result.response['access_token'];
+						token = result.response.access_token;
 
 						currentKeySettings[cAcctTokenName] = token;
 
