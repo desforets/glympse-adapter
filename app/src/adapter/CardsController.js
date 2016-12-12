@@ -169,10 +169,7 @@ define(function(require, exports, module)
 			dbg(sig + '[' + ((cfg.isAnon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
-			for (var i = 0, len = cardInvites.length; i < len; i++)
-			{
-				loadCard(cardInvites[i]);
-			}
+			loadCards(cardInvites);
 
 			if (!cardInvites.length)
 			{
@@ -201,14 +198,34 @@ define(function(require, exports, module)
 
 		function loadCard(cardInvite)
 		{
+			var isNew = false;
 			if (!cardsIndex[cardInvite])
 			{
-				cardsIndex[cardInvite] = new Card(that, cardInvite, cfg);
+				cardsIndex[cardInvite] = new Card(that, cardInvite, account, cfg);
+				isNew = true;
 			}
 
 			var card = cardsIndex[cardInvite];
 
-			getCard(card);
+			if (isNew)
+			{
+				getCard(card);
+			}
+			else
+			{
+				updateCard(card);
+			}
+		}
+
+		function loadCards(cardInvites) {
+			if(!cardInvites || !cardInvites.length)
+			{
+				return;
+			}
+			for (var i = 0, len = cardInvites.length; i < len; i++)
+			{
+				loadCard(cardInvites[i]);
+			}
 		}
 
 		//////////////////////
@@ -251,10 +268,7 @@ define(function(require, exports, module)
 							}
 						}
 						// refresh existing cards
-						for (i = 0, len = cardInvites.length; i < len; i++)
-						{
-							loadCard(cardInvites[i]);
-						}
+						loadCards(cardInvites);
 					}
 
 					controller.notify(m.CardsRequestStatus, result);
@@ -275,15 +289,18 @@ define(function(require, exports, module)
 
 			controller.notify(m.CardInit, idCard);
 
-			var cardUrl = (svr + 'cards/' + idCard);
+			var cardUrl = svr + 'cards/' + idCard;
 
-			ajax.get(cardUrl, { members: true }, account)
+			var getParams = { members: true };
+
+			ajax.get(cardUrl, getParams, account)
 				.then(function(result)
 				{
 					if (result.status)
 					{
 						//dbg('Got card data', resp);
 						card.setData(result.response);
+						card.setLastUpdatingTime(result.time);
 						that.notify(m.CardReady, idCard);
 					}
 					else if (result.response.error === 'failed_to_decode')
@@ -292,6 +309,37 @@ define(function(require, exports, module)
 						// either case, we cannot continue loading this
 						// card, so bail immediately
 						that.notify(m.CardReady, idCard);
+					}
+				});
+		}
+
+		function updateCard(card, from, to) {
+			var idCard = card.getIdCard();
+
+			var cardUrl = svr + 'cards/' + idCard + '/activity';
+
+			var getParams = { from_ts: card.getLastUpdatingTime() };
+
+			if (from)
+			{
+				getParams.from_ts = from;
+			}
+
+			if (to)
+			{
+				getParams.to_ts = to;
+			}
+
+			ajax.get(cardUrl, getParams, account)
+				.then(function(result)
+				{
+					if (result.status)
+					{
+						//dbg('Got card data', resp);
+						if(result.response.length) {
+							card.setDataFromStream(result.response);
+							card.setLastUpdatingTime(result.time);
+						}
 					}
 				});
 		}
