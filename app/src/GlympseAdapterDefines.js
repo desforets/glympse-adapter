@@ -53,6 +53,7 @@ define(function(require, exports, module)
 				, joinRequestCancel: 'joinRequestCancel'
 				, getActiveJoinRequests: 'getActiveJoinRequests'
 				, removeMember: 'removeMember'
+				, activity: 'activity'
 				//  addInvites: 'addInvites'
 				//, getInvites: 'getInvites'
 				//, removeInvites: 'removeInvites'

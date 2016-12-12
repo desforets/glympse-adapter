@@ -100,7 +100,7 @@ define(function(require, exports, module)
 			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
 		};
 
-		this.setDataFromStream = function (streamArray) {
+		this.setDataFromStream = function(streamArray) {
 			var cardId = this.getIdCard();
 			var newMembers = [],
 				updateResult,
@@ -146,17 +146,22 @@ define(function(require, exports, module)
 			{
 				//need to implement batch;
 				ajax.get(svr + 'cards/' + cardId + '/members/' + newMembers[i], null, account)
-					.then(function (result) {
-						var member;
-						if(result.status){
-							member = addMember(result.response);
-							updateResult.member = member;
-							controller.notify(m.CardUpdated, updateResult);
-						}
-						else {
-							controller.notify(m.CardUpdated, result);
-						}
-					});
+					.then(processResult);
+			}
+
+			function processResult(result)
+			{
+				var newMember;
+				if (result.status)
+				{
+					newMember = addMember(result.response);
+					updateResult.member = newMember;
+					controller.notify(m.CardUpdated, updateResult);
+				}
+				else
+				{
+					controller.notify(m.CardUpdated, result);
+				}
 			}
 		};
 

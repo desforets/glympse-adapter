@@ -72,16 +72,16 @@ define(function(require, exports, module)
 			//invite = (data.invite) ? new MemberInvite(data.invite, cfg) : {};
 			//ticket = (data.ticket) ? new MemberTicket(data.ticket, cfg) : {};
 			//permissions = (data.permissions) ? new MemberPermissions(data.permissions, cfg) : {};
-			if(data.invite)
+			if (data.invite)
 			{
 				invite = new MemberInvite(data.invite, cfg);
 			}
-			if(data.ticket)
+			if (data.ticket)
 			{
 				ticket = new MemberTicket(data.ticket, cfg);
 			}
 
-			if(data.permissions)
+			if (data.permissions)
 			{
 				permissions = new MemberPermissions(data.permissions, cfg);
 			}

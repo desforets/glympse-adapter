@@ -139,6 +139,9 @@ define(function(require, exports, module)
 				case r.getActiveJoinRequests:
 					return getActiveJoinRequests();
 
+				case r.activity:
+					return getCardActivity(args);
+
 				default:
 					dbg('method not found', cmd);
 			}
@@ -218,7 +221,7 @@ define(function(require, exports, module)
 		}
 
 		function loadCards(cardInvites) {
-			if(!cardInvites || !cardInvites.length)
+			if (!cardInvites || !cardInvites.length)
 			{
 				return;
 			}
@@ -336,7 +339,7 @@ define(function(require, exports, module)
 					if (result.status)
 					{
 						//dbg('Got card data', resp);
-						if(result.response.length) {
+						if (result.response.length) {
 							card.setDataFromStream(result.response);
 							card.setLastUpdatingTime(result.time);
 						}
@@ -515,6 +518,18 @@ define(function(require, exports, module)
 
 					controller.notify(m.CardRemoveMemberStatus, result);
 				});
+		}
+
+		function getCardActivity(config) {
+			var cardId = config.cardId,
+				card = cardsIndex[cardId],
+				fromTS = config.from_ts,
+				toTS = config.to_ts;
+
+			if (card)
+			{
+				updateCard(card, fromTS, toTS);
+			}
 		}
 	}
 
