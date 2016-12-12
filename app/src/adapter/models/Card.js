@@ -139,6 +139,9 @@ define(function(require, exports, module)
 						member = getMemberById(action.member_id);
 						removeMemberInviteCode(member);
 						break;
+
+					default:
+						controller.notify(m.CardUpdated, updateResult);
 				}
 			}
 
