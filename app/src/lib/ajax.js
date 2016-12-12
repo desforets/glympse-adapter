@@ -21,7 +21,7 @@ define(function(require, exports, module)
 	};
 
 
-	function processResponse()
+	function processResponse(account)
 	{
 		var that = this;
 
@@ -53,17 +53,42 @@ define(function(require, exports, module)
 				{
 					var meta = data.meta || {};
 
-					if (meta.error === 'oauth_token')
-					{
-						//FixMe: [oauth_token] deal with expired/invalid tokens here
-						// need to generate new token for account & retry request
-						result.invalidToken = true;
-					}
-
 					result.response = meta;
 					// check if we need them, left for now for backward compatibility
 					result.error = meta.error;
 					result.errorDetail = meta.error_detail;
+
+					// in case of token error try to get new token & re-run action
+					if (meta.error === 'oauth_token')
+					{
+						if (account)
+						{
+							account.generateToken(function(authResult)
+							{
+								if (authResult.status)
+								{
+									if (that.retry)
+									{
+										that.retry();
+									}
+								}
+								else
+								{
+									result.authResult = authResult;
+
+									that.request.resolve(result);
+								}
+							});
+
+							return;
+						}
+						else
+						{
+							// should never happen
+							console.warn('[ajax] invalid token for not authorized request!');
+							result.invalidToken = true;
+						}
+					}
 
 					that.request.resolve(result);
 
@@ -99,20 +124,54 @@ define(function(require, exports, module)
 	var api = {
 		/**
 		 * @function ajax.makeRequest
+		 *
+		 * @param {object} jqOptions - options for jQuery ajax method
+		 * @param {object} [auth] - authorization data (required for auth requests)
+		 * @param {object} [auth.account] - account instance
+		 * @param {boolean} [auth.useBearer] - if should use bearer auth header instead of url param (default: true)
+		 * @param {boolean} [retryOnError] - if should re-try on temporary server errors (default: true)
+		 *
+		 * @returns {$.Deferred}
 		 */
-		makeRequest: function makeRequest(jqOptions, authToken, retryOnError)
+		makeRequest: function makeRequest(jqOptions, auth, retryOnError)
 		{
 			var options = $.extend(
 				{},
 				DEFAULT_OPTIONS.ALL,
 				jqOptions
 			);
-			if (authToken)
+			var account;
+			if (auth)
 			{
-				options.beforeSend = function(request)
+				var useBearer = true;
+				if (auth.account)
 				{
-					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				};
+					account = auth.account;
+					useBearer = (auth.useBearer === false);
+				}
+				else
+				{
+					account = auth;
+				}
+				if (useBearer === false)
+				{
+					if (options.url.indexOf('?') === -1)
+					{
+						options.url += '?';
+					}
+					else
+					{
+						options.url += '&';
+					}
+					options.url += ('oauth_token=' + account.getToken());
+				}
+				else
+				{
+					options.beforeSend = function(request)
+					{
+						request.setRequestHeader('Authorization', 'Bearer ' + account.getToken());
+					};
+				}
 			}
 
 			var context = {
@@ -120,13 +179,12 @@ define(function(require, exports, module)
 				attempts: ((retryOnError === false) ? 1 : MAX_ATTEMPTS),
 				retry: function()
 				{
-					//TODO: remove debug info
-					console.warn('[ajax] retry', options);
-					$.ajax(options).always(processResponse.call(context));
+					// console.debug('[ajax] retry', options);
+					$.ajax(options).always(processResponse.call(context, account));
 				}
 			};
 
-			$.ajax(options).always(processResponse.call(context));
+			$.ajax(options).always(processResponse.call(context, account));
 
 			return context.request;
 		},
@@ -134,7 +192,7 @@ define(function(require, exports, module)
 		/**
 		 * @function ajax.get
 		 */
-		get: function reqGet(url, data, authToken, jqOptions, retryOnError)
+		get: function reqGet(url, data, auth, jqOptions, retryOnError)
 		{
 			var options = $.extend(
 				{
@@ -144,13 +202,13 @@ define(function(require, exports, module)
 				},
 				jqOptions
 			);
-			return api.makeRequest(options, authToken, retryOnError);
+			return api.makeRequest(options, auth, retryOnError);
 		},
 
 		/**
 		 * @function ajax.post
 		 */
-		post: function reqPost(url, data, authToken, jqOptions, retryOnError)
+		post: function reqPost(url, data, auth, jqOptions, retryOnError)
 		{
 			var options = $.extend(
 				{
@@ -170,13 +228,13 @@ define(function(require, exports, module)
 				options.data = data;
 			}
 
-			return api.makeRequest(options, authToken, retryOnError);
+			return api.makeRequest(options, auth, retryOnError);
 		},
 
 		/**
 		 * @function ajax.delete
 		 */
-		delete: function reqDelete(url, authToken, jqOptions, retryOnError)
+		delete: function reqDelete(url, auth, jqOptions, retryOnError)
 		{
 			var options = $.extend(
 				{
@@ -186,7 +244,7 @@ define(function(require, exports, module)
 				DEFAULT_OPTIONS.POST,
 				jqOptions
 			);
-			return api.makeRequest(options, authToken, retryOnError);
+			return api.makeRequest(options, auth, retryOnError);
 		}
 
 	};

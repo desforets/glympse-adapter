@@ -33,8 +33,7 @@ define(function(require, exports, module)
 		var cardsIndex;
 		var cardsReady = 0;
 		var initialized = false;
-		var authToken = cfg.authToken;
-		var accountId = cfg.accountId;
+		var account = cfg.account;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -52,7 +51,7 @@ define(function(require, exports, module)
 
 			controller.notify(m.CardsInitStart, cardInvites);
 
-			if (authToken)
+			if (account)
 			{
 				accountInitComplete();
 			}
@@ -65,8 +64,7 @@ define(function(require, exports, module)
 			{
 				case m.AccountLoginStatus:
 				{
-					authToken = args.token;
-					accountId = args.id;
+					account = args.account;
 					accountInitComplete(args);
 					break;
 				}
@@ -161,7 +159,7 @@ define(function(require, exports, module)
 				return;
 			}
 
-			if (!authToken)
+			if (!account)
 			{
 				dbg(sig + 'authToken unavailable', args);
 				return;
@@ -193,8 +191,7 @@ define(function(require, exports, module)
 		}
 
 		function accountDeleteComplete(){
-			authToken = null;
-			accountId = null;
+			account = null;
 			if (pollingInterval)
 			{
 				clearInterval(pollingInterval);
@@ -223,7 +220,7 @@ define(function(require, exports, module)
 		 */
 		function requestCards()
 		{
-			ajax.get(svr + 'cards', null, authToken)
+			ajax.get(svr + 'cards', null, account)
 				.then(function(result)
 				{
 					if (result.status)
@@ -280,7 +277,7 @@ define(function(require, exports, module)
 
 			var cardUrl = (svr + 'cards/' + idCard);
 
-			ajax.get(cardUrl, { members: true }, authToken)
+			ajax.get(cardUrl, { members: true }, account)
 				.then(function(result)
 				{
 					if (result.status)
@@ -345,7 +342,7 @@ define(function(require, exports, module)
 				data.invitees.type = 'all';
 			}
 
-			ajax.post(url, data, authToken)
+			ajax.post(url, data, account)
 				.then(function(result)
 				{
 					controller.notify(m.CardsLocationRequestStatus, result);
@@ -386,7 +383,7 @@ define(function(require, exports, module)
 			}
 			requestConfig.send = requestConfig.send || 'server';
 
-			ajax.post(url, requestConfig, authToken)
+			ajax.post(url, requestConfig, account)
 				.then(function(result)
 				{
 					controller.notify(m.CardsJoinRequestStatus, result);
@@ -397,7 +394,7 @@ define(function(require, exports, module)
 		{
 			var url = svr + 'cards/requests/' + requestId;
 
-			ajax.delete(url, authToken)
+			ajax.delete(url, account)
 				.then(function(result)
 				{
 					controller.notify(m.CardsJoinRequestCancelStatus, result);
@@ -408,7 +405,7 @@ define(function(require, exports, module)
 		{
 			var url = svr + 'cards/requests';
 
-			ajax.get(url, null, authToken)
+			ajax.get(url, null, account)
 				.then(function(result)
 				{
 					controller.notify(m.CardsActiveJoinRequestsStatus, result);
@@ -444,7 +441,7 @@ define(function(require, exports, module)
 				for (var i = 0, len = members.length, member; i < len; i++)
 				{
 					member = members[i];
-					if (member.getUserId() === accountId)
+					if (member.getUserId() === account.getId())
 					{
 						memberId = member.getId();
 						break;
@@ -457,7 +454,7 @@ define(function(require, exports, module)
 				}
 			}
 
-			ajax.delete((svr + 'cards/' + config.cardId + '/members/' + memberId), authToken)
+			ajax.delete((svr + 'cards/' + config.cardId + '/members/' + memberId), account)
 				.then(function(result)
 				{
 					if (result.status)

@@ -6,12 +6,11 @@ define(function(require, exports, module)
 	var ajax = require('glympse-adapter/lib/ajax');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var m = Defines.MSG;
-	var cOauthToken = 'oauth_token';
 	var cModuleId = 'GlympseInvite';
 
 
 	// Exported class
-	function GlympseInvite(controller, idInvite, accountToken, cfg)
+	function GlympseInvite(controller, idInvite, account, cfg)
 	{
 		// consts
 		var dbg = lib.dbg(cModuleId, cfg.dbg);
@@ -20,7 +19,6 @@ define(function(require, exports, module)
 		var cMaxAttempts = 3;
 
 		// state
-		var attempts = 0;
 		var next = 0;
 		var data;
 		var error;
@@ -79,9 +77,9 @@ define(function(require, exports, module)
 			//dbg('Invite "' + this.getIdInvite() + '" loaded (reference: "' + this.getReference() + '")');
 		};
 
-		this.setToken = function(val)
+		this.setAccount = function(val)
 		{
-			accountToken = val;
+			account = val;
 		};
 
 
@@ -91,17 +89,13 @@ define(function(require, exports, module)
 
 		this.load = function()
 		{
-			var token = accountToken;
-
-			if (!idInvite || !token)
+			if (!idInvite || !account)
 			{
 				return false;
 			}
 
 			// Kick off invite load
 			error = null;
-			attempts = 0;
-			inviteParams[cOauthToken] = token;
 
 			loadInvite();
 
@@ -127,7 +121,7 @@ define(function(require, exports, module)
 		{
 			controller.notify(m.InviteInit, idInvite);
 
-			ajax.get(inviteUrl, inviteParams)
+			ajax.get(inviteUrl, inviteParams, { account: account, useBearer: false })
 				.then(function(result)
 				{
 					if (result.status)

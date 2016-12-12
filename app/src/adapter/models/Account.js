@@ -38,13 +38,16 @@ define(function(require, exports, module)
 		var urlLogin = (svr + 'account/login');
 
 		// state
-		var attempts = 0;
 		var isAnon = !cfg.apiKey;
 		var token;
 
 		var settings;
 		var currentEnvKeys;
 		var currentKeySettings;
+
+		var that = this;
+
+		var gettingTokenProcess = null;
 
 		account[cApiKey] = apiKey;
 
@@ -55,6 +58,11 @@ define(function(require, exports, module)
 		this.getToken = function()
 		{
 			return token;
+		};
+
+		this.getId = function()
+		{
+			return account[cSvcUserName];
 		};
 
 
@@ -102,17 +110,15 @@ define(function(require, exports, module)
 				return true;
 			}
 
-			attempts = 0;
 			getNewToken();
 
 			return false;
 		};
 
-		this.generateToken = function()
+		this.generateToken = function(callback)
 		{
 			token = null;
-			attempts = 0;
-			getNewToken();
+			getNewToken(callback);
 		};
 
 		this.create = function()
@@ -131,7 +137,7 @@ define(function(require, exports, module)
 		{
 			var apiUrl = (svr + 'users/self/update');
 
-			ajax.get(apiUrl, { oauth_token: token, name: newName })
+			ajax.get(apiUrl, { name: newName }, that)
 				.then(function(result)
 				{
 					controller.notify(m.UserNameUpdateStatus, result);
@@ -179,9 +185,9 @@ define(function(require, exports, module)
 
 			function imageScaleCallback(dataArray)
 			{
-				var apiUrl = (svr + 'users/self/upload_avatar?oauth_token=' + token);
+				var apiUrl = (svr + 'users/self/upload_avatar');
 
-				ajax.post(apiUrl, new Uint8Array(dataArray), null, {
+				ajax.post(apiUrl, new Uint8Array(dataArray), that, {
 					contentType: 'image/jpeg',
 					processData: false
 				})
@@ -234,7 +240,7 @@ define(function(require, exports, module)
 
 			var url = svr + 'users/self/create_request?' + $.param(config);
 
-			ajax.post(url, null, token)
+			ajax.post(url, null, that)
 				.then(function(result)
 				{
 					controller.notify(m.CreateRequestStatus, result);
@@ -276,62 +282,54 @@ define(function(require, exports, module)
 
 		function getNewToken(callback)
 		{
-			ajax.get(urlLogin, account)
-				.then(function(result)
-				{
-					if (result.status)
+			// do not allow multiple log-ins at the same time
+			if (!gettingTokenProcess)
+			{
+				gettingTokenProcess = ajax.get(urlLogin, account)
+					.then(function(result)
 					{
-						token = result.response.access_token;
-
-						currentKeySettings[cAcctTokenName] = token;
-
-						saveSettings();
-
-						//dbg('>> new token: ' + token);
-
-						result.id = account[cSvcUserName];
-						result.token = token;
-
-						// notify before callback
-						controller.notify(m.AccountLoginStatus, result);
-
-						//FixMe: [oauth_token] callback probably will be unnecessary after centralizing expired/invalid tokens handling
-						if (callback)
+						if (result.status)
 						{
-							callback();
+							token = result.response.access_token;
+
+							currentKeySettings[cAcctTokenName] = token;
+
+							saveSettings();
+
+							//dbg('>> new token: ' + token);
+
+							result.id = account[cSvcUserName];
+							result.token = token;
 						}
 
-					}
-					else
-					{
 						controller.notify(m.AccountLoginStatus, result);
-					}
+
+						gettingTokenProcess = null;
+
+						return result;
+					});
+			}
+
+			if (callback)
+			{
+				gettingTokenProcess.then(function(result)
+				{
+					callback(result);
 				});
+			}
 		}
 
 		function getUserInfo(userId, checkToken)
 		{
 			var apiUrl = svr + 'users/' + (userId || 'self');
 
-			ajax.get(apiUrl, { oauth_token: token })
+			ajax.get(apiUrl, null, that)
 				.then(function(result)
 				{
 					if (result.status)
 					{
 						// can be useful for properly filtering events on consumer side
 						result.response.userId = userId;
-					}
-					//FixMe: [oauth_token] dealing with expired/invalid tokens will go to another place
-					else if (result.invalidToken)
-					{
-						// do not send failure -> get new token and retry
-						getNewToken(function()
-						{
-							// do not re-pass "checkToken" arguments =>
-							// 		AccountLoginStatus will be send in "getNewToken" method
-							getUserInfo(userId);
-						});
-						return;
 					}
 
 					if (checkToken)
