@@ -341,8 +341,8 @@ define(function(require, exports, module)
 						//dbg('Got card data', resp);
 						if (result.response.length) {
 							card.setDataFromStream(result.response);
-							card.setLastUpdatingTime(result.time);
 						}
+						card.setLastUpdatingTime(result.time);
 					}
 				});
 		}
