@@ -3,21 +3,31 @@ define(function(require, exports, module)
 	'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');
+	var ajax = require('glympse-adapter/lib/ajax');
 	var Member = require('glympse-adapter/adapter/models/Member');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var m = Defines.MSG;
 
 
 	// Exported class
-	function Card(controller, idCard, cfg)
+	function Card(controller, idCard, account, cfg)
 	{
+		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
 		// state
 		var data;
 		var loaded = false;
+		//members collection
 		var members = [];
 		var membersIndex = {};
-		var currentlySharing = [];
+		//inviteCodes collection
+		var inviteCodes = [];
+		var inviteCodesIndex = {};
+		//card join invites collection
+		var joinInvites = [];
+		var joinInvitesIndex = {};
+
 		var that = this;
+		var lastUpdated;
 
 		// constants
 		var dbg = lib.dbg('Card', cfg.dbg);
@@ -74,76 +84,26 @@ define(function(require, exports, module)
 
 			var mems = data.members || [];
 			var mem, member, invite;
-			var allMembersIds = [];
-			var allShares = [];
+
 			for (var i = 0, len = mems.length; i < len; i++)
 			{
 				mem = mems[i];
-				allMembersIds.push(mem.id);
-				if (membersIndex[mem.id])
-				{
-					member = membersIndex[mem.id];
-					member.setData(mem);
-				}
-				else
-				{
-					member = new Member(mem, cfg);
-					membersIndex[mem.id] = member;
-					members.push(member);
+				member = addMember(mem);
 
+				controller.notify(m.CardUpdated, {
+					card: that,
+					action: 'member_added',
+					member: member
+				});
+
+				var addedInviteCode = checkMemberInviteCode(member);
+
+				if (addedInviteCode)
+				{
 					controller.notify(m.CardUpdated, {
 						card: that,
-						action: 'member_added',
-						member: member
-					});
-				}
-
-				invite = member.getTicket().getInviteCode();
-				//console.log('  [' + j + ']: ' + invite);
-				if (invite)
-				{
-					allShares.push(invite);
-					if (currentlySharing.indexOf(invite) === -1)
-					{
-						currentlySharing.push(invite);
-
-						controller.notify(m.CardUpdated, {
-							card: that,
-							action: 'invite_added',
-							invite: invite
-						});
-					}
-				}
-			}
-			// (use while to allow deleting in the loop)
-			i = currentlySharing.length;
-			while (i--)
-			{
-				invite = currentlySharing[i];
-				if (allShares.indexOf(invite) === -1)
-				{
-					currentlySharing.splice(i, 1);
-
-					controller.notify(m.CardUpdated, {
-						card: that,
-						action: 'invite_removed',
-						invite: invite
-					});
-				}
-			}
-			i = members.length;
-			while (i--)
-			{
-				member = members[i];
-				if (allMembersIds.indexOf(member.getId()) === -1)
-				{
-					members.splice(i, 1);
-					delete membersIndex[member.getId()];
-
-					controller.notify(m.CardUpdated, {
-						card: that,
-						action: 'member_removed',
-						member: member
+						action: 'invite_code_found',
+						invite: addedInviteCode
 					});
 				}
 			}
@@ -151,11 +111,135 @@ define(function(require, exports, module)
 			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
 		};
 
-		this.getInvites = function()
-		{
-			return currentlySharing;
+		this.setDataFromStream = function(streamArray) {
+			var cardId = this.getIdCard();
+			var newMembers = [],
+				newJoinCardInvites = [],
+				updateResult,
+				action,
+				member,
+				invite,
+				inviteCode,
+				i, len;
+			for (i = 0, len = streamArray.length; i < len; i++)
+			{
+				action = streamArray[i];
+				updateResult = {
+					card: this,
+					action: action.type
+				};
+				switch (action.type)
+				{
+					case 'member_added':
+						newMembers.push(action.data.member_id);
+						break;
+					case 'member_removed':
+						member = removeMemberById(action.data.member_id);
+						updateResult.member = member;
+						controller.notify(m.CardUpdated, updateResult);
+						break;
+					case 'invite_added':
+						newJoinCardInvites.push(action.data.invite_id);
+						break;
+					case 'invite_removed':
+						updateResult.invite = removeJoinInviteById(action.data.invite_id);
+						controller.notify(m.CardUpdated, updateResult);
+						break;
+					case 'member_started_sharing':
+						member = getMemberById(action.member_id);
+						member.setData(action.data);
+						updateResult.invite = checkMemberInviteCode(member);
+						controller.notify(m.CardUpdated, updateResult);
+						break;
+					case 'member_stopped_sharing':
+						member = getMemberById(action.member_id);
+						updateResult.invite = removeMemberInviteCode(member);
+						controller.notify(m.CardUpdated, updateResult);
+						break;
+
+					default:
+						controller.notify(m.CardUpdated, updateResult);
+				}
+			}
+
+			// var batchRequests = [];
+
+			for (i = 0, len = newMembers.length; i < len; i++)
+			{
+				//Todo: need to implement batch request
+				ajax.get(svr + 'cards/' + cardId + '/members/' + newMembers[i], null, account)
+					.then(processMemberResult);
+
+				// batchRequests.push(svr + 'cards/' + cardId + '/members/' + newMembers[i]);
+			}
+
+			for (i = 0, len = newJoinCardInvites.length; i < len; i++)
+			{
+				ajax.get(svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i], null, account)
+					.then(processInviteResult);
+				// batchRequests.push({
+				// 	url: 'https:' + svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i],
+				// 	method: 'GET',
+				// 	headers: {
+				// 		'Authorization': 'Bearer ' + account.getToken()
+				// 	}
+				// });
+			}
+
+			// Batch request
+			// ajax.post(svr + 'batch', batchRequests, account)
+			// 	.then(function(response) {
+			// 		var results = response;
+			// 		for (i = 0, len = results.length; i < len; i++)
+			// 		{
+            //
+			// 		}
+			// 	});
+
+			function processMemberResult(result)
+			{
+				var newMember;
+				if (result.status)
+				{
+					newMember = addMember(result.response);
+					updateResult.member = newMember;
+					controller.notify(m.CardUpdated, updateResult);
+					checkMemberInviteCode(newMember);
+				}
+				else
+				{
+					controller.notify(m.CardUpdated, result);
+				}
+			}
+
+			function processInviteResult(result)
+			{
+				var newInvite;
+				if (result.status)
+				{
+					newInvite = addJoinInvite(result.response);
+					updateResult.invite = newInvite;
+					controller.notify(m.CardUpdated, updateResult);
+				}
+				else
+				{
+					controller.notify(m.CardUpdated, result);
+				}
+			}
 		};
 
+		this.getInvites = function()
+		{
+			return inviteCodes;
+		};
+
+		this.setLastUpdatingTime = function(time) {
+			lastUpdated = time;
+		};
+
+		this.getLastUpdatingTime = function() {
+			return lastUpdated;
+		};
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -172,6 +256,87 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
+		function addMember(memberData) {
+			var member = new Member(memberData, cfg);
+			membersIndex[memberData.id] = members.length;
+			members.push(member);
+
+			return member;
+		}
+
+		function getMemberById(id) {
+			var memberIndex = membersIndex[id];
+			return memberIndex >= 0 ? members[memberIndex] : null;
+		}
+
+		function removeMemberById(id) {
+			var memberIndex = membersIndex[id],
+				removedMember;
+
+			delete membersIndex[id];
+			removedMember = members.splice(memberIndex, 1)[0];
+
+			return removedMember || null;
+		}
+
+		function checkMemberInviteCode(member) {
+			var ticket = member.getTicket();
+			var inviteCode = ticket && ticket.getInviteCode();
+
+			if (inviteCode && typeof inviteCodesIndex[inviteCode] === 'undefined')
+			{
+				return addInviteCode(inviteCode);
+			}
+
+			return inviteCode;
+		}
+
+		function removeMemberInviteCode(member) {
+			var ticket = member.getTicket();
+			var inviteCode = ticket && ticket.getInviteCode();
+
+			if (inviteCode && inviteCodesIndex[inviteCode])
+			{
+				return removeInviteCode(inviteCode);
+			}
+		}
+
+		function addInviteCode(inviteCode) {
+
+			inviteCodesIndex[inviteCode] = inviteCodes.length;
+			inviteCodes.push(inviteCode);
+
+			return inviteCode;
+		}
+
+		function removeInviteCode(inviteCode) {
+			var inviteIndex = inviteCodesIndex[inviteCode],
+				removedInviteCode;
+
+			delete inviteCodesIndex[inviteCode];
+			removedInviteCode = inviteCodes.splice(inviteIndex, 1)[0];
+
+			return removedInviteCode || null;
+		}
+
+		function addJoinInvite(inviteData) {
+			var invite = inviteData;
+
+			joinInvitesIndex[inviteData.invite_id] = joinInvites.length;
+			joinInvites.push(invite);
+
+			return invite;
+		}
+
+		function removeJoinInviteById(inviteId) {
+			var inviteIndex = joinInvitesIndex[inviteId],
+				removedInvite;
+
+			delete joinInvitesIndex[inviteId];
+			removedInvite = inviteCodes.splice(inviteIndex, 1)[0];
+
+			return removedInvite || null;
+		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		// CTOR

@@ -311,8 +311,9 @@ define(function(require, exports, module)
 					// dbg('card updated', args);
 
 					switch (args.action) {
-						case 'invite_added':
-						case 'invite_removed':
+						case 'invite_code_found':
+						case 'member_started_sharing':
+						case 'member_stopped_sharing':
 							mapCardInvites[args.invite] = args.card.getId();
 							break;
 					}
@@ -406,7 +407,8 @@ define(function(require, exports, module)
 						//dbg('m.AccountInit', args);
 
 						account = coreController.getAccount();
-						cfgAdapter.account = cfgViewer.account = account;
+						cfgAdapter.account = account;
+						cfgViewer.authToken = account.getToken();
 
 						args.account = account;
 

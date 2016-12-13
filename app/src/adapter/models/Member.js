@@ -65,15 +65,27 @@ define(function(require, exports, module)
 
 		this.setData = function(val)
 		{
-			data = val;
+			$.extend(data, val);
+
 			lib.mapProps(this, props, data);
 
 			//invite = (data.invite) ? new MemberInvite(data.invite, cfg) : {};
 			//ticket = (data.ticket) ? new MemberTicket(data.ticket, cfg) : {};
 			//permissions = (data.permissions) ? new MemberPermissions(data.permissions, cfg) : {};
-			invite = new MemberInvite(data.invite, cfg);
-			ticket = new MemberTicket(data.ticket, cfg);
-			permissions = new MemberPermissions(data.permissions, cfg);
+			if (data.invite)
+			{
+				invite = new MemberInvite(data.invite, cfg);
+			}
+
+			if (data.ticket)
+			{
+				ticket = new MemberTicket(data.ticket, cfg);
+			}
+
+			if (data.permissions)
+			{
+				permissions = new MemberPermissions(data.permissions, cfg);
+			}
 		};
 
 

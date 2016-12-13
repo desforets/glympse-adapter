@@ -43,6 +43,7 @@ define(function(require, exports, module)
 				{
 					result.status = true;
 					result.response = data.response;
+					result.time = data.meta && data.meta.time;
 
 					that.request.resolve(result);
 
