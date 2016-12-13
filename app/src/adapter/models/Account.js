@@ -3,6 +3,7 @@ define(function(require, exports, module)
     'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');
+	var ajax = require('glympse-adapter/lib/ajax');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 	var imageProcessing = require('glympse-adapter/lib/image');
 
@@ -11,13 +12,10 @@ define(function(require, exports, module)
 
 	var cAcctTokenName = 't0';
 	var cApiKey = 'api_key';
-	var cMaxAttempts = 3;
 	var cPassword = 'p0';
 	var cUserName = 'n0';
 	var cSvcPassword = 'password';
 	var cSvcUserName = 'username';
-	var cSvcError = 'error';
-	var cSvcErrorDetail = 'error_detail';
 	var cAccountInfo = 'accountInfo';
 
 	var anonymousUserName = 'viewer';
@@ -40,13 +38,16 @@ define(function(require, exports, module)
 		var urlLogin = (svr + 'account/login');
 
 		// state
-		var attempts = 0;
 		var isAnon = !cfg.apiKey;
 		var token;
 
 		var settings;
 		var currentEnvKeys;
 		var currentKeySettings;
+
+		var that = this;
+
+		var gettingTokenProcess = null;
 
 		account[cApiKey] = apiKey;
 
@@ -57,6 +58,11 @@ define(function(require, exports, module)
 		this.getToken = function()
 		{
 			return token;
+		};
+
+		this.getId = function()
+		{
+			return account[cSvcUserName];
 		};
 
 
@@ -78,7 +84,11 @@ define(function(require, exports, module)
 
 				if (!u || !p)
 				{
-					controller.notify(m.AccountLoginStatus, { status: false, error: 'no_account', errorDetail: 'No account exists for the current apiKey.' });
+					controller.notify(m.AccountLoginStatus, {
+						status: false,
+						error: 'no_account',
+						errorDetail: 'No account exists for the current apiKey.'
+					});
 					return false;
 				}
 
@@ -100,17 +110,15 @@ define(function(require, exports, module)
 				return true;
 			}
 
-			attempts = 0;
 			getNewToken();
 
 			return false;
 		};
 
-		this.generateToken = function()
+		this.generateToken = function(callback)
 		{
 			token = null;
-			attempts = 0;
-			getNewToken();
+			getNewToken(callback);
 		};
 
 		this.create = function()
@@ -129,30 +137,11 @@ define(function(require, exports, module)
 		{
 			var apiUrl = (svr + 'users/self/update');
 
-			$.getJSON(apiUrl, { oauth_token: token, name: newName })
-				.done(processUserNameResponse)
-				.fail(processUserNameResponse);
-
-			function processUserNameResponse(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
+			ajax.get(apiUrl, { name: newName }, that)
+				.then(function(result)
 				{
-					if (data.result === 'ok')
-					{
-						result.status = true;
-						result.response = data.response;
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.UserNameUpdateStatus, result);
-			}
+					controller.notify(m.UserNameUpdateStatus, result);
+				});
 		};
 
 		this.setAvatar = function(urlOrAvatarDataArray)
@@ -196,37 +185,16 @@ define(function(require, exports, module)
 
 			function imageScaleCallback(dataArray)
 			{
-				var apiUrl = (svr + 'users/self/upload_avatar?oauth_token=' + token);
-				$.ajax({
-					url: apiUrl,
-					type: 'POST',
+				var apiUrl = (svr + 'users/self/upload_avatar');
+
+				ajax.post(apiUrl, new Uint8Array(dataArray), that, {
 					contentType: 'image/jpeg',
-					data: new Uint8Array(dataArray),
 					processData: false
 				})
-					.done(processResponse)
-					.fail(processResponse);
-			}
-
-			function processResponse(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
+					.then(function(result)
 					{
-						result.status = true;
-						result.response = data.response;
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.UserAvatarUpdateStatus, result);
+						controller.notify(m.UserAvatarUpdateStatus, result);
+					});
 			}
 		};
 
@@ -258,48 +226,29 @@ define(function(require, exports, module)
 		{
 			if (!config || !config.type || config.type !== REQUEST_TYPES.LINK)
 			{
-				dbg('"type" must be provided (NOTE: only Defines.CARDS.REQUEST_TYPES.LINK type is supported for now)', config, 3);
+				var error = '"type" must be provided (NOTE: only Defines.CARDS.REQUEST_TYPES.LINK type is supported for now)';
+
+				dbg(error, config, 3);
+
+				controller.notify(m.CreateRequestStatus, {
+					status: false,
+					response: { error: error }
+				});
+
 				return;
 			}
 
 			var url = svr + 'users/self/create_request?' + $.param(config);
 
-			$.ajax({
-				url: url,
-				method: 'POST',
-				beforeSend: function(request)
+			ajax.post(url, null, that)
+				.then(function(result)
 				{
-					request.setRequestHeader('Authorization', 'Bearer ' + token);
-				},
-				dataType: 'json',
-				contentType: 'application/json'
-			})
-				.done(processResponse)
-				.fail(processResponse);
-
-			function processResponse(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
-					{
-						result.status = true;
-						result.response = data.response;
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.CreateRequestStatus, result);
-			}
+					controller.notify(m.CreateRequestStatus, result);
+				});
 		};
 
-		this.delete = function() {
+		this.delete = function()
+		{
 			//delete all storages for this account
 			deleteSettings();
 
@@ -324,7 +273,8 @@ define(function(require, exports, module)
 			currentKeySettings = currentEnvKeys[apiKey] || {};
 		}
 
-		function deleteSettings() {
+		function deleteSettings()
+		{
 			getSettings();
 			currentKeySettings = {};
 			saveSettings();
@@ -332,127 +282,69 @@ define(function(require, exports, module)
 
 		function getNewToken(callback)
 		{
-			$.getJSON(urlLogin, account)
-				.done(function(data)
-				{
-					processLogin(data, callback);
-				})
-				.fail(processLogin);
-		}
-
-		function processLogin(data, callback)
-		{
-			var result = { status: false };
-
-			attempts++;
-
-			try
+			// do not allow multiple log-ins at the same time
+			if (!gettingTokenProcess)
 			{
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
+				gettingTokenProcess = ajax.get(urlLogin, account)
+					.then(function(result)
 					{
-						token = data.response.access_token;
-
-						currentKeySettings[cAcctTokenName] = token;
-						saveSettings();
-
-						//dbg('>> new token: ' + token);
-
-						controller.notify(m.AccountLoginStatus, { status: true, token: token, id: account[cSvcUserName] });
-
-						if (callback)
+						if (result.status)
 						{
-							callback();
+							token = result.response.access_token;
+
+							currentKeySettings[cAcctTokenName] = token;
+
+							saveSettings();
+
+							//dbg('>> new token: ' + token);
+
+							result.id = account[cSvcUserName];
+							result.token = token;
 						}
-
-						return;
-					}
-
-					if (data.result === 'failure')
-					{
-						var meta = data.meta || {};
-						result.error = meta[cSvcError];
-						result.errorDetail = meta[cSvcErrorDetail];
 
 						controller.notify(m.AccountLoginStatus, result);
 
-						return;
-					}
-				}
-			}
-			catch (e)
-			{
-				dbg('Error parsing login', e);
+						gettingTokenProcess = null;
+
+						return result;
+					});
 			}
 
-			//dbg('attempt: ' + attempts + ', last data', data);
-
-			if (attempts < cMaxAttempts)
+			if (callback)
 			{
-				setTimeout(function()
+				gettingTokenProcess.then(function(result)
 				{
-					getNewToken();
-				}, attempts * (500 + Math.round(1000 * Math.random()))	// Incremental + random offset delay between retry in case of short availability outage
-				);
-
-				return;
+					callback(result);
+				});
 			}
-
-			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
-			result.info = { mode: 'login', status: 'max_attempts', lastResult: data };
-			controller.notify(m.AccountLoginStatus, result);
 		}
 
 		function getUserInfo(userId, checkToken)
 		{
 			var apiUrl = svr + 'users/' + (userId || 'self');
 
-			$.getJSON(apiUrl, { oauth_token: token })
-				.done(processResponse)
-				.fail(processResponse);
-
-			function processResponse(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
+			ajax.get(apiUrl, null, that)
+				.then(function(result)
 				{
-					if (data.result === 'ok')
+					if (result.status)
 					{
-						result.status = true;
-						result.response = data.response;
-						result.response.id = userId;
+						// can be useful for properly filtering events on consumer side
+						result.response.userId = userId;
 					}
-					else if (data.meta && data.meta.error === 'oauth_token')
+
+					if (checkToken)
 					{
-						getNewToken(function()
-						{
-							getUserInfo(userId);
+						controller.notify(m.AccountLoginStatus, {
+							status: true,
+							token: token,
+							id: currentKeySettings[cUserName]
 						});
-						// do not send failure -> get new token and retry
-						return;
 					}
 					else
 					{
-						result.response = data.meta;
+						controller.notify(m.UserInfoStatus, result);
 					}
-				}
-				if (checkToken)
-				{
-					controller.notify(m.AccountLoginStatus, {
-						status: true,
-						token: token,
-						id: currentKeySettings[cUserName]
-					});
-				}
-				else
-				{
-					controller.notify(m.UserInfoStatus, result);
-				}
-			}
+				});
 		}
 
 		function createAccount()
@@ -461,66 +353,27 @@ define(function(require, exports, module)
 
 			opts[cApiKey] = account[cApiKey];
 
-			$.getJSON(urlCreate, opts)
-				.done(processCreateAccount)
-				.fail(processCreateAccount);
-		}
-
-		function processCreateAccount(data)
-		{
-			var result = { status: false };
-
-			attempts++;
-
-			try
-			{
-				var resp = (data && data.response);
-
-				if (resp && data.result === 'ok')
+			ajax.get(urlCreate, opts)
+				.then(function(result)
 				{
-					var id = resp.id;
-					var pw = resp.password;
+					if (result.status)
+					{
+						var resp = result.response;
 
-					account[cSvcUserName] = id;
-					account[cSvcPassword] = pw;
+						var id = resp.id;
+						var pw = resp.password;
 
-					currentKeySettings[cUserName] = id;
-					currentKeySettings[cPassword] = pw;
-					saveSettings();
-					//dbg('>> new account: ' + id + ' / ' + pw);
+						account[cSvcUserName] = id;
+						account[cSvcPassword] = pw;
 
-					result.status = true;
-					result.response = resp;
+						currentKeySettings[cUserName] = id;
+						currentKeySettings[cPassword] = pw;
+
+						saveSettings();
+					}
 
 					controller.notify(m.AccountCreateStatus, result);
-
-					// AuthToken will be loaded on next request requiring authentication
-					// ---> Avoids race conditions if app reacts to AccountCreateStatus without
-					//      waiting for AccountLoginStatus
-					return;
-				}
-			}
-			catch (e)
-			{
-				dbg('Error parsing ' + urlCreate, e);
-			}
-
-			//dbg('attempt: ' + attempts + ', last data', data);
-
-			if (attempts < cMaxAttempts)
-			{
-				setTimeout(function()
-				{
-					createAccount();
-				}, attempts * (500 + Math.round(1000 * Math.random()))	// Incremental + random offset delay between retry in case of short availability outage
-				);
-
-				return;
-			}
-
-			//dbg('Max attempts: (' + attempts + ') -- ' + ((data && data.result) || 'data=null'));
-			result.info = { mode: 'create_account', status: 'max_attempts', lastResult: data };
-			controller.notify(m.AccountCreateStatus, result);
+				});
 		}
 	}
 
@@ -529,7 +382,6 @@ define(function(require, exports, module)
 	// Environment
 	Account.EnvProduction = 'prod';
 	Account.EnvSandbox = 'sbox';
-
 
 
 	module.exports = Account;

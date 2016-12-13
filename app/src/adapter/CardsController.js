@@ -4,6 +4,7 @@ define(function(require, exports, module)
 
 	// defines
 	var lib = require('glympse-adapter/lib/utils');
+	var ajax = require('glympse-adapter/lib/ajax');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 
 	var m = Defines.MSG;
@@ -32,8 +33,7 @@ define(function(require, exports, module)
 		var cardsIndex;
 		var cardsReady = 0;
 		var initialized = false;
-		var authToken = cfg.authToken;
-		var accountId = cfg.accountId;
+		var account = cfg.account;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ define(function(require, exports, module)
 
 			controller.notify(m.CardsInitStart, cardInvites);
 
-			if (authToken)
+			if (account)
 			{
 				accountInitComplete();
 			}
@@ -64,8 +64,7 @@ define(function(require, exports, module)
 			{
 				case m.AccountLoginStatus:
 				{
-					authToken = args.token;
-					accountId = args.id;
+					account = args.account;
 					accountInitComplete(args);
 					break;
 				}
@@ -160,7 +159,7 @@ define(function(require, exports, module)
 				return;
 			}
 
-			if (!authToken)
+			if (!account)
 			{
 				dbg(sig + 'authToken unavailable', args);
 				return;
@@ -192,8 +191,7 @@ define(function(require, exports, module)
 		}
 
 		function accountDeleteComplete(){
-			authToken = null;
-			accountId = null;
+			account = null;
 			if (pollingInterval)
 			{
 				clearInterval(pollingInterval);
@@ -222,41 +220,16 @@ define(function(require, exports, module)
 		 */
 		function requestCards()
 		{
-			$.ajax(
+			ajax.get(svr + 'cards', null, account)
+				.then(function(result)
 				{
-					type: 'GET',
-					dataType: 'JSON',
-					beforeSend: function(request)
-					{
-						request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-					},
-					url: svr + 'cards',
-					processData: true
-				})
-				.done(function(data)
-				{
-					processCardsData(data);
-				})
-				.fail(function()
-				{
-					processCardsData();
-				});
-
-			function processCardsData(resp)
-			{
-				var result = {
-					status: false,
-					response: resp
-				};
-				if (resp && resp.response)
-				{
-					if (resp.result === 'ok')
+					if (result.status)
 					{
 						var i, card, len, cardId, allCardIds = [];
 						// add new cards
-						for (i = 0, len = resp.response.length; i < len; i++)
+						for (i = 0, len = result.response.length; i < len; i++)
 						{
-							card = resp.response[i];
+							card = result.response[i];
 							allCardIds.push(card.id);
 							if (cardInvites.indexOf(card.id) === -1)
 							{
@@ -282,21 +255,10 @@ define(function(require, exports, module)
 						{
 							loadCard(cardInvites[i]);
 						}
-						result.status = true;
-						result.response = resp.response;
 					}
-					else
-					{
-						result.response = resp.meta;
-					}
-				}
-				else
-				{
-					dbg('failed to load cards');
-				}
-				controller.notify(m.CardsRequestStatus, result);
-			}
 
+					controller.notify(m.CardsRequestStatus, result);
+				});
 		}
 
 		/**
@@ -315,56 +277,23 @@ define(function(require, exports, module)
 
 			var cardUrl = (svr + 'cards/' + idCard);
 
-			$.ajax(
+			ajax.get(cardUrl, { members: true }, account)
+				.then(function(result)
 				{
-					type: 'GET',
-					dataType: 'JSON',
-					beforeSend: function(request)
+					if (result.status)
 					{
-						request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-					},
-					url: cardUrl,
-					data: {members: true},
-					processData: true
-				})
-				.done(function(data)
-				{
-					processCardData(data);
-				})
-				.fail(function()
-				{
-					processCardData(null);
-				});
-
-			function processCardData(resp)
-			{
-				try
-				{
-					if (resp)
-					{
-						if (resp.response && resp.result === 'ok')
-						{
-							//dbg('Got card data', resp);
-							card.setData(resp.response);
-							that.notify(m.CardReady, idCard);
-						}
-						else if (resp.meta && resp.meta.error)
-						{
-							// Invite is invalid or has been revoked, in
-							// either case, we cannot continue loading this
-							// card, so bail immediately
-							if (resp.meta.error === 'failed_to_decode')
-							{
-								that.notify(m.CardReady, idCard);
-							}
-						}
+						//dbg('Got card data', resp);
+						card.setData(result.response);
+						that.notify(m.CardReady, idCard);
 					}
-				}
-				catch (e)
-				{
-					dbg('Error parsing card', e);
-				}
-			}
+					else if (result.response.error === 'failed_to_decode')
+					{
+						// Invite is invalid or has been revoked, in
+						// either case, we cannot continue loading this
+						// card, so bail immediately
+						that.notify(m.CardReady, idCard);
+					}
+				});
 		}
 
 		/**
@@ -379,7 +308,15 @@ define(function(require, exports, module)
 		{
 			if (!config || !config.cardId || !config.inviteCode)
 			{
-				dbg('cardId & inviteCode config params must be passed', config, 3);
+				var error = 'cardId & inviteCode config params must be passed';
+
+				dbg(error, config, 3);
+
+				controller.notify(m.CardsLocationRequestStatus, {
+					status: false,
+					response: { error: error }
+				});
+
 				return;
 			}
 
@@ -395,7 +332,7 @@ define(function(require, exports, module)
 				var members = [];
 				for (var i = 0, len = config.memberList.length; i < len; i++)
 				{
-					members.push({member_id: config.memberList[i]});
+					members.push({ member_id: config.memberList[i] });
 				}
 				data.invitees.type = 'list';
 				data.invitees.list = members;
@@ -405,40 +342,11 @@ define(function(require, exports, module)
 				data.invitees.type = 'all';
 			}
 
-			$.ajax({
-				url: url,
-				method: 'POST',
-				beforeSend: function(request)
+			ajax.post(url, data, account)
+				.then(function(result)
 				{
-					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				},
-				dataType: 'json',
-				data: JSON.stringify(data),
-				contentType: 'application/json'
-			})
-				.done(processResponse)
-				.fail(processResponse);
-
-			function processResponse(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
-					{
-						result.status = true;
-						result.response = data.response;
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.CardsLocationRequestStatus, result);
-			}
+					controller.notify(m.CardsLocationRequestStatus, result);
+				});
 		}
 
 		/**
@@ -461,126 +369,47 @@ define(function(require, exports, module)
 			if (!requestConfig.type ||
 				(!requestConfig.address && requestConfig.type !== REQUEST_TYPES.CLIPBOARD && requestConfig.type !== REQUEST_TYPES.LINK))
 			{
-				dbg('Need to provide type (Defines.CARDS.REQUEST_TYPES: LINK, CLIPBOARD, SMS, EMAIL, ACCOUNT) ' +
-					'and address (except LINK and CLIPBOARD types) to join a card', requestConfig, 3);
+				var error = 'Need to provide type (Defines.CARDS.REQUEST_TYPES: LINK, CLIPBOARD, SMS, EMAIL, ACCOUNT) ' +
+					'and address (except LINK and CLIPBOARD types) to join a card';
+
+				dbg(error, requestConfig, 3);
+
+				controller.notify(m.CardsJoinRequestStatus, {
+					status: false,
+					response: { error: error }
+				});
+
 				return;
 			}
 			requestConfig.send = requestConfig.send || 'server';
 
-			//Todo: This should be centralized as this call pattern will be identical for nearly all authenticated calls in the adapter.
-			$.ajax({
-				url: url,
-				method: 'POST',
-				beforeSend: function(request)
+			ajax.post(url, requestConfig, account)
+				.then(function(result)
 				{
-					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				},
-				dataType: 'json',
-				data: JSON.stringify(requestConfig),
-				contentType: 'application/json'
-			})
-				.done(processRequest)
-				.fail(processRequest);
-
-			function processRequest(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
-					{
-						result.status = true;
-						result.response = data.response;
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.CardsJoinRequestStatus, result);
-			}
+					controller.notify(m.CardsJoinRequestStatus, result);
+				});
 		}
 
 		function joinRequestCancel(requestId)
 		{
 			var url = svr + 'cards/requests/' + requestId;
 
-			$.ajax({
-				url: url,
-				method: 'DELETE',
-				beforeSend: function(request)
+			ajax.delete(url, account)
+				.then(function(result)
 				{
-					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				},
-				dataType: 'json',
-				contentType: 'application/json'
-			})
-				.done(processRequest)
-				.fail(processRequest);
-
-			function processRequest(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
-					{
-						result.status = true;
-						result.response = data.response || {};
-						result.response.id = requestId;
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.CardsJoinRequestCancelStatus, result);
-			}
+					controller.notify(m.CardsJoinRequestCancelStatus, result);
+				});
 		}
 
 		function getActiveJoinRequests()
 		{
 			var url = svr + 'cards/requests';
 
-			$.ajax({
-				url: url,
-				method: 'GET',
-				beforeSend: function(request)
+			ajax.get(url, null, account)
+				.then(function(result)
 				{
-					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				},
-				dataType: 'json',
-				contentType: 'application/json'
-			})
-				.done(processRequest)
-				.fail(processRequest);
-
-			function processRequest(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
-					{
-						result.status = true;
-						result.response = data.response || {};
-					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.CardsActiveJoinRequestsStatus, result);
-			}
+					controller.notify(m.CardsActiveJoinRequestsStatus, result);
+				});
 		}
 
 		/**
@@ -612,7 +441,7 @@ define(function(require, exports, module)
 				for (var i = 0, len = members.length, member; i < len; i++)
 				{
 					member = members[i];
-					if (member.getUserId() === accountId)
+					if (member.getUserId() === account.getId())
 					{
 						memberId = member.getId();
 						break;
@@ -625,43 +454,19 @@ define(function(require, exports, module)
 				}
 			}
 
-			$.ajax({
-				url: (svr + 'cards/' + config.cardId + '/members/' + memberId),
-				method: 'DELETE',
-				beforeSend: function(request)
+			ajax.delete((svr + 'cards/' + config.cardId + '/members/' + memberId), account)
+				.then(function(result)
 				{
-					request.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				},
-				dataType: 'json',
-				contentType: 'application/json'
-			})
-				.done(processResponse)
-				.fail(processResponse);
-
-			function processResponse(data)
-			{
-				var result = {
-					status: false,
-					response: data
-				};
-				if (data && data.response)
-				{
-					if (data.result === 'ok')
+					if (result.status)
 					{
-						result.status = true;
-						result.response = data.response || {};
 						result.response.cardId = config.cardId;
 						result.response.memberId = memberId;
 
 						requestCards();
 					}
-					else
-					{
-						result.response = data.meta;
-					}
-				}
-				controller.notify(m.CardRemoveMemberStatus, result);
-			}
+
+					controller.notify(m.CardRemoveMemberStatus, result);
+				});
 		}
 	}
 

@@ -1,6 +1,6 @@
 define(function(require, exports, module)
 {
-    'use strict';
+	'use strict';
 
 	// defines
 	var lib = require('glympse-adapter/lib/utils');
@@ -107,6 +107,11 @@ define(function(require, exports, module)
 					break;
 				}
 			}
+		};
+
+		this.getAccount = function()
+		{
+			return account;
 		};
 
 

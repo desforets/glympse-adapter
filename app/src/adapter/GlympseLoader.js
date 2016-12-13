@@ -20,7 +20,7 @@ define(function(require, exports, module)
 
 		// state
 		var that = this;
-		var authToken = cfg.authToken;
+		var account = cfg.account;
 		var idInvite;
 		var invite;
 		var initialized = false;
@@ -35,9 +35,9 @@ define(function(require, exports, module)
 			idInvite = inviteToLoad;
 			initialized = true;
 
-			if (authToken)
+			if (account)
 			{
-				accountInitComplete(authToken);
+				accountInitComplete(account);
 			}
 		};
 
@@ -48,17 +48,17 @@ define(function(require, exports, module)
 			{
 				case m.AccountLoginStatus:
 				{
-					authToken = args.token;
+					account = args.account;
 					accountInitComplete(args);
 					break;
 				}
 
 				case m.AccountDeleteStatus:
 				{
-					authToken = null;
+					account = null;
 					if (invite)
 					{
-						invite.setToken(authToken);
+						invite.setAccount(account);
 					}
 					break;
 				}
@@ -71,22 +71,6 @@ define(function(require, exports, module)
 
 				case m.InviteReady:
 				{
-					//var error = args.getError();
-
-					// if (error && error.error === 'oauth_token')
-					// {
-					// 	if (error.error_detail.indexOf('expired') >= 0)
-					// 	{
-					// 		account.handleExpiredToken();
-					// 	}
-					// 	else
-					// 	{
-					// 		account.handleInvalidToken();
-					// 	}
-                    //
-					// 	break;
-					// }
-
 					controller.notify(msg, args);
 					break;
 				}
@@ -116,7 +100,7 @@ define(function(require, exports, module)
 				return;
 			}
 
-			if (!authToken)
+			if (!account)
 			{
 				dbg(sig + 'authToken unavailable', info);
 				return;
@@ -127,14 +111,17 @@ define(function(require, exports, module)
 
 			if (invite)
 			{
-				invite.setToken(authToken);
+				invite.setAccount(account);
 			}
 			else
 			{
-				invite = new GlympseInvite(that, idInvite, authToken, cfg);
+				invite = new GlympseInvite(that, idInvite, account, cfg);
 			}
 
-			invite.load();
+			if (!invite.isLoaded())
+			{
+				invite.load();
+			}
 		}
 	}
 
