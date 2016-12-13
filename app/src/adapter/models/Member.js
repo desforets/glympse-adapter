@@ -76,6 +76,7 @@ define(function(require, exports, module)
 			{
 				invite = new MemberInvite(data.invite, cfg);
 			}
+
 			if (data.ticket)
 			{
 				ticket = new MemberTicket(data.ticket, cfg);

@@ -19,11 +19,10 @@ define(function(require, exports, module)
 		//members collection
 		var members = [];
 		var membersIndex = {};
-		//invites collection
-		var invites = [];
-		var invitesIndex = {};
+		//inviteCodes collection
+		var inviteCodes = [];
+		var inviteCodesIndex = {};
 
-		var currentlySharing = [];
 		var that = this;
 		var lastUpdated;
 
@@ -94,7 +93,13 @@ define(function(require, exports, module)
 					member: member
 				});
 
-				checkMemberInviteCode(member);
+				var addedInviteCode = checkMemberInviteCode(member);
+
+				controller.notify(m.CardUpdated, {
+					card: that,
+					action: 'invite_code_found',
+					invite: addedInviteCode
+				});
 			}
 
 			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
@@ -107,6 +112,7 @@ define(function(require, exports, module)
 				action,
 				member,
 				invite,
+				inviteCode,
 				i, len;
 			for (i = 0, len = streamArray.length; i < len; i++)
 			{
@@ -133,11 +139,13 @@ define(function(require, exports, module)
 					case 'member_started_sharing':
 						member = getMemberById(action.member_id);
 						member.setData(action.data);
-						checkMemberInviteCode(member);
+						updateResult.invite = checkMemberInviteCode(member);
+						controller.notify(m.CardUpdated, updateResult);
 						break;
 					case 'member_stopped_sharing':
 						member = getMemberById(action.member_id);
-						removeMemberInviteCode(member);
+						updateResult.invite = removeMemberInviteCode(member);
+						controller.notify(m.CardUpdated, updateResult);
 						break;
 
 					default:
@@ -160,6 +168,7 @@ define(function(require, exports, module)
 					newMember = addMember(result.response);
 					updateResult.member = newMember;
 					controller.notify(m.CardUpdated, updateResult);
+					checkMemberInviteCode(newMember);
 				}
 				else
 				{
@@ -170,7 +179,7 @@ define(function(require, exports, module)
 
 		this.getInvites = function()
 		{
-			return currentlySharing;
+			return inviteCodes;
 		};
 
 		this.setLastUpdatingTime = function(time) {
@@ -200,7 +209,6 @@ define(function(require, exports, module)
 			var member = new Member(memberData, cfg);
 			membersIndex[memberData.id] = members.length;
 			members.push(member);
-			checkMemberInviteCode(member);
 
 			return member;
 		}
@@ -224,48 +232,38 @@ define(function(require, exports, module)
 			var ticket = member.getTicket();
 			var inviteCode = ticket && ticket.getInviteCode();
 
-			if (inviteCode && !invitesIndex[inviteCode])
+			if (inviteCode && typeof inviteCodesIndex[inviteCode] === 'undefined')
 			{
-				addInvite(inviteCode);
+				return addInviteCode(inviteCode);
 			}
+
+			return inviteCode;
 		}
 
 		function removeMemberInviteCode(member) {
 			var ticket = member.getTicket();
 			var inviteCode = ticket && ticket.getInviteCode();
 
-			if (inviteCode && invitesIndex[inviteCode])
+			if (inviteCode && inviteCodesIndex[inviteCode])
 			{
-				removeInvite(inviteCode);
+				return removeInviteCode(inviteCode);
 			}
 		}
 
-		function addInvite(inviteCode) {
+		function addInviteCode(inviteCode) {
 
-			invitesIndex[inviteCode] = invites.length;
-			invites.push(inviteCode);
-
-			controller.notify(m.CardUpdated, {
-				card: that,
-				action: 'invite_added',
-				invite: inviteCode
-			});
+			inviteCodesIndex[inviteCode] = inviteCodes.length;
+			inviteCodes.push(inviteCode);
 
 			return inviteCode;
 		}
 
-		function removeInvite(inviteCode) {
-			var inviteIndex = invitesIndex[inviteCode],
+		function removeInviteCode(inviteCode) {
+			var inviteIndex = inviteCodesIndex[inviteCode],
 				removedInviteCode;
 
-			delete invitesIndex[inviteCode];
-			removedInviteCode = invites.splice(inviteIndex, 1)[0];
-
-			controller.notify(m.CardUpdated, {
-				card: that,
-				action: 'invite_removed',
-				invite: removedInviteCode
-			});
+			delete inviteCodesIndex[inviteCode];
+			removedInviteCode = inviteCodes.splice(inviteIndex, 1)[0];
 
 			return removedInviteCode || null;
 		}
