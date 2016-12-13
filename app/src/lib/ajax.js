@@ -147,7 +147,7 @@ define(function(require, exports, module)
 				if (auth.account)
 				{
 					account = auth.account;
-					useBearer = (auth.useBearer === false);
+					useBearer = (auth.useBearer !== false);
 				}
 				else
 				{
