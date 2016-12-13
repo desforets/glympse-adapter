@@ -162,12 +162,39 @@ define(function(require, exports, module)
 				}
 			}
 
+			// var batchRequests = [];
+
 			for (i = 0, len = newMembers.length; i < len; i++)
 			{
-				//need to implement batch;
+				//Todo: need to implement batch request
 				ajax.get(svr + 'cards/' + cardId + '/members/' + newMembers[i], null, account)
 					.then(processMemberResult);
+
+				// batchRequests.push(svr + 'cards/' + cardId + '/members/' + newMembers[i]);
 			}
+
+			for (i = 0, len = newJoinCardInvites.length; i < len; i++)
+			{
+				ajax.get(svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i], null, account)
+					.then(processInviteResult);
+				// batchRequests.push({
+				// 	url: 'https:' + svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i],
+				// 	method: 'GET',
+				// 	headers: {
+				// 		'Authorization': 'Bearer ' + account.getToken()
+				// 	}
+				// });
+			}
+
+			// Batch request
+			// ajax.post(svr + 'batch', batchRequests, account)
+			// 	.then(function(response) {
+			// 		var results = response;
+			// 		for (i = 0, len = results.length; i < len; i++)
+			// 		{
+            //
+			// 		}
+			// 	});
 
 			function processMemberResult(result)
 			{
@@ -183,13 +210,6 @@ define(function(require, exports, module)
 				{
 					controller.notify(m.CardUpdated, result);
 				}
-			}
-
-			for (i = 0, len = newJoinCardInvites.length; i < len; i++)
-			{
-				//need to implement batch;
-				ajax.get(svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i], null, account)
-					.then(processInviteResult);
 			}
 
 			function processInviteResult(result)
