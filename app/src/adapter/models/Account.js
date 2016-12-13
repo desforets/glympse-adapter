@@ -424,7 +424,7 @@ define(function(require, exports, module)
 					{
 						result.status = true;
 						result.response = data.response;
-						result.response.id = userId;
+						result.response.userId = userId;
 					}
 					else if (data.meta && data.meta.error === 'oauth_token')
 					{
