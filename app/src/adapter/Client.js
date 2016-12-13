@@ -38,7 +38,8 @@ define(function(require, exports, module)
 		var cardsInitialized = false;
 		var viewerMonitor;
 		var coreController;
-		var authToken;
+		// var authToken;
+		var account;
 
 		var progressCurrent = 0;
 		var progressTotal = 0;
@@ -340,16 +341,7 @@ define(function(require, exports, module)
 						var inviteError = args.getError();
 						dbg('Invite error state', inviteError);
 
-						// Refetch a new token on token errors. m.AccountInit should
-						// properly push the new token to controllers so they can continue.
-						if (inviteError && inviteError.error === 'oauth_token')
-						{
-							coreController.cmd(CoreController.GenerateToken, true);
-						}
-						else
-						{
-							sendEvent(m.InviteError, args);
-						}
+						sendEvent(m.InviteError, args);
 
 						return null;
 					}
@@ -408,10 +400,15 @@ define(function(require, exports, module)
 				{
 					if (args.status)
 					{
-						authToken = args.token;
-						cfgAdapter.accountId = cfgViewer.accountId = args.id;
-						cfgAdapter.authToken = cfgViewer.authToken = authToken;
+						// authToken = args.token;
+						// cfgAdapter.accountId = cfgViewer.accountId = args.id;
+						// cfgAdapter.authToken = cfgViewer.authToken = authToken;
 						//dbg('m.AccountInit', args);
+
+						account = coreController.getAccount();
+						cfgAdapter.account = cfgViewer.account = account;
+
+						args.account = account;
 
 						if (glympseLoader)
 						{
@@ -422,6 +419,9 @@ define(function(require, exports, module)
 						{
 							cardsController.notify(msg, args);
 						}
+
+						// do not pass "account" to consumers
+						delete args.account;
 					}
 
 					sendEvent(msg, args);
