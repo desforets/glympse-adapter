@@ -126,7 +126,9 @@ define(function(require, exports, module)
 		 * @function ajax.makeRequest
 		 *
 		 * @param {object} jqOptions - options for jQuery ajax method
-		 * @param {object} [auth] - authorization data (required for auth requests)
+		 * @param {object} [auth|account] - authorization data (required for auth requests):
+		 * 									can be either auth object (documented below) or account instance
+		 *
 		 * @param {object} [auth.account] - account instance
 		 * @param {boolean} [auth.useBearer] - if should use bearer auth header instead of url param (default: true)
 		 * @param {boolean} [retryOnError] - if should re-try on temporary server errors (default: true)
@@ -153,24 +155,16 @@ define(function(require, exports, module)
 				{
 					account = auth;
 				}
-				if (useBearer === false)
-				{
-					if (options.url.indexOf('?') === -1)
-					{
-						options.url += '?';
-					}
-					else
-					{
-						options.url += '&';
-					}
-					options.url += ('oauth_token=' + account.getToken());
-				}
-				else
+				if (useBearer)
 				{
 					options.beforeSend = function(request)
 					{
 						request.setRequestHeader('Authorization', 'Bearer ' + account.getToken());
 					};
+				}
+				else
+				{
+					options.url += ((options.url.indexOf('?') < 0) ? '?' : '&') + 'oauth_token=' + account.getToken();
 				}
 			}
 

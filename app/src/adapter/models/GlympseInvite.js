@@ -121,7 +121,7 @@ define(function(require, exports, module)
 		{
 			controller.notify(m.InviteInit, idInvite);
 
-			ajax.get(inviteUrl, inviteParams, { account: account, useBearer: false })
+			ajax.get(inviteUrl, inviteParams, account)
 				.then(function(result)
 				{
 					if (result.status)
