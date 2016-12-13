@@ -312,6 +312,8 @@ define(function(require, exports, module)
 
 					switch (args.action) {
 						case 'invite_code_found':
+						case 'member_started_sharing':
+						case 'member_stopped_sharing':
 							mapCardInvites[args.invite] = args.card.getId();
 							break;
 					}
