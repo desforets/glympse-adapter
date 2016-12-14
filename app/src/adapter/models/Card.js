@@ -149,11 +149,13 @@ define(function(require, exports, module)
 						member = getMemberById(action.member_id);
 						member.setData(action.data);
 						updateResult.invite = checkMemberInviteCode(member);
+						updateResult.userId = action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
 						break;
 					case 'member_stopped_sharing':
 						member = getMemberById(action.member_id);
 						updateResult.invite = removeMemberInviteCode(member);
+						updateResult.userId = action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
 						break;
 

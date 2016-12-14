@@ -448,6 +448,10 @@ define(function(require, exports, module)
 			ajax.delete(url, account)
 				.then(function(result)
 				{
+					if (result.status)
+					{
+						result.response.id = requestId;
+					}
 					controller.notify(m.CardsJoinRequestCancelStatus, result);
 				});
 		}
