@@ -100,7 +100,9 @@ define(function(require, exports, module)
 				return;
 			}
 
-			result = {};
+			result = {
+				status: false
+			};
 
 			if (that.retry && that.attempts > 0)
 			{
@@ -272,7 +274,7 @@ define(function(require, exports, module)
 							var req = batchRequests[i];
 							responces.push({
 								name: req.name,
-								result: batchResponse.info
+								result: batchResponse
 							});
 						}
 					}
