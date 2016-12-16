@@ -4,7 +4,6 @@
 
 define(function(require, exports, module)
 {
-
 	'use strict';
 
 	var lib = require('glympse-adapter/lib/utils');

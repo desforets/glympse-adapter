@@ -4,6 +4,7 @@ define(function(require, exports, module)
 
 	// defines
 	var lib = require('glympse-adapter/lib/utils');
+	var raf = require('glympse-adapter/lib/rafUtils');
 	var ajax = require('glympse-adapter/lib/ajax');
 	var Defines = require('glympse-adapter/GlympseAdapterDefines');
 
@@ -35,6 +36,8 @@ define(function(require, exports, module)
 		var initialized = false;
 		var account = cfg.account;
 
+
+		var w = window;
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -183,10 +186,10 @@ define(function(require, exports, module)
 			{
 				if (pollingInterval)
 				{
-					clearInterval(pollingInterval);
+					raf.clearInterval(pollingInterval);
 				}
 				requestCards();
-				pollingInterval = setInterval(requestCards, pollInterval);
+				pollingInterval = raf.setInterval(requestCards, pollInterval);
 			}
 		}
 
@@ -194,7 +197,7 @@ define(function(require, exports, module)
 			account = null;
 			if (pollingInterval)
 			{
-				clearInterval(pollingInterval);
+				raf.clearInterval(pollingInterval);
 				pollingInterval = null;
 			}
 		}
