@@ -160,43 +160,56 @@ define(function(require, exports, module)
 						break;
 
 					default:
+						updateResult.data = action;
 						controller.notify(m.CardUpdated, updateResult);
 				}
 			}
 
-			// var batchRequests = [];
+			var batchRequests = [];
 
 			for (i = 0, len = newMembers.length; i < len; i++)
 			{
 				//Todo: need to implement batch request
-				ajax.get(svr + 'cards/' + cardId + '/members/' + newMembers[i], null, account)
-					.then(processMemberResult);
+				// ajax.get(svr + 'cards/' + cardId + '/members/' + newMembers[i], null, account)
+				// 	.then(processMemberResult);
 
-				// batchRequests.push(svr + 'cards/' + cardId + '/members/' + newMembers[i]);
+				batchRequests.push({
+					name: 'members',
+					url: 'cards/' + cardId + '/members/' + newMembers[i],
+					method: 'GET'
+				});
 			}
 
 			for (i = 0, len = newJoinCardInvites.length; i < len; i++)
 			{
-				ajax.get(svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i], null, account)
-					.then(processInviteResult);
-				// batchRequests.push({
-				// 	url: 'https:' + svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i],
-				// 	method: 'GET',
-				// 	headers: {
-				// 		'Authorization': 'Bearer ' + account.getToken()
-				// 	}
-				// });
+				// ajax.get(svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i], null, account)
+				// 	.then(processInviteResult);
+				batchRequests.push({
+					name: 'invites',
+					url: 'cards/' + cardId + '/invites/' + newJoinCardInvites[i],
+					method: 'GET'
+				});
 			}
 
 			// Batch request
-			// ajax.post(svr + 'batch', batchRequests, account)
-			// 	.then(function(response) {
-			// 		var results = response;
-			// 		for (i = 0, len = results.length; i < len; i++)
-			// 		{
-            //
-			// 		}
-			// 	});
+			if (batchRequests.length) {
+				ajax.batch(svr + 'batch', batchRequests, account)
+					.then(function(responses) {
+						var response;
+						for (i = 0, len = responses.length; i < len; i++)
+						{
+							response = responses[i];
+							switch (response.name) {
+								case 'invites':
+									processInviteResult(response.result);
+									break;
+								case 'members':
+									processMemberResult(response.result);
+									break;
+							}
+						}
+					});
+			}
 
 			function processMemberResult(result)
 			{
