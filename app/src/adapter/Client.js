@@ -252,58 +252,6 @@ define(function(require, exports, module)
 				case m.CardsInitEnd:
 				{
 					sendEvent(msg, args);
-					invitesGlympse = [];
-					cardsInitialized = true;
-
-					for (var i = 0, cards = args, len = cards.length; i < len; i++)
-					{
-						card = cards[i];
-						idCard = card.getIdCard();
-
-						if (!card.isLoaded())
-						{
-							// If card failed to load properly, fallback to the
-							// original Glympse invite to render last-known state
-							var reference = invitesReferences[idCard];
-							var idx = invitesCard.indexOf(idCard);
-							console.log('Error loading card "' + idCard + '" ---> reference: ' + reference + ', idx=' + idx);
-							if (reference)
-							{
-								invitesGlympse.push(reference);
-							}
-
-							if (idx >= 0)
-							{
-								invitesCard.splice(idx, 1);
-							}
-
-							continue;
-						}
-
-						var members = card.getMembers();
-						//console.log('[' + i + ']: ' + card.getName() + ' with ' + members.length + ' members');
-						for (var j = 0, mlen = members.length; j < mlen; j++)
-						{
-							var member = members[j];
-							var invite = member.getTicket().getInviteCode();
-							//console.log('  [' + j + ']: ' + invite);
-							if (invite)
-							{
-								invitesGlympse.push(invite);
-								mapCardInvites[invite] = idCard;
-							}
-						}
-					}
-
-					//dbg('Card map', mapCardInvites);
-					// Real cards/invites to be loaded
-					if (invitesGlympse.length > 0)
-					{
-						//console.log('---> Loading invites: ' + invitesGlympse);
-						cfgViewer.t = invitesGlympse.join(';');
-						loadMap(cfgViewer);
-					}
-
 					break;
 				}
 

@@ -92,6 +92,7 @@ define(function(require, exports, module)
 						cards.push(card);
 						controller.notify(m.CardAdded, card);
 					}
+
 					if (--cardsReady === 0)
 					{
 						controller.notify(m.CardsInitEnd, cards);
@@ -224,6 +225,8 @@ define(function(require, exports, module)
 			var batchRequests = [],
 				loadingCards = [],
 				loadingCard;
+
+			cardsReady = cardInvites.length;
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
 				loadingCard = loadCard(cardInvites[i]);
@@ -249,35 +252,6 @@ define(function(require, exports, module)
 				});
 		}
 
-		function processGetCard(result, card){
-			var idCard = card.getIdCard();
-
-			if (result.status)
-			{
-				//dbg('Got card data', resp);
-				card.setData(result.response);
-				card.setLastUpdatingTime(result.time);
-				that.notify(m.CardReady, idCard);
-			}
-			else if (result.response.error === 'failed_to_decode')
-			{
-				// Invite is invalid or has been revoked, in
-				// either case, we cannot continue loading this
-				// card, so bail immediately
-				that.notify(m.CardReady, idCard);
-			}
-		}
-
-		function processUpdateCard(result, card){
-			if (result.status)
-			{
-				//dbg('Got card data', resp);
-				if (result.response.length) {
-					card.setDataFromStream(result.response);
-				}
-				card.setLastUpdatingTime(result.time);
-			}
-		}
 
 		//////////////////////
 		// Cards API
@@ -371,6 +345,37 @@ define(function(require, exports, module)
 				method: 'GET'
 			};
 		}
+
+		function processGetCard(result, card){
+			var idCard = card.getIdCard();
+
+			if (result.status)
+			{
+				//dbg('Got card data', resp);
+				card.setData(result.response);
+				card.setLastUpdatingTime(result.time);
+				that.notify(m.CardReady, idCard);
+			}
+			else if (result.response.error === 'failed_to_decode')
+			{
+				// Invite is invalid or has been revoked, in
+				// either case, we cannot continue loading this
+				// card, so bail immediately
+				that.notify(m.CardReady, idCard);
+			}
+		}
+
+		function processUpdateCard(result, card){
+			if (result.status)
+			{
+				//dbg('Got card data', resp);
+				if (result.response.length) {
+					card.setDataFromStream(result.response);
+				}
+				card.setLastUpdatingTime(result.time);
+			}
+		}
+
 
 		/**
 		 * Request a card member / all card members to share its / their locations

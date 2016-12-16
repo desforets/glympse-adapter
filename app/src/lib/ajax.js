@@ -20,7 +20,7 @@ define(function(require, exports, module)
 		}
 	};
 
-	function parseResponse(data, request) {
+	function parseResponse(data) {
 		var result = null;
 
 		if (data && data.response)
