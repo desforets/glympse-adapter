@@ -118,8 +118,6 @@ define(function(require, exports, module)
 				updateResult,
 				action,
 				member,
-				invite,
-				inviteCode,
 				i, len;
 			for (i = 0, len = streamArray.length; i < len; i++)
 			{
@@ -169,10 +167,6 @@ define(function(require, exports, module)
 
 			for (i = 0, len = newMembers.length; i < len; i++)
 			{
-				//Todo: need to implement batch request
-				// ajax.get(svr + 'cards/' + cardId + '/members/' + newMembers[i], null, account)
-				// 	.then(processMemberResult);
-
 				batchRequests.push({
 					name: 'members',
 					url: 'cards/' + cardId + '/members/' + newMembers[i],
@@ -182,8 +176,6 @@ define(function(require, exports, module)
 
 			for (i = 0, len = newJoinCardInvites.length; i < len; i++)
 			{
-				// ajax.get(svr + 'cards/' + cardId + '/invites/' + newJoinCardInvites[i], null, account)
-				// 	.then(processInviteResult);
 				batchRequests.push({
 					name: 'invites',
 					url: 'cards/' + cardId + '/invites/' + newJoinCardInvites[i],
