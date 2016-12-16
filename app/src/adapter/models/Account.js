@@ -10,10 +10,6 @@ define(function(require, exports, module)
 	var m = Defines.MSG;
 	var REQUEST_TYPES = Defines.CARDS.REQUEST_TYPES;
 
-	var w = window;
-	var defaultAppConfig = w.APP_SETTINGS || {};
-	var defaultConfig = defaultAppConfig.adapter || {};
-
 	var cAcctTokenName = 't0';
 	var cApiKey = 'api_key';
 	var cPassword = 'p0';
@@ -37,7 +33,7 @@ define(function(require, exports, module)
 
 		var account = {};
 
-		var apiKey = cfg.apiKey || defaultConfig.apiKey;
+		var apiKey = cfg.apiKey;
 
 		if (!apiKey)
 		{
