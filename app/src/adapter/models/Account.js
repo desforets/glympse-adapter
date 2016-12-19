@@ -32,8 +32,14 @@ define(function(require, exports, module)
 		var idEnvironment = (sandbox) ? Account.EnvSandbox : Account.EnvProduction;
 
 		var account = {};
-		//var apiKey = cfg.apiKey || ((sandbox) ? 'eHXSnRf0slRRxGpC' : 'TDuy3X0PfQAyYjTt');
-		var apiKey = cfg.apiKey || ((sandbox) ? 'eHXSnRf0slRRxGpC' : 'nXQ44D38OdVzEC34'); //(sandbox) ? 'nXQ44D38OdVzEC34' : 'nXQ44D38OdVzEC34';
+
+		var apiKey = cfg.apiKey;
+
+		if (!apiKey)
+		{
+			throw new Error('Need to define apiKey in adapter\'s config');
+		}
+
 		var urlCreate = (svr + 'account/create');
 		var urlLogin = (svr + 'account/login');
 
