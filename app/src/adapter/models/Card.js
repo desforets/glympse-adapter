@@ -145,6 +145,8 @@ define(function(require, exports, module)
 						break;
 					case 'member_started_sharing':
 						member = getMemberById(action.member_id);
+						//remove previous invite code if member was sharing lately
+						removeMemberInviteCode(member);
 						member.setData(action.data);
 						updateResult.invite = checkMemberInviteCode(member);
 						updateResult.userId = action.user_id;
@@ -152,7 +154,7 @@ define(function(require, exports, module)
 						break;
 					case 'member_stopped_sharing':
 						member = getMemberById(action.member_id);
-						updateResult.invite = removeMemberInviteCode(member);
+						updateResult.invite = getMemberInviteCode(member);
 						updateResult.userId = action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
 						break;
@@ -287,8 +289,7 @@ define(function(require, exports, module)
 		}
 
 		function checkMemberInviteCode(member) {
-			var ticket = member.getTicket();
-			var inviteCode = ticket && ticket.getInviteCode();
+			var inviteCode = getMemberInviteCode(member);
 
 			if (inviteCode && typeof inviteCodesIndex[inviteCode] === 'undefined')
 			{
@@ -298,9 +299,13 @@ define(function(require, exports, module)
 			return inviteCode;
 		}
 
-		function removeMemberInviteCode(member) {
+		function getMemberInviteCode(member) {
 			var ticket = member.getTicket();
-			var inviteCode = ticket && ticket.getInviteCode();
+			return ticket && ticket.getInviteCode();
+		}
+
+		function removeMemberInviteCode(member) {
+			var inviteCode = getMemberInviteCode(member);
 
 			if (inviteCode && inviteCodesIndex[inviteCode])
 			{
