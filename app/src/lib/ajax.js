@@ -19,6 +19,35 @@ define(function(require, exports, module)
 		}
 	};
 
+	function parseResponse(data) {
+		var result = null;
+
+		if (data && data.response)
+		{
+			result = {
+				status: false,
+				response: {}
+			};
+			if (data.result === 'ok')
+			{
+				result.status = true;
+				result.response = data.response;
+				result.time = data.meta && data.meta.time;
+			}
+
+			if (data.result === 'failure')
+			{
+				var meta = data.meta || {};
+
+				result.response = meta;
+				// check if we need them, left for now for backward compatibility
+				result.error = meta.error;
+				result.errorDetail = meta.error_detail;
+			}
+		}
+
+		return result;
+	}
 
 	function processResponse(account)
 	{
@@ -29,72 +58,50 @@ define(function(require, exports, module)
 			// arguments
 			// data|jqXHR, textStatus, jqXHR|errorThrown
 
-			var result = {
-				status: false,
-				response: {}
-			};
-
 			that.attempts--;
 
-			if (data && data.response)
+			var result = parseResponse(data);
+
+			if (result)
 			{
-				if (data.result === 'ok')
+				// in case of token error try to get new token & re-run action
+				if (result.error === 'oauth_token')
 				{
-					result.status = true;
-					result.response = data.response;
-					result.time = data.meta && data.meta.time;
-
-					that.request.resolve(result);
-
-					return;
-				}
-
-				if (data.result === 'failure')
-				{
-					var meta = data.meta || {};
-
-					result.response = meta;
-					// check if we need them, left for now for backward compatibility
-					result.error = meta.error;
-					result.errorDetail = meta.error_detail;
-
-					// in case of token error try to get new token & re-run action
-					if (meta.error === 'oauth_token')
-					{
-						if (account)
-						{
-							account.generateToken(function(authResult)
+					if (account) {
+						account.generateToken(function(authResult) {
+							if (authResult.status)
 							{
-								if (authResult.status)
+								if (that.retry)
 								{
-									if (that.retry)
-									{
-										that.retry();
-									}
+									that.retry();
 								}
-								else
-								{
-									result.authResult = authResult;
+							}
+							else
+							{
+								result.authResult = authResult;
 
-									that.request.resolve(result);
-								}
-							});
+								that.request.resolve(result);
+							}
+						});
 
-							return;
-						}
-						else
-						{
-							// should never happen
-							console.warn('[ajax] invalid token for not authorized request!');
-							result.invalidToken = true;
-						}
+						return;
 					}
-
-					that.request.resolve(result);
-
-					return;
+					else
+					{
+						// should never happen
+						console.warn('[ajax] invalid token for not authorized request!');
+						result.invalidToken = true;
+					}
 				}
+
+				that.request.resolve(result);
+
+				return;
 			}
+
+			result = {
+				status: false
+			};
 
 			if (that.retry && that.attempts > 0)
 			{
@@ -239,6 +246,42 @@ define(function(require, exports, module)
 				jqOptions
 			);
 			return api.makeRequest(options, auth, retryOnError);
+		},
+
+		/**
+		 * @function ajax.batch
+		 */
+		batch: function reqBatch(batchEndpoint, batchRequests, auth, jqOptions, retryOnError)
+		{
+			return api.post(batchEndpoint, batchRequests, auth, jqOptions, retryOnError)
+				.then(function(batchResponse) {
+					var responses = [], i, len, response;
+					if (batchResponse.status)
+					{
+						var results = batchResponse.response.items || [];
+						for (i = 0, len = results.length; i < len; i++)
+						{
+							response = parseResponse(results[i].body);
+							response.time = batchResponse.time;
+
+							responses.push({
+								name: results[i].name,
+								result: response
+							});
+						}
+					}
+					else {
+						for (i = 0, len = batchRequests.length; i < len; i++)
+						{
+							var req = batchRequests[i];
+							responses.push({
+								name: req.name,
+								result: batchResponse
+							});
+						}
+					}
+					return responses;
+				});
 		}
 
 	};

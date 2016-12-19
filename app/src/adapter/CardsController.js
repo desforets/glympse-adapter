@@ -95,6 +95,7 @@ define(function(require, exports, module)
 						cards.push(card);
 						controller.notify(m.CardAdded, card);
 					}
+
 					if (--cardsReady === 0)
 					{
 						controller.notify(m.CardsInitEnd, cards);
@@ -213,14 +214,10 @@ define(function(require, exports, module)
 
 			var card = cardsIndex[cardInvite];
 
-			if (isNew)
-			{
-				getCard(card);
-			}
-			else
-			{
-				updateCard(card);
-			}
+			return {
+				card: card,
+				request: isNew ? getCard(card) : updateCard(card)
+			};
 		}
 
 		function loadCards(cardInvites) {
@@ -228,11 +225,36 @@ define(function(require, exports, module)
 			{
 				return;
 			}
+			var batchRequests = [],
+				loadingCards = [],
+				loadingCard;
+
+			cardsReady = cardInvites.length;
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				loadCard(cardInvites[i]);
+				loadingCard = loadCard(cardInvites[i]);
+				batchRequests.push(loadingCard.request);
+				loadingCards.push(loadingCard.card);
 			}
+
+			ajax.batch(svr + 'batch', batchRequests, account)
+				.then(function(responses) {
+					var response, i, len, card;
+					for (i = 0, len = responses.length; i < len; i++){
+						response = responses[i];
+						card = loadingCards[i];
+						switch (response.name){
+							case 'getCard':
+								processGetCard(response.result, card);
+								break;
+							case 'updateCard':
+								processUpdateCard(response.result, card);
+								break;
+						}
+					}
+				});
 		}
+
 
 		//////////////////////
 		// Cards API
@@ -295,34 +317,19 @@ define(function(require, exports, module)
 
 			controller.notify(m.CardInit, idCard);
 
-			var cardUrl = svr + 'cards/' + idCard;
+			var cardUrl = 'cards/' + idCard;
 
-			var getParams = { members: true };
-
-			ajax.get(cardUrl, getParams, account)
-				.then(function(result)
-				{
-					if (result.status)
-					{
-						//dbg('Got card data', resp);
-						card.setData(result.response);
-						card.setLastUpdatingTime(result.time);
-						that.notify(m.CardReady, idCard);
-					}
-					else if (result.response.error === 'failed_to_decode')
-					{
-						// Invite is invalid or has been revoked, in
-						// either case, we cannot continue loading this
-						// card, so bail immediately
-						that.notify(m.CardReady, idCard);
-					}
-				});
+			return {
+				name: 'getCard',
+				url: cardUrl + '?' +  $.param({members: true}),
+				method: 'GET'
+			};
 		}
 
 		function updateCard(card, from, to) {
 			var idCard = card.getIdCard();
 
-			var cardUrl = svr + 'cards/' + idCard + '/activity';
+			var cardUrl = 'cards/' + idCard + '/activity';
 
 			var getParams = { from_ts: card.getLastUpdatingTime() };
 
@@ -335,20 +342,43 @@ define(function(require, exports, module)
 			{
 				getParams.to_ts = to;
 			}
-
-			ajax.get(cardUrl, getParams, account)
-				.then(function(result)
-				{
-					if (result.status)
-					{
-						//dbg('Got card data', resp);
-						if (result.response.length) {
-							card.setDataFromStream(result.response);
-						}
-						card.setLastUpdatingTime(result.time);
-					}
-				});
+			return {
+				name: 'updateCard',
+				url: cardUrl + '?' + $.param(getParams),
+				method: 'GET'
+			};
 		}
+
+		function processGetCard(result, card){
+			var idCard = card.getIdCard();
+
+			if (result.status)
+			{
+				//dbg('Got card data', resp);
+				card.setData(result.response);
+				card.setLastUpdatingTime(result.time);
+				that.notify(m.CardReady, idCard);
+			}
+			else if (result.response.error === 'failed_to_decode')
+			{
+				// Invite is invalid or has been revoked, in
+				// either case, we cannot continue loading this
+				// card, so bail immediately
+				that.notify(m.CardReady, idCard);
+			}
+		}
+
+		function processUpdateCard(result, card){
+			if (result.status)
+			{
+				//dbg('Got card data', resp);
+				if (result.response.length) {
+					card.setDataFromStream(result.response);
+				}
+				card.setLastUpdatingTime(result.time);
+			}
+		}
+
 
 		/**
 		 * Request a card member / all card members to share its / their locations
