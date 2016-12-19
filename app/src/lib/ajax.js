@@ -256,15 +256,18 @@ define(function(require, exports, module)
 		{
 			return api.post(batchEndpoint, batchRequests, auth, jqOptions, retryOnError)
 				.then(function(batchResponse) {
-					var responces = [], i, len;
+					var responses = [], i, len, response;
 					if (batchResponse.status)
 					{
 						var results = batchResponse.response.items || [];
 						for (i = 0, len = results.length; i < len; i++)
 						{
-							responces.push({
+							response = parseResponse(results[i].body);
+							response.time = batchResponse.time;
+
+							responses.push({
 								name: results[i].name,
-								result: parseResponse(results[i].body)
+								result: response
 							});
 						}
 					}
@@ -272,13 +275,13 @@ define(function(require, exports, module)
 						for (i = 0, len = batchRequests.length; i < len; i++)
 						{
 							var req = batchRequests[i];
-							responces.push({
+							responses.push({
 								name: req.name,
 								result: batchResponse
 							});
 						}
 					}
-					return responces;
+					return responses;
 				});
 		}
 
