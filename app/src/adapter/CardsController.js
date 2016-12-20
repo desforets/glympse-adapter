@@ -216,7 +216,7 @@ define(function(require, exports, module)
 
 			return {
 				card: card,
-				request: isNew ? getCard(card) : updateCard(card)
+				request: (isNew || card.dirty) ? getCard(card) : updateCard(card)
 			};
 		}
 
@@ -321,7 +321,7 @@ define(function(require, exports, module)
 
 			return {
 				name: 'getCard',
-				url: cardUrl + '?' +  $.param({members: true}),
+				url: cardUrl + '?' +  $.param({members: !card.dirty}),
 				method: 'GET'
 			};
 		}
@@ -355,9 +355,14 @@ define(function(require, exports, module)
 			if (result.status)
 			{
 				//dbg('Got card data', resp);
+
 				card.setData(result.response);
-				card.setLastUpdatingTime(result.time);
-				that.notify(m.CardReady, idCard);
+				if(!card.dirty) {
+					card.setLastUpdatingTime(result.time);
+					that.notify(m.CardReady, idCard);
+				} else {
+					card.dirty = false;
+				}
 			}
 			else if (result.response.error === 'failed_to_decode')
 			{
