@@ -36,6 +36,7 @@ define(function(require, exports, module)
 		var initialized = false;
 		var account = cfg.account;
 
+		var cardRequest = cfg.cardRequest;
 
 		var w = window;
 
@@ -160,15 +161,15 @@ define(function(require, exports, module)
 		{
 			var sig = '[accountInitComplete] - ';
 
-			if (!initialized)
-			{
-				dbg(sig + 'not initialized', args);
-				return;
-			}
-
 			if (!account)
 			{
 				dbg(sig + 'authToken unavailable', args);
+				return;
+			}
+
+			if (!initialized)
+			{
+				dbg(sig + 'not initialized', args);
 				return;
 			}
 
@@ -176,7 +177,7 @@ define(function(require, exports, module)
 			dbg(sig + '[' + ((cfg.isAnon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
-			loadCards(cardInvites);
+			loadCards(cardInvites, cardRequest);
 
 			if (!cardInvites.length)
 			{
@@ -185,12 +186,17 @@ define(function(require, exports, module)
 
 			if (cardsMode)
 			{
-				if (pollingInterval)
+				if (!cardRequest)
 				{
-					raf.clearInterval(pollingInterval);
+					if (pollingInterval) {
+						raf.clearInterval(pollingInterval);
+					}
+					requestCards();
+					pollingInterval = raf.setInterval(requestCards, pollInterval);
 				}
-				requestCards();
-				pollingInterval = raf.setInterval(requestCards, pollInterval);
+				else {
+					getCardByRequest();
+				}
 			}
 		}
 
@@ -220,7 +226,7 @@ define(function(require, exports, module)
 			};
 		}
 
-		function loadCards(cardInvites) {
+		function loadCards(cardInvites, cardRequest) {
 			if (!cardInvites || !cardInvites.length)
 			{
 				return;
@@ -299,6 +305,17 @@ define(function(require, exports, module)
 						loadCards(cardInvites);
 					}
 
+					controller.notify(m.CardsRequestStatus, result);
+				});
+		}
+
+		function getCardByRequest() {
+			var card = new Card(that, cardRequest, account, cfg);
+			cardsIndex[cardRequest] = card;
+			ajax.get(svr + 'cards/invites/' + cardRequest, null, account)
+				.then(function (result) {
+					processGetCard(result, card);
+					result.response = [result.response];
 					controller.notify(m.CardsRequestStatus, result);
 				});
 		}
