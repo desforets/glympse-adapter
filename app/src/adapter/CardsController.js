@@ -205,14 +205,14 @@ define(function(require, exports, module)
 
 		function loadCard(cardInvite)
 		{
-			var isNew = false;
+			var isNew;
 			if (!cardsIndex[cardInvite])
 			{
 				cardsIndex[cardInvite] = new Card(that, cardInvite, account, cfg);
-				isNew = true;
 			}
 
 			var card = cardsIndex[cardInvite];
+			isNew = !card.isLoaded();
 
 			return {
 				card: card,

@@ -35,16 +35,11 @@ define(function(require, exports, module)
 
 		var apiKey = cfg.apiKey;
 
-		if (!apiKey)
-		{
-			throw new Error('Need to define apiKey in adapter\'s config');
-		}
-
 		var urlCreate = (svr + 'account/create');
 		var urlLogin = (svr + 'account/login');
 
 		// state
-		var isAnon = !cfg.apiKey;
+		var isAnon = cfg.isAnon;
 		var token;
 
 		var settings;
@@ -112,7 +107,20 @@ define(function(require, exports, module)
 			if (token)
 			{
 				// validate token before sending init event
-				getUserInfo(null, true);
+				if(!isAnon)
+				{
+					getUserInfo(null, true);
+				}
+				else {
+					setTimeout(function () {
+						controller.notify(m.AccountLoginStatus, {
+							status: true,
+							token: token,
+							id: 'anonymous',
+							anonymous: true
+						});
+					}, 0);
+				}
 				return true;
 			}
 
