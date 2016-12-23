@@ -51,6 +51,10 @@ define(function(require, exports, module)
 			cardInvites = cardsInvitesToLoad || [];
 
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
+			if (cardRequest)
+			{
+				cardsReady++;
+			}
 			initialized = true;
 
 			controller.notify(m.CardsInitStart, cardInvites);
@@ -310,12 +314,14 @@ define(function(require, exports, module)
 		}
 
 		function getCardByRequest() {
-			var card = new Card(that, cardRequest, account, cfg);
-			cardsIndex[cardRequest] = card;
 			ajax.get(svr + 'cards/invites/' + cardRequest, null, account)
 				.then(function (result) {
-					processGetCard(result, card);
-					result.response = [result.response];
+					if(result.status) {
+						var card = new Card(that, cardRequest, account, cfg);
+						cardsIndex[cardRequest] = card;
+						processGetCard(result, card);
+						result.response = [result.response];
+					}
 					controller.notify(m.CardsRequestStatus, result);
 				});
 		}

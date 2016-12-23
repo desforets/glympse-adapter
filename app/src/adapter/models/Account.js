@@ -116,7 +116,6 @@ define(function(require, exports, module)
 						controller.notify(m.AccountLoginStatus, {
 							status: true,
 							token: token,
-							id: 'anonymous',
 							anonymous: true
 						});
 					}, 0);
