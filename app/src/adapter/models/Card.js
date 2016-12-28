@@ -158,7 +158,11 @@ define(function(require, exports, module)
 						updateResult.userId = action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
 						break;
-
+					case 'card_modified':
+						//mark to update on next poll
+						this.dirty = true;
+						controller.notify(m.CardUpdated, updateResult);
+						break;
 					default:
 						updateResult.data = action;
 						controller.notify(m.CardUpdated, updateResult);

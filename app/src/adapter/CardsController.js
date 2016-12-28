@@ -203,20 +203,11 @@ define(function(require, exports, module)
 			}
 		}
 
-		function loadCard(cardInvite)
+		function loadCard(card, fullRequest)
 		{
-			var isNew = false;
-			if (!cardsIndex[cardInvite])
-			{
-				cardsIndex[cardInvite] = new Card(that, cardInvite, account, cfg);
-				isNew = true;
-			}
-
-			var card = cardsIndex[cardInvite];
-
 			return {
 				card: card,
-				request: isNew ? getCard(card) : updateCard(card)
+				request: fullRequest ? getCard(card) : updateCard(card)
 			};
 		}
 
@@ -227,14 +218,36 @@ define(function(require, exports, module)
 			}
 			var batchRequests = [],
 				loadingCards = [],
-				loadingCard;
+				loadingCard,
+				isNew,
+				card,
+				cardInvite;
 
 			cardsReady = cardInvites.length;
 			for (var i = 0, len = cardInvites.length; i < len; i++)
 			{
-				loadingCard = loadCard(cardInvites[i]);
+				cardInvite = cardInvites[i];
+				card = cardsIndex[cardInvite];
+				isNew = false;
+				if (!card)
+				{
+					card = new Card(that, cardInvite, account, cfg);
+					cardsIndex[cardInvite] = card;
+					isNew = true;
+				}
+
+				loadingCard = loadCard(card, isNew);
+
 				batchRequests.push(loadingCard.request);
 				loadingCards.push(loadingCard.card);
+
+				if (card.dirty)
+				{
+					//need to send additional full request to update card properties
+					loadingCard = loadCard(card, true);
+					batchRequests.push(loadingCard.request);
+					loadingCards.push(loadingCard.card);
+				}
 			}
 
 			ajax.batch(svr + 'batch', batchRequests, account)
@@ -321,7 +334,7 @@ define(function(require, exports, module)
 
 			return {
 				name: 'getCard',
-				url: cardUrl + '?' +  $.param({members: true}),
+				url: cardUrl + '?' +  $.param({members: !card.dirty}),
 				method: 'GET'
 			};
 		}
@@ -355,9 +368,17 @@ define(function(require, exports, module)
 			if (result.status)
 			{
 				//dbg('Got card data', resp);
+
 				card.setData(result.response);
-				card.setLastUpdatingTime(result.time);
-				that.notify(m.CardReady, idCard);
+				if (!card.dirty)
+				{
+					card.setLastUpdatingTime(result.time);
+					that.notify(m.CardReady, idCard);
+				}
+				else
+				{
+					card.dirty = false;
+				}
 			}
 			else if (result.response.error === 'failed_to_decode')
 			{
