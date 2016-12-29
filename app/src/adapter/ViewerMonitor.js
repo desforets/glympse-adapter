@@ -26,6 +26,7 @@ define(function(require, exports, module)
 					  , s.Name
 					  , s.Phase
 					  , s.Expired
+					  , s.App
 					  ];	// Known/tracked properties
 
 		// state

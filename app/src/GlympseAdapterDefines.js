@@ -176,6 +176,7 @@ define(function(require, exports, module)
 			, Arrived: 'Arrived'	// needed?
 			, Expired: 'Expired'
 			, NoInvites: 'NoInvites'
+			, App: 'app'
 		}
 	};
 
