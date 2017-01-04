@@ -392,7 +392,7 @@ define(function(require, exports, module)
 		function addJoinInvite(inviteData) {
 			var invite = inviteData;
 
-			joinInvitesIndex[inviteData.invite_id] = joinInvites.length;
+			joinInvitesIndex[inviteData.id] = joinInvites.length;
 			joinInvites.push(invite);
 
 			return invite;
