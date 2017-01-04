@@ -344,7 +344,7 @@ define(function(require, exports, module)
 			if (!member)
 			{
 				dbg('!!! can\'t get invite: no member provided', member, 3);
-				return;
+				return undefined;
 			}
 			var ticket = member.getTicket();
 			return ticket && ticket.getInviteCode();
