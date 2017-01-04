@@ -233,8 +233,11 @@ define(function(require, exports, module)
 					{
 						newMember = addMember(result.response);
 					}
-					updateResult.member = newMember;
-					controller.notify(m.CardUpdated, updateResult);
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'member_added',
+						member: newMember
+					});
 					checkMemberInviteCode(newMember);
 				}
 				else
@@ -250,7 +253,11 @@ define(function(require, exports, module)
 				{
 					newInvite = addJoinInvite(result.response);
 					updateResult.invite = newInvite;
-					controller.notify(m.CardUpdated, updateResult);
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'invite_added',
+						invite: newInvite
+					});
 				}
 				else
 				{
