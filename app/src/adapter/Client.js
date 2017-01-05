@@ -209,22 +209,29 @@ define(function(require, exports, module)
 		this.infoUpdate = function(id, invite, owner, t, val)
 		{
 			invite = lib.normalizeInvite(invite);
-			var info = {
-				id: id
-				, invite: invite
-				, owner: owner
-				, card: mapCardInvites[invite]
-				, t: t
-				, val: val
-			};
 
-			notifyApp(mStateUpdate, info, false);
-			sendOasisMessage(mStateUpdate, info);
+			var targetCards = mapCardInvites[invite] || [];
+			var info, i;
+			// send event for each card (same user can share same inviteCode to different cards)
+			for (i = targetCards.length - 1; i >= 0; i--)
+			{
+				info = {
+					id: id
+					, invite: invite
+					, owner: owner
+					, card: targetCards[i]
+					, t: t
+					, val: val
+				};
+
+				notifyApp(mStateUpdate, info, false);
+				sendOasisMessage(mStateUpdate, info);
+			}
 		};
 
 		this.notify = function(msg, args)
 		{
-			var idCard, card;
+			var idCard, targetCards, i;
 
 			switch (msg)
 			{
@@ -262,7 +269,11 @@ define(function(require, exports, module)
 						case 'invite_code_found':
 						case 'member_started_sharing':
 						case 'member_stopped_sharing':
-							mapCardInvites[args.invite] = args.card.getId();
+							if (!mapCardInvites[args.invite])
+							{
+								mapCardInvites[args.invite] = [];
+							}
+							mapCardInvites[args.invite].push(args.card.getId());
 							break;
 					}
 
@@ -339,8 +350,12 @@ define(function(require, exports, module)
 				case m.InviteAdded:
 				case m.InviteRemoved:
 				{
-					args.card = mapCardInvites[args.id];
-					sendEvent(msg, args);
+					targetCards = mapCardInvites[args.id] || [];
+					// send event for each card (same user can share same inviteCode to different cards)
+					for (i = targetCards.length - 1; i >= 0; i--)
+					{
+						sendEvent(msg, $.extend({card: targetCards[i]}, args));
+					}
 					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
 					break;
 				}
