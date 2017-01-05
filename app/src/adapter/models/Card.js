@@ -137,6 +137,7 @@ define(function(require, exports, module)
 					case 'member_removed':
 						member = removeMemberById(action.data ? action.data.member_id : action.member_id);
 						updateResult.member = member;
+						updateResult.userId = action.data ? action.data.user_id : action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
 						break;
 					case 'invite_added':
