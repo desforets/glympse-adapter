@@ -34,7 +34,7 @@ define(function(require, exports, module)
 		var invitesGlympse;
 		var invitesReferences = {};
 		var glympseLoader;
-		var mapCardInvites = {};
+		var mapCardTicketInvites = {};
 		var cardsInitialized = false;
 		var viewerMonitor;
 		var coreController;
@@ -210,7 +210,7 @@ define(function(require, exports, module)
 		{
 			invite = lib.normalizeInvite(invite);
 
-			var targetCards = mapCardInvites[invite] || [];
+			var targetCards = mapCardTicketInvites[invite] || [];
 			var info, i;
 			// send event for each card (same user can share same inviteCode to different cards)
 			for (i = targetCards.length - 1; i >= 0; i--)
@@ -231,7 +231,7 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
-			var idCard, targetCards, i;
+			var i, idx, idCard, targetCards;
 
 			switch (msg)
 			{
@@ -265,16 +265,40 @@ define(function(require, exports, module)
 				case m.CardUpdated:
 					// dbg('card updated', args);
 
-					switch (args.action) {
+					switch (args.action)
+					{
 						case 'invite_code_found':
 						case 'member_started_sharing':
-						case 'member_stopped_sharing':
-							if (!mapCardInvites[args.invite])
+						{
+							var ticketInvite = args.invite;
+							if (!mapCardTicketInvites[ticketInvite])
 							{
-								mapCardInvites[args.invite] = [];
+								mapCardTicketInvites[ticketInvite] = [];
 							}
-							mapCardInvites[args.invite].push(args.card.getId());
+
+							// Track ticket invite for this card. Need to handlecases where
+							// the same invite is used by a member in multiple cards (like bots)
+							idCard = args.card.getId();
+							if (mapCardTicketInvites[ticketInvite].indexOf(idCard) < 0)
+							{
+								mapCardTicketInvites[ticketInvite].push(idCard);
+							}
+
 							break;
+						}
+
+						case 'member_stopped_sharing':
+						{
+							var inviteCards = mapCardTicketInvites[args.invite];
+							if (inviteCards)
+							{
+								idx = inviteCards.indexOf(args.card.getId());
+								if (idx >= 0)
+								{
+									inviteCards.splice(idx, 1);
+								}
+							}
+						}
 					}
 
 					sendEvent(msg, args);
@@ -339,8 +363,32 @@ define(function(require, exports, module)
 				}
 
 				case m.CardAdded:
+				{
+					sendEvent(msg, args);
+					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
+					break;
+				}
+
 				case m.CardRemoved:
 				{
+					idCard = args.getId();
+
+					// Remove this card from all tracked ticket invites
+					for (var id in mapCardTicketInvites)
+					{
+						var inv = mapCardTicketInvites[id];
+						if (!inv)
+						{
+							continue;
+						}
+
+						idx = inv.indexOf(idCard);
+						if (idx >= 0)
+						{
+							inv.splice(idx, 1);
+						}
+					}
+
 					sendEvent(msg, args);
 					//dbg(msg, args);//(msg === m.DataUpdate) ? args : undefined);
 					break;
@@ -350,7 +398,8 @@ define(function(require, exports, module)
 				case m.InviteAdded:
 				case m.InviteRemoved:
 				{
-					targetCards = mapCardInvites[args.id] || [];
+					targetCards = mapCardTicketInvites[args.id] || [];
+
 					// send event for each card (same user can share same inviteCode to different cards)
 					for (i = targetCards.length - 1; i >= 0; i--)
 					{

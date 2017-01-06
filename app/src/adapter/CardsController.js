@@ -81,7 +81,6 @@ define(function(require, exports, module)
 				case m.CardInit:
 				{
 					controller.notify(msg, args);
-
 					break;
 				}
 
@@ -105,8 +104,10 @@ define(function(require, exports, module)
 				}
 
 				case m.CardUpdated:
+				{
 					controller.notify(msg, args);
 					break;
+				}
 
 				default:
 				{
@@ -211,11 +212,13 @@ define(function(require, exports, module)
 			};
 		}
 
-		function loadCards(cardInvites) {
+		function loadCards(cardInvites)
+		{
 			if (!cardInvites || !cardInvites.length)
 			{
 				return;
 			}
+
 			var batchRequests = [],
 				loadingCards = [],
 				loadingCard,
@@ -256,7 +259,8 @@ define(function(require, exports, module)
 					for (i = 0, len = responses.length; i < len; i++){
 						response = responses[i];
 						card = loadingCards[i];
-						switch (response.name){
+						switch (response.name)
+						{
 							case 'getCard':
 								processGetCard(response.result, card);
 								break;
