@@ -120,15 +120,70 @@ define(function(require, exports, module)
 				member,
 				i, len;
 
-			// console.debug('--->>> stream', streamArray);
+			var mem, msg, members;
+			var cleanActions = {};
+			var cleanStream = [];
 
+			// Loop through the updates, culling out entries where only the
+			// latest update matters (i.e. ticket invites shared).
+			// Hash on action, then members under the action
 			for (i = 0, len = streamArray.length; i < len; i++)
 			{
 				action = streamArray[i];
+				var actionType = action.type;
+
+				// Pass anything that isn't a share for now
+				if (actionType !== 'member_started_sharing')
+				{
+					cleanStream.push(action);
+					continue;
+				}
+
+				var ref = cleanActions[actionType];
+				mem = action.data.member_id || action.member_id;
+
+				if (!ref)
+				{
+					members = {};
+					members[mem] = action;
+					cleanActions[action.type] = members;
+				}
+				else
+				{
+					msg = ref[mem];
+					if (!msg)
+					{
+						ref[mem] = action;
+					}
+					else
+					{
+						if (msg.last_modified < action.last_modified)
+						{
+							ref[mem] = action;
+						}
+					}
+				}
+			}
+
+			// Re-add the final pruned items
+			for (i in cleanActions)
+			{
+				members = cleanActions[i];
+				for (mem in members)
+				{
+					cleanStream.push(members[mem]);
+				}
+			}
+
+			// Finally, process the cleaned up actions
+			for (i = 0, len = cleanStream.length; i < len; i++)
+			{
+				action = cleanStream[i];
 				updateResult = {
 					card: this,
 					action: action.type
 				};
+
 				switch (action.type)
 				{
 					case 'member_added':
@@ -360,7 +415,13 @@ define(function(require, exports, module)
 			}
 		}
 
-		function addInviteCode(inviteCode) {
+		function addInviteCode(inviteCode)
+		{
+			// Ensure an invite is specified only once for each card
+			if (inviteCodesIndex[inviteCode])
+			{
+				return inviteCode;
+			}
 
 			inviteCodesIndex[inviteCode] = inviteCodes.length;
 			inviteCodes.push(inviteCode);
