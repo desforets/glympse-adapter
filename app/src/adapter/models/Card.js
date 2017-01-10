@@ -83,7 +83,7 @@ define(function(require, exports, module)
 			lib.mapProps(this, props, data);
 
 			var mems = data.members || [];
-			var mem, member, invite;
+			var mem, member;
 
 			for (var i = 0, len = mems.length; i < len; i++)
 			{
@@ -119,13 +119,71 @@ define(function(require, exports, module)
 				action,
 				member,
 				i, len;
+
+			var mem, msg, members;
+			var cleanActions = {};
+			var cleanStream = [];
+
+			// Loop through the updates, culling out entries where only the
+			// latest update matters (i.e. ticket invites shared).
+			// Hash on action, then members under the action
 			for (i = 0, len = streamArray.length; i < len; i++)
 			{
 				action = streamArray[i];
+				var actionType = action.type;
+
+				// Pass anything that isn't a share for now
+				if (actionType !== 'member_started_sharing')
+				{
+					cleanStream.push(action);
+					continue;
+				}
+
+				var ref = cleanActions[actionType];
+				mem = action.data.member_id || action.member_id;
+
+				if (!ref)
+				{
+					members = {};
+					members[mem] = action;
+					cleanActions[action.type] = members;
+				}
+				else
+				{
+					msg = ref[mem];
+					if (!msg)
+					{
+						ref[mem] = action;
+					}
+					else
+					{
+						if (msg.last_modified < action.last_modified)
+						{
+							ref[mem] = action;
+						}
+					}
+				}
+			}
+
+			// Re-add the final pruned items
+			for (i in cleanActions)
+			{
+				members = cleanActions[i];
+				for (mem in members)
+				{
+					cleanStream.push(members[mem]);
+				}
+			}
+
+			// Finally, process the cleaned up actions
+			for (i = 0, len = cleanStream.length; i < len; i++)
+			{
+				action = cleanStream[i];
 				updateResult = {
 					card: this,
 					action: action.type
 				};
+
 				switch (action.type)
 				{
 					case 'member_added':
@@ -134,6 +192,7 @@ define(function(require, exports, module)
 					case 'member_removed':
 						member = removeMemberById(action.data ? action.data.member_id : action.member_id);
 						updateResult.member = member;
+						updateResult.userId = action.data ? action.data.user_id : action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
 						break;
 					case 'invite_added':
@@ -145,9 +204,16 @@ define(function(require, exports, module)
 						break;
 					case 'member_started_sharing':
 						member = getMemberById(action.member_id);
-						//remove previous invite code if member was sharing lately
-						removeMemberInviteCode(member);
-						member.setData(action.data);
+						if (!member)
+						{
+							member = addMember($.extend({ id: action.member_id }, action.data));
+						}
+						else
+						{
+							//remove previous invite code if member was sharing lately
+							removeMemberInviteCode(member);
+							member.setData(action.data);
+						}
 						updateResult.invite = checkMemberInviteCode(member);
 						updateResult.userId = action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
@@ -158,7 +224,11 @@ define(function(require, exports, module)
 						updateResult.userId = action.user_id;
 						controller.notify(m.CardUpdated, updateResult);
 						break;
-
+					case 'card_modified':
+						//mark to update on next poll
+						this.dirty = true;
+						controller.notify(m.CardUpdated, updateResult);
+						break;
 					default:
 						updateResult.data = action;
 						controller.notify(m.CardUpdated, updateResult);
@@ -210,9 +280,20 @@ define(function(require, exports, module)
 				var newMember;
 				if (result.status)
 				{
-					newMember = addMember(result.response);
-					updateResult.member = newMember;
-					controller.notify(m.CardUpdated, updateResult);
+					newMember = getMemberById(result.response.id);
+					if (newMember)
+					{
+						newMember.setData(result.response);
+					}
+					else
+					{
+						newMember = addMember(result.response);
+					}
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'member_added',
+						member: newMember
+					});
 					checkMemberInviteCode(newMember);
 				}
 				else
@@ -228,7 +309,11 @@ define(function(require, exports, module)
 				{
 					newInvite = addJoinInvite(result.response);
 					updateResult.invite = newInvite;
-					controller.notify(m.CardUpdated, updateResult);
+					controller.notify(m.CardUpdated, {
+						card: that,
+						action: 'invite_added',
+						invite: newInvite
+					});
 				}
 				else
 				{
@@ -282,8 +367,20 @@ define(function(require, exports, module)
 			var memberIndex = membersIndex[id],
 				removedMember;
 
+			if (typeof memberIndex === 'undefined')
+			{
+				dbg('!!! no member to delete', id, 3);
+				return null;
+			}
+
 			delete membersIndex[id];
 			removedMember = members.splice(memberIndex, 1)[0];
+
+			// update index
+			for (var i = memberIndex, len = members.length; i < len; i++)
+			{
+				membersIndex[members[i].getId()] = i;
+			}
 
 			return removedMember || null;
 		}
@@ -300,6 +397,11 @@ define(function(require, exports, module)
 		}
 
 		function getMemberInviteCode(member) {
+			if (!member)
+			{
+				dbg('!!! can\'t get invite: no member provided', member, 3);
+				return undefined;
+			}
 			var ticket = member.getTicket();
 			return ticket && ticket.getInviteCode();
 		}
@@ -313,7 +415,13 @@ define(function(require, exports, module)
 			}
 		}
 
-		function addInviteCode(inviteCode) {
+		function addInviteCode(inviteCode)
+		{
+			// Ensure an invite is specified only once for each card
+			if (inviteCodesIndex[inviteCode])
+			{
+				return inviteCode;
+			}
 
 			inviteCodesIndex[inviteCode] = inviteCodes.length;
 			inviteCodes.push(inviteCode);
@@ -325,8 +433,20 @@ define(function(require, exports, module)
 			var inviteIndex = inviteCodesIndex[inviteCode],
 				removedInviteCode;
 
+			if (typeof inviteIndex === 'undefined')
+			{
+				dbg('!!! no invite to delete', inviteCode, 3);
+				return null;
+			}
+
 			delete inviteCodesIndex[inviteCode];
 			removedInviteCode = inviteCodes.splice(inviteIndex, 1)[0];
+
+			// update index
+			for (var i = inviteIndex, len = inviteCodes.length; i < len; i++)
+			{
+				inviteCodesIndex[inviteCodes[i]] = i;
+			}
 
 			return removedInviteCode || null;
 		}
@@ -334,7 +454,7 @@ define(function(require, exports, module)
 		function addJoinInvite(inviteData) {
 			var invite = inviteData;
 
-			joinInvitesIndex[inviteData.invite_id] = joinInvites.length;
+			joinInvitesIndex[inviteData.id] = joinInvites.length;
 			joinInvites.push(invite);
 
 			return invite;
@@ -344,8 +464,20 @@ define(function(require, exports, module)
 			var inviteIndex = joinInvitesIndex[inviteId],
 				removedInvite;
 
+			if (typeof inviteIndex === 'undefined')
+			{
+				dbg('!!! no join invite to delete', inviteId, 3);
+				return null;
+			}
+
 			delete joinInvitesIndex[inviteId];
-			removedInvite = inviteCodes.splice(inviteIndex, 1)[0];
+			removedInvite = joinInvites.splice(inviteIndex, 1)[0];
+
+			// update index
+			for (var i = inviteIndex, len = joinInvites.length; i < len; i++)
+			{
+				joinInvitesIndex[joinInvites[i]] = i;
+			}
 
 			return removedInvite || null;
 		}
