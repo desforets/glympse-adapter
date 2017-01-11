@@ -41,6 +41,8 @@ define(function(require, exports, module)
 			, 'created_time'
 			, 'id'
 			, 'metadata_etag'
+			, 'inviter'
+			, 'details'
 		];
 
 

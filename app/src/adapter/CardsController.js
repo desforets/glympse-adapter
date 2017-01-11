@@ -25,7 +25,7 @@ define(function(require, exports, module)
 		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
 		var pollInterval = cfg.pollCards || 60000;
 		var pollingInterval;
-		var cardsMode = cfg.cardsMode;
+		var cardsMode = cfg.hasOwnProperty('cardsMode') ? cfg.cardsMode : !!cfg.card;
 
 		// state
 		var that = this;
@@ -35,10 +35,6 @@ define(function(require, exports, module)
 		var cardsReady = 0;
 		var initialized = false;
 		var account = cfg.account;
-
-		var cardRequest = cfg.cardRequest;
-
-		var w = window;
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -51,10 +47,6 @@ define(function(require, exports, module)
 			cardInvites = cardsInvitesToLoad || [];
 
 			cardsReady = (cardInvites) ? cardInvites.length : 0;
-			if (cardRequest)
-			{
-				cardsReady++;
-			}
 			initialized = true;
 
 			controller.notify(m.CardsInitStart, cardInvites);
@@ -182,26 +174,23 @@ define(function(require, exports, module)
 			dbg(sig + '[' + ((cfg.isAnon) ? 'ANON' : 'ACCT') + '] Authenticated. Loading ' + cardInvites.length + ' cards...');
 
 			// Now load card(s)
-			loadCards(cardInvites, cardRequest);
+			loadCards(cardInvites);
 
 			if (!cardInvites.length)
 			{
 				controller.notify(m.CardsInitEnd, []);
 			}
 
-			if (cardsMode)
+			if(cardsMode && cfg.isAnon) {
+                getInviteById(cardInvites[0]);
+			}
+			else
 			{
-				if (!cardRequest)
-				{
-					if (pollingInterval) {
-						raf.clearInterval(pollingInterval);
-					}
-					requestCards();
-					pollingInterval = raf.setInterval(requestCards, pollInterval);
+				if (pollingInterval) {
+					raf.clearInterval(pollingInterval);
 				}
-				else {
-					getCardByRequest();
-				}
+				requestCards();
+				pollingInterval = raf.setInterval(requestCards, pollInterval);
 			}
 		}
 
@@ -222,7 +211,7 @@ define(function(require, exports, module)
 			};
 		}
 
-		function loadCards(cardInvites, cardRequest)
+		function loadCards(cardInvites)
 		{
 			if (!cardInvites || !cardInvites.length)
 			{
@@ -290,7 +279,7 @@ define(function(require, exports, module)
 		/**
 		 * Requests cards for the current user.
 		 */
-		function requestCards()
+        function requestCards()
 		{
 			ajax.get(svr + 'cards', null, account)
 				.then(function(result)
@@ -330,12 +319,12 @@ define(function(require, exports, module)
 				});
 		}
 
-		function getCardByRequest() {
-			ajax.get(svr + 'cards/invites/' + cardRequest, null, account)
+		function getInviteById(cardId) {
+			ajax.get(svr + 'cards/invites/' + cardId, null, account)
 				.then(function (result) {
 					if(result.status) {
-						var card = new Card(that, cardRequest, account, cfg);
-						cardsIndex[cardRequest] = card;
+						var card = new Card(that, cardId, account, cfg);
+						cardsIndex[cardId] = card;
 						processGetCard(result, card);
 						result.response = [result.response];
 					}

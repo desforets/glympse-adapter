@@ -75,8 +75,6 @@ define(function(require, exports, module)
 		{
 			getSettings();
 
-			cfg.isAnon = isAnon;
-
 			// If not anonymous, add saved username/password to token request
 			if (!isAnon)
 			{
@@ -112,13 +110,11 @@ define(function(require, exports, module)
 					getUserInfo(null, true);
 				}
 				else {
-					setTimeout(function () {
-						controller.notify(m.AccountLoginStatus, {
-							status: true,
-							token: token,
-							anonymous: true
-						});
-					}, 0);
+					controller.notify(m.AccountLoginStatus, {
+						status: true,
+						token: token,
+						anonymous: true
+					});
 				}
 				return true;
 			}

@@ -44,11 +44,6 @@ define(function(require, exports, module)
 			return invite;
 		};
 
-		this.getInviter = function()
-		{
-			return data.inviter;
-		};
-
 		this.getPermissions = function()
 		{
 			return permissions;
