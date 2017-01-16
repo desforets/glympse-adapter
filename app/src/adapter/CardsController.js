@@ -35,6 +35,8 @@ define(function(require, exports, module)
 		var cardsReady = 0;
 		var initialized = false;
 		var account = cfg.account;
+		var cacheCardUpdatedEvts = false;
+		var cachedCardUpdatedEvts = [];
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -102,6 +104,10 @@ define(function(require, exports, module)
 
 				case m.CardUpdated:
 				{
+                    if(cacheCardUpdatedEvts) {
+                    	cachedCardUpdatedEvts.push(args);
+                        return;
+                    }
 					controller.notify(msg, args);
 					break;
 				}
@@ -385,6 +391,7 @@ define(function(require, exports, module)
 			{
 				//dbg('Got card data', resp);
 
+				cacheCardUpdatedEvts = true;
 				card.setData(result.response);
 				if (!card.dirty)
 				{
@@ -395,6 +402,10 @@ define(function(require, exports, module)
 				{
 					card.dirty = false;
 				}
+
+				if(cacheCardUpdatedEvts) {
+                    flushCardUpdatedEvtCache();
+                }
 			}
 			else if (result.response.error === 'failed_to_decode')
 			{
@@ -402,6 +413,13 @@ define(function(require, exports, module)
 				// either case, we cannot continue loading this
 				// card, so bail immediately
 				that.notify(m.CardReady, idCard);
+			}
+		}
+
+		function flushCardUpdatedEvtCache() {
+            cacheCardUpdatedEvts = false;
+			for(var i = 0, len = cachedCardUpdatedEvts.length; i < len; i++){
+				that.notify(m.CardUpdated, cachedCardUpdatedEvts[i]);
 			}
 		}
 
