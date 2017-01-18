@@ -105,7 +105,7 @@ define(function(require, exports, module)
 			if (token)
 			{
 				// validate token before sending init event
-				if(!isAnon)
+				if (!isAnon)
 				{
 					getUserInfo(null, true);
 				}
