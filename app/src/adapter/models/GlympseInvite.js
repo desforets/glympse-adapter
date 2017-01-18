@@ -127,7 +127,7 @@ define(function(require, exports, module)
 					if (result.status)
 					{
 						loaded = true;
-						that.setData(data.response);
+						that.setData(result.response);
 					}
 					// max attempts
 					else if (result.info)

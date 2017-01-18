@@ -25,7 +25,7 @@ define(function(require, exports, module)
 		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
 		var pollInterval = cfg.pollCards || 60000;
 		var pollingInterval;
-		var cardsMode = cfg.cardsMode;
+		var cardsMode = cfg.hasOwnProperty('cardsMode') ? cfg.cardsMode : !!cfg.card;
 
 		// state
 		var that = this;
@@ -35,9 +35,8 @@ define(function(require, exports, module)
 		var cardsReady = 0;
 		var initialized = false;
 		var account = cfg.account;
-
-
-		var w = window;
+		var cacheCardUpdatedEvts = false;
+		var cachedCardUpdatedEvts = [];
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -105,6 +104,10 @@ define(function(require, exports, module)
 
 				case m.CardUpdated:
 				{
+                    if(cacheCardUpdatedEvts) {
+                    	cachedCardUpdatedEvts.push(args);
+                        return;
+                    }
 					controller.notify(msg, args);
 					break;
 				}
@@ -161,15 +164,15 @@ define(function(require, exports, module)
 		{
 			var sig = '[accountInitComplete] - ';
 
-			if (!initialized)
-			{
-				dbg(sig + 'not initialized', args);
-				return;
-			}
-
 			if (!account)
 			{
 				dbg(sig + 'authToken unavailable', args);
+				return;
+			}
+
+			if (!initialized)
+			{
+				dbg(sig + 'not initialized', args);
 				return;
 			}
 
@@ -184,10 +187,12 @@ define(function(require, exports, module)
 				controller.notify(m.CardsInitEnd, []);
 			}
 
-			if (cardsMode)
+			if(cardsMode && cfg.isAnon) {
+                getInviteById(cardInvites[0]);
+			}
+			else
 			{
-				if (pollingInterval)
-				{
+				if (pollingInterval) {
 					raf.clearInterval(pollingInterval);
 				}
 				requestCards();
@@ -280,7 +285,7 @@ define(function(require, exports, module)
 		/**
 		 * Requests cards for the current user.
 		 */
-		function requestCards()
+        function requestCards()
 		{
 			ajax.get(svr + 'cards', null, account)
 				.then(function(result)
@@ -316,6 +321,19 @@ define(function(require, exports, module)
 						loadCards(cardInvites);
 					}
 
+					controller.notify(m.CardsRequestStatus, result);
+				});
+		}
+
+		function getInviteById(cardId) {
+			ajax.get(svr + 'cards/invites/' + cardId, null, account)
+				.then(function (result) {
+					if(result.status) {
+						var card = new Card(that, cardId, account, cfg);
+						cardsIndex[cardId] = card;
+						processGetCard(result, card);
+						result.response = [result.response];
+					}
 					controller.notify(m.CardsRequestStatus, result);
 				});
 		}
@@ -373,6 +391,7 @@ define(function(require, exports, module)
 			{
 				//dbg('Got card data', resp);
 
+				cacheCardUpdatedEvts = true;
 				card.setData(result.response);
 				if (!card.dirty)
 				{
@@ -383,6 +402,10 @@ define(function(require, exports, module)
 				{
 					card.dirty = false;
 				}
+
+				if(cacheCardUpdatedEvts) {
+                    flushCardUpdatedEvtCache();
+                }
 			}
 			else if (result.response.error === 'failed_to_decode')
 			{
@@ -390,6 +413,13 @@ define(function(require, exports, module)
 				// either case, we cannot continue loading this
 				// card, so bail immediately
 				that.notify(m.CardReady, idCard);
+			}
+		}
+
+		function flushCardUpdatedEvtCache() {
+            cacheCardUpdatedEvts = false;
+			for(var i = 0, len = cachedCardUpdatedEvts.length; i < len; i++){
+				that.notify(m.CardUpdated, cachedCardUpdatedEvts[i]);
 			}
 		}
 

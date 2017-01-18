@@ -41,6 +41,8 @@ define(function(require, exports, module)
 			, 'created_time'
 			, 'id'
 			, 'metadata_etag'
+			, 'inviter'
+			, 'details'
 		];
 
 
@@ -53,6 +55,10 @@ define(function(require, exports, module)
 		this.getMembers = function()
 		{
 			return members;
+		};
+
+		this.getMemberById = function (id) {
+			return getMemberById(id);
 		};
 
 		this.getMetaData = function()

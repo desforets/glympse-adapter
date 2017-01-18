@@ -28,6 +28,7 @@ define(function(require, exports, module)
 					, 'created_time'
 					, 'id'
 					, 'user_id'
+					, 'inviter'
 					];
 
 
