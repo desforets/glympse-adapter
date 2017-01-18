@@ -13,6 +13,7 @@
         "brace-style": [0, "stroustrup"],
 		"camelcase": 1,
         "consistent-this": 2,
+        "consistent-return": 0,
         "curly": [1, "all"],
         "eqeqeq": 0,
         "no-console": 0,

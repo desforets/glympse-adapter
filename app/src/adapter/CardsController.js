@@ -104,8 +104,8 @@ define(function(require, exports, module)
 
 				case m.CardUpdated:
 				{
-                    if(cacheCardUpdatedEvts) {
-                    	cachedCardUpdatedEvts.push(args);
+                    if (cacheCardUpdatedEvts) {
+						cachedCardUpdatedEvts.push(args);
                         return;
                     }
 					controller.notify(msg, args);
@@ -187,7 +187,7 @@ define(function(require, exports, module)
 				controller.notify(m.CardsInitEnd, []);
 			}
 
-			if(cardsMode && cfg.isAnon) {
+			if (cardsMode && cfg.isAnon) {
                 getInviteById(cardInvites[0]);
 			}
 			else
@@ -327,8 +327,8 @@ define(function(require, exports, module)
 
 		function getInviteById(cardId) {
 			ajax.get(svr + 'cards/invites/' + cardId, null, account)
-				.then(function (result) {
-					if(result.status) {
+				.then(function(result) {
+					if (result.status) {
 						var card = new Card(that, cardId, account, cfg);
 						cardsIndex[cardId] = card;
 						processGetCard(result, card);
@@ -403,7 +403,7 @@ define(function(require, exports, module)
 					card.dirty = false;
 				}
 
-				if(cacheCardUpdatedEvts) {
+				if (cacheCardUpdatedEvts) {
                     flushCardUpdatedEvtCache();
                 }
 			}
@@ -418,7 +418,7 @@ define(function(require, exports, module)
 
 		function flushCardUpdatedEvtCache() {
             cacheCardUpdatedEvts = false;
-			for(var i = 0, len = cachedCardUpdatedEvts.length; i < len; i++){
+			for (var i = 0, len = cachedCardUpdatedEvts.length; i < len; i++){
 				that.notify(m.CardUpdated, cachedCardUpdatedEvts[i]);
 			}
 		}

@@ -57,7 +57,7 @@ define(function(require, exports, module)
 			return members;
 		};
 
-		this.getMemberById = function (id) {
+		this.getMemberById = function(id) {
 			return getMemberById(id);
 		};
 
