@@ -88,6 +88,7 @@ define(function(require, exports, module)
 
 			invitesCard = (card) ? cleanInvites([card]) : [];
 			invitesGlympse = cleanInvites(splitMulti(t));
+console.log('t=' + t + ', invitesGlympse:', invitesGlympse);
 
 			events.setUserInfo = setUserInfo;	// Dummy/test
 
@@ -515,12 +516,12 @@ define(function(require, exports, module)
 			// GlympseLoader will perform the lookup to determine if indeed there
 			// is a card invite to load instead of the presented core invite.
 			// FIXME: Assumes only one invite code!
-			if (lib.simplifyInvite(t).indexOf('demobot') < 0)
-			{
-				glympseLoader = new GlympseLoader(that, cfgAdapter);
-				glympseLoader.init(t);
-				return;
-			}
+		//	if (lib.simplifyInvite(t).indexOf('demobot') < 0)
+		//	{
+		//		glympseLoader = new GlympseLoader(that, cfgAdapter);
+		//		glympseLoader.init(t);
+		//		return;
+		//	}
 
 			// Straight invite types to load
 			if (t || pg || g || twt)
