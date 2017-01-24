@@ -117,7 +117,7 @@ define(function(require, exports, module)
 			dbg('Card "' + this.getName() + '" ready with ' + members.length + ' members');
 		};
 
-		this.setDataFromStream = function(streamArray) {
+		this.setDataFromStream = function(streamArray, time) {
 			var cardId = this.getIdCard();
 			var newMembers = [],
 				newJoinCardInvites = [],
@@ -187,7 +187,8 @@ define(function(require, exports, module)
 				action = cleanStream[i];
 				updateResult = {
 					card: this,
-					action: action.type
+					action: action.type,
+					t: time
 				};
 
 				switch (action.type)
