@@ -108,6 +108,7 @@ define(function(require, exports, module)
 						cachedCardUpdatedEvts.push(args);
                         return;
                     }
+
 					controller.notify(msg, args);
 					break;
 				}
@@ -428,7 +429,7 @@ define(function(require, exports, module)
 			{
 				//dbg('Got card data', resp);
 				if (result.response.length) {
-					card.setDataFromStream(result.response);
+					card.setDataFromStream(result.response, result.time);
 				}
 				card.setLastUpdatingTime(result.time);
 			}
