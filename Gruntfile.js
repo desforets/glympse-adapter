@@ -1,6 +1,7 @@
 /*global module:false*/
 
-module.exports = function(grunt) {
+module.exports = function(grunt)
+{
   'use strict';
 
   // Time how long tasks take. Can help when optimizing build times
@@ -18,7 +19,7 @@ module.exports = function(grunt) {
 		distExports: 'dist',
 		moduleOut: 'glympse-adapter',
 		moduleIn: 'GlympseAdapter',
-		moduleVersion: '1.5.0b16'
+		moduleVersion: '1.5.0b17'
       }
     }
   });

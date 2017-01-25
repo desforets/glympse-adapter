@@ -260,9 +260,11 @@ define(function(require, exports, module)
 			}
 
 			ajax.batch(svr + 'batch', batchRequests, account)
-				.then(function(responses) {
+				.then(function(responses)
+				{
 					var response, i, len, card;
-					for (i = 0, len = responses.length; i < len; i++){
+					for (i = 0, len = responses.length; i < len; i++)
+					{
 						response = responses[i];
 						card = loadingCards[i];
 						switch (response.name)
