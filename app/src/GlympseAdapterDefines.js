@@ -166,6 +166,7 @@ define(function(require, exports, module)
 			, Destination: 'destination'
 			, Eta: 'eta'
 			, InviteEnd: 'end_time'
+			, InviteCompleted: 'completed'
 			, InviteStart: 'start_time'
 			, Message: 'message'
 			, Name: 'name'

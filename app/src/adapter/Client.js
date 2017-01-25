@@ -290,6 +290,10 @@ console.log('t=' + t + ', invitesGlympse:', invitesGlympse);
 
 						case 'member_stopped_sharing':
 						{
+							//Need to send s.InviteEnd and s.InviteCompleted events
+							this.infoUpdate(s.InviteEnd, args.invite, args.userId, args.t, args.t);
+							this.infoUpdate(s.InviteCompleted, args.invite, args.userId, args.t, true);
+
 							var inviteCards = mapCardTicketInvites[args.invite];
 							if (inviteCards)
 							{
