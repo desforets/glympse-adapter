@@ -300,9 +300,7 @@ define(function(require, exports, module)
 						if (result.status)
 						{
 							token = result.response.access_token;
-
 							currentKeySettings[cAcctTokenName] = token;
-
 							saveSettings();
 
 							//dbg('>> new token: ' + token);
