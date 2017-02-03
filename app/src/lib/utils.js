@@ -46,24 +46,27 @@ define(function(require, exports, module)
 		{
 			if (window.localStorage)
 			{
-				return window.localStorage.getItem(cookieName);
-			}
-			else
-			{
-				var c, i, idx, x, y;
-				var cookies = document.cookie.split(';');
+				var val = window.localStorage.getItem(cookieName);
 
-				for (i = 0; i < cookies.length; i++)
+				if (val)
 				{
-					c = cookies[i];
-					idx = c.indexOf('=');
-					x = c.substr(0, idx);
-					y = c.substr(idx + 1);
+					return val;
+				}
+			}
 
-					if (x.replace(/^\s+|\s+$/g, '') === cookieName)
-					{
-						return window.unescape(y);
-					}
+			var c, i, idx, x, y;
+			var cookies = document.cookie.split(';');
+
+			for (i = 0; i < cookies.length; i++)
+			{
+				c = cookies[i];
+				idx = c.indexOf('=');
+				x = c.substr(0, idx);
+				y = c.substr(idx + 1);
+
+				if (x.replace(/^\s+|\s+$/g, '') === cookieName)
+				{
+					return window.unescape(y);
 				}
 			}
 
@@ -72,11 +75,22 @@ define(function(require, exports, module)
 
 		, setCookie: function(cookieName, cookieValue, daysExpire)
 		{
+			var usedLocalStorage = false;
+
 			if (window.localStorage)
 			{
-				window.localStorage.setItem(cookieName, cookieValue);
+				try
+				{
+					window.localStorage.setItem(cookieName, cookieValue);
+					usedLocalStorage = true;
+				}
+				catch (e)
+				{
+					console.log('localStorage error', e);
+				}
 			}
-			else
+
+			if (!usedLocalStorage)
 			{
 				var d = new Date();
 				d.setTime(d.getTime() + (daysExpire || 365) * 24 * 3600 * 1000);

@@ -88,7 +88,6 @@ define(function(require, exports, module)
 
 			invitesCard = (card) ? cleanInvites([card]) : [];
 			invitesGlympse = cleanInvites(splitMulti(t));
-console.log('t=' + t + ', invitesGlympse:', invitesGlympse);
 
 			events.setUserInfo = setUserInfo;	// Dummy/test
 
