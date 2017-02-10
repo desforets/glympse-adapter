@@ -1,7 +1,7 @@
 {
   "name": "glympse-adapter",
-  "description": "Web-based adapter for handling various Glympse-related functionality.",
-  "version": "1.5.0",
+  "description": "Web-based adapter for handling various Glympse-related functionality",
+  "version": "2.0.0",
   "homepage": "https://github.com/Glympse/glympse-adapter",
   "license": "BSD-Protection",
   "authors": [
@@ -14,7 +14,10 @@
     "Glympse",
     "iframe",
     "viewer",
-    "adapter"
+    "adapter",
+    "cards",
+    "tickets",
+    "invites"
   ],
   "repository": {
     "type": "git",
@@ -27,28 +30,28 @@
     "node": ">= 0.10.0"
   },
   "devDependencies": {
-    "bower": ">=1.0.0",
-    "grunt": ">=0.4.5",
+    "bower": "^1.8.0",
+    "grunt": "^1.0.1",
     "grunt-bower-requirejs": "^2.0.0",
     "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-concat": "^1.0.0",
-    "grunt-contrib-connect": "^1.0.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-connect": "^1.0.2",
     "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-cssmin": "^1.0.0",
-    "grunt-contrib-htmlmin": "^1.0.0",
-    "grunt-contrib-imagemin": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.2",
+    "grunt-contrib-htmlmin": "^2.2.0",
+    "grunt-contrib-imagemin": "^1.0.1",
     "grunt-contrib-requirejs": "^1.0.0",
-    "grunt-contrib-uglify": "^1.0.0",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt-eslint": "^1.1.0",
-    "grunt-jscs": "^0.7.1",
-    "grunt-newer": "^1.1.0",
-    "grunt-processhtml": "^0.3.3",
+    "grunt-contrib-uglify": "^2.1.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-eslint": "^19.0.0",
+    "grunt-jscs": "^3.0.1",
+    "grunt-newer": "^1.2.0",
+    "grunt-processhtml": "^0.4.1",
     "grunt-rev": "^0.1.0",
     "grunt-text-replace": "^0.4.0",
-    "grunt-usemin": "^2.1.1",
-    "load-grunt-config": "^0.13.1",
-    "time-grunt": "^1.0.0"
+    "grunt-usemin": "^3.1.1",
+    "load-grunt-config": "^0.19.2",
+    "time-grunt": "^1.4.0"
   },
   "scripts": {
     "test": "grunt test"

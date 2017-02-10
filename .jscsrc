@@ -4,10 +4,9 @@
     "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
     "disallowSpaceAfterPrefixUnaryOperators": true,
     "disallowKeywords": ["with"],
-    //"disallowMultipleLineBreaks": true,
     "requireBlocksOnNewline": true,
     //"disallowMixedSpacesAndTabs": true,
-    //"disallowTrailingWhitespace": true,
+    "disallowTrailingWhitespace": true,
     "requireLineFeedAtFileEnd": true,
     "requireSpacesInFunctionExpression": {
         "beforeOpeningCurlyBrace": true
@@ -15,11 +14,7 @@
     "disallowSpacesInFunctionExpression": {
         "beforeOpeningRoundBrace": true
     },
-    "validateJSDoc": {
-        "checkParamNames": true,
-        "requireParamTypes": false
-    },
-    "validateQuoteMarks": "'",
-    //"disallowMultipleVarDecl": true,
-    "disallowSpacesInsideParentheses": true
+	"disallowSpacesInsideParentheses": true,
+    "validateQuoteMarks": "'"
+    //"disallowMultipleVarDecl": true
 }
