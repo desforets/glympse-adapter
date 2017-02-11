@@ -23,6 +23,8 @@ define(function(require, exports, module)
 		};
 	}
 
+	var localStorage = window.localStorage;
+
 	// Simple lib export
 	var utils =
 	{
@@ -42,47 +44,47 @@ define(function(require, exports, module)
 		}
 
 		, domain: window.location.hostname
-		, getCookie: function(cookieName)
+		, getCookie: function(id)
 		{
-			if (window.localStorage)
+			if (localStorage)
 			{
-				var val = window.localStorage.getItem(cookieName);
+				var val = localStorage.getItem(id);
 
-				if (val)
+				// Some implementations have the localStorage interface available, but not
+				// writable (i.e. iOS Safari), so need to fall through to cookie lookup just in case.
+				if (val !== null)
 				{
 					return val;
 				}
 			}
 
-			var c, i, idx, x, y;
 			var cookies = document.cookie.split(';');
 
-			for (i = 0; i < cookies.length; i++)
+			for (var i = cookies.length - 1; i >= 0; i--)
 			{
-				c = cookies[i];
-				idx = c.indexOf('=');
-				x = c.substr(0, idx);
-				y = c.substr(idx + 1);
+				var c = cookies[i];
+				var idx = c.indexOf('=');
+				var x = c.substr(0, idx);
 
-				if (x.replace(/^\s+|\s+$/g, '') === cookieName)
+				if (x.replace(/^\s+|\s+$/g, '') === id)
 				{
-					return window.unescape(y);
+					return window.decodeURIComponent(c.substr(idx + 1));
 				}
 			}
 
 			return null;
 		}
 
-		, setCookie: function(cookieName, cookieValue, daysExpire)
+		, setCookie: function(id, val, daysExpire)
 		{
-			var usedLocalStorage = false;
-
-			if (window.localStorage)
+			if (localStorage)
 			{
 				try
 				{
-					window.localStorage.setItem(cookieName, cookieValue);
-					usedLocalStorage = true;
+					// Some implementations exception when localStorage is defined, but
+					// not available (i.e. iOS Safari)
+					localStorage.setItem(id, val);
+					return;
 				}
 				catch (e)
 				{
@@ -90,32 +92,25 @@ define(function(require, exports, module)
 				}
 			}
 
-			if (!usedLocalStorage)
-			{
-				var d = new Date();
-				d.setTime(d.getTime() + (daysExpire || 365) * 24 * 3600 * 1000);
-				document.cookie = cookieName + '=' + (cookieValue + '; expires=' + d.toGMTString() + '; domain=' + utils.domain + '; path=/');
-			}
+			var d = new Date();
+			d.setTime(d.getTime() + (daysExpire || 365) * 24 * 3600 * 1000);
+			document.cookie = id + '=' + val + '; expires=' + d.toGMTString() + '; domain=' + utils.domain + '; path=/';
 		}
 
 		, getCfgVal: function(propertyName, idCfg)
 		{
-			var cookieName = idCfg || defCfg;
-
-			var cookieValue = utils.getCookie(cookieName);
-			//console.log('cookie = ' + cookie + ' -- ' + name + ' -- ' + (JSON.parse(cookie))[name]);
-			return (cookieValue) ? (JSON.parse(cookieValue))[propertyName] : null;
+			var config = utils.getCookie(idCfg || defCfg);
+			return (config) ? (JSON.parse(config))[propertyName] : null;
 		}
 
 		, setCfgVal: function(propertyName, newValue, idCfg, daysExpire)
 		{
-			var cookieName = (idCfg || defCfg);
-			var cookieValue = utils.getCookie(cookieName);
+			var config = utils.getCookie(idCfg || defCfg);
 
-			cookieValue = (cookieValue) ? JSON.parse(cookieValue) : {};
-			cookieValue[propertyName] = newValue;
+			config = (config) ? JSON.parse(config) : {};
+			config[propertyName] = newValue;
 
-			utils.setCookie(cookieName, JSON.stringify(cookieValue), daysExpire);
+			utils.setCookie(cookieName, JSON.stringify(config), daysExpire);
 		}
 
 		, capFirst: function(str)
