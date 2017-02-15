@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+2.0.1	| 2017/02/15 | Updated to use LocalStorage instead of cookies, if available
 2.0.0   | 2017/02/10 | Revamp of internal architecture + addition of Glympse Cards APIs. Biggest imact for ticket invite usage: must specify apiKey param and set isAnon=true config setting for regular viewing of ticket invites.
 1.4.2   | 2016/11/12 | *InviteClicked* event propagation fix
 1.4.1   | 2016/11/09 | Add *InviteClicked* event

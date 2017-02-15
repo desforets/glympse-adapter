@@ -105,12 +105,13 @@ define(function(require, exports, module)
 
 		, setCfgVal: function(propertyName, newValue, idCfg, daysExpire)
 		{
-			var config = utils.getCookie(idCfg || defCfg);
+			var id = idCfg || defCfg;
+			var config = utils.getCookie(id);
 
 			config = (config) ? JSON.parse(config) : {};
 			config[propertyName] = newValue;
 
-			utils.setCookie(cookieName, JSON.stringify(config), daysExpire);
+			utils.setCookie(id, JSON.stringify(config), daysExpire);
 		}
 
 		, capFirst: function(str)
