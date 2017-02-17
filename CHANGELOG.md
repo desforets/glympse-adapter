@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+2.0.2	| 2017/02/17 | Add `invitee` property on the Card model for proper handling of *card_request* invite types
 2.0.1	| 2017/02/15 | Updated to use LocalStorage instead of cookies, if available
 2.0.0   | 2017/02/10 | Revamp of internal architecture + addition of Glympse Cards APIs. Biggest imact for ticket invite usage: must specify apiKey param and set isAnon=true config setting for regular viewing of ticket invites.
 1.4.2   | 2016/11/12 | *InviteClicked* event propagation fix
