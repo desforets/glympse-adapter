@@ -42,6 +42,7 @@ define(function(require, exports, module)
 			, 'id'
 			, 'metadata_etag'
 			, 'inviter'
+			, 'invitee'
 			, 'details'
 		];
 
