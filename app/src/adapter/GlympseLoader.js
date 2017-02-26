@@ -16,7 +16,6 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('GlympseLoader', cfg.dbg);
-		//var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
 
 		// state
 		var that = this;

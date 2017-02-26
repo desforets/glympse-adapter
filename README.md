@@ -115,7 +115,6 @@ var cfg =
 		, apiKey: *string*|null|undefined
 		, sandbox: *bool*
 		, svcGlympse: *string*
-		, svcCards: *string*
 		, dbg: *bool*
 		, loaderEnvironment: *string*
         , loaderPath: *string*
@@ -143,14 +142,15 @@ var cfg =
   endpoints. More details can be found in *Custom Endpoints*. Can also be null,
   - `apiKey`: Specifies the Core API key to use. If not set, the adapter will run in
   anonymous mode, which will allow only for the viewing of Core API invites.
-  - `sandbox`: Force usage of the sandbox environment for Cards/Glympses
+  - `sandbox`: Force usage of the sandbox environment for Cards/Glympses. Note that
+  this setting, if set, will change some defaults of other params to fully align to
+  the sandbox environment: `loaderEnvironment` and `svcGlympse`
   - `svcGlympse`: Override the default Glympse API datacenter. Default is
-  `//api.glympse.com/v2/`.
-  - `svcCards`: Override the default Cards API datacenter. Default is
-  `//api.cards.glympse.com/api/v1/`.
+  `//api.glympse.com/v2/`, or `//api.sandbox.glympse.com/v2/`, if `sandbox` is set.
   - `dbg`: Enable debugging state. Defaults to `false`.
   - `card`, `t`, `g`, `twt`, `pg`: Standard Cards/Glympse invite types.
-  - `loaderEnvironment`: Environment for the viewer's loader: "prod" (glympse.com) | "sandbox" (dev.glympse.com). Default is "prod".
+  - `loaderEnvironment`: Environment for the viewer's loader: "prod"|"sandbox".
+  Automatically set based on _sandbox_ setting if this param is not specified.
   - `loaderVersion`: Version of the viewer's loader. Default is "latest".
   - `loaderPath`: Arbitrary URL to the loader (overrides `loaderEnvironment` and `loaderVersion`). Default is NULL.
   - `avatar` - configuration for Image processing for `core.setUserAvatar` API endpoint

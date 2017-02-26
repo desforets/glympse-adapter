@@ -22,7 +22,7 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg('CardsController', cfg.dbg);
-		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
+		var svr = cfg.svcGlympse;
 		var pollInterval = cfg.pollCards || 60000;
 		var pollingInterval;
 		var cardsMode = cfg.hasOwnProperty('cardsMode') ? cfg.cardsMode : !!cfg.card;

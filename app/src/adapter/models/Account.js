@@ -11,12 +11,14 @@ define(function(require, exports, module)
 	var REQUEST_TYPES = Defines.CARDS.REQUEST_TYPES;
 
 	var cAcctTokenName = 't0';
+	var cAccountInfo = 'accountInfo';
 	var cApiKey = 'api_key';
 	var cPassword = 'p0';
 	var cUserName = 'n0';
 	var cSvcPassword = 'password';
 	var cSvcUserName = 'username';
-	var cAccountInfo = 'accountInfo';
+	var cEnvProduction = 'EnvProd';
+	var cEnvSandbox = 'EnvSandbox';
 
 	var anonymousUserName = 'viewer';
 	var anonymousPassword = 'password';
@@ -27,9 +29,9 @@ define(function(require, exports, module)
 		// consts
 		var dbg = lib.dbg('Account', cfg.dbg);
 
-		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
+		var svr = cfg.svcGlympse;
 		var sandbox = cfg.sandbox;
-		var idEnvironment = (sandbox) ? Account.EnvSandbox : Account.EnvProduction;
+		var idEnvironment = (sandbox) ? Account[cEnvSandbox] : Account[cEnvProduction];
 
 		var account = {};
 
@@ -387,8 +389,8 @@ define(function(require, exports, module)
 	// Account defines
 
 	// Environment
-	Account.EnvProduction = 'prod';
-	Account.EnvSandbox = 'sbox';
+	Account[cEnvProduction] = 'prod';
+	Account[cEnvSandbox] = 'sbox';
 
 
 	module.exports = Account;
