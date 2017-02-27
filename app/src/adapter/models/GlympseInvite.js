@@ -14,7 +14,7 @@ define(function(require, exports, module)
 	{
 		// consts
 		var dbg = lib.dbg(cModuleId, cfg.dbg);
-		var svr = (cfg.svcGlympse || '//api.glympse.com/v2/');
+		var svr = cfg.svcGlympse;
 		var inviteUrl = (svr + 'invites/' + idInvite);
 		var cMaxAttempts = 3;
 

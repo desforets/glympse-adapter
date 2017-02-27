@@ -50,9 +50,16 @@ define(function(require, exports, module)
 		var cardsMode = cfgAdapter.cardsMode;
 
 		var initialized = false;
+		var apiKey = cfgAdapter.apiKey || 'nXQ44D38OdVzEC34';	// sand/prod: application/79 --> prod org 20715 or 24778
 
+
+		cfgAdapter.apiKey = apiKey;
 		cfgAdapter.dbg = cfgApp.dbg || cfgAdapter.dbg;
-		cfgViewer.services = cfgAdapter.svcGlympse; // Link viewer to card data center
+		cfgAdapter.svcGlympse = (cfgAdapter.svcGlympse || ('//api.' + ((cfgAdapter.sandbox) ? 'sandbox.' : '') + 'glympse.com/v2/'));
+
+		// Sync up viewer settings
+		cfgViewer.apiKey = apiKey;
+		cfgViewer.services = cfgAdapter.svcGlympse;
 
 
 		///////////////////////////////////////////////////////////////////////////////

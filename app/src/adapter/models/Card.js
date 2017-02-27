@@ -12,7 +12,8 @@ define(function(require, exports, module)
 	// Exported class
 	function Card(controller, idCard, account, cfg)
 	{
-		var svr = (cfg.svcCards || '//api.cards.glympse.com/api/v1/');
+		var svr = cfg.svcGlympse;
+
 		// state
 		var data;
 		var loaded = false;

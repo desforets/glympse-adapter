@@ -128,11 +128,19 @@ define(function(require, exports, module)
 			}
 			else
 			{
-				var loaderUrl = getGlympserLoaderUrl();
+				var loaderUrl = cfgAdapter.loaderPath ||
+								[ '//'
+								, ((cfgAdapter.loaderEnvironment === 'sandbox' || cfgAdapter.sandbox) ? 's-' : '')
+								, 'viewer.content.glympse.com/components/glympse-viewer/'
+								, (cfgAdapter.loaderVersion || 'latest')
+								, '/jquery.glympser.min.js'
+								].join('');
+
 				dbg('loading glympser loader from', loaderUrl);
-				$.getScript(loaderUrl)
+				$.ajax({ dataType: 'script', cache: true, url: loaderUrl })
 					.done(function()
 					{
+						dbg('.. loaded glympser loader!');
 						loader.resolve();
 					})
 					.fail(function()
@@ -144,18 +152,6 @@ define(function(require, exports, module)
 			return loader;
 		}
 
-		function getGlympserLoaderUrl()
-		{
-			if (cfgAdapter.loaderPath)
-			{
-				return cfgAdapter.loaderPath;
-			}
-
-			var env = (cfgAdapter.loaderEnvironment === 'sandbox' ? 'dev.' : '');
-			var version = (cfgAdapter.loaderVersion || 'latest');
-
-			return '//' + env + 'glympse.com/js/loader/' + version + '/jquery.glympser.min.js';
-		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		// CTOR
