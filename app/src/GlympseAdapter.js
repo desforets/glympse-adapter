@@ -164,15 +164,11 @@ define(function(require, exports, module)
 
 
 	// Global namespace registration
-	if (!window.glympse)
-	{
-		window.glympse = {};
-	}
-
-	if (!window.glympse.GlympseAdapter)
-	{
-		window.glympse.GlympseAdapter = GlympseAdapter;
-	}
+	(function(w) {
+		var g = w.glympse || {};
+		g.GlympseAdapter || (g.GlympseAdapter = GlympseAdapter);
+		w.glympse = g;
+	})(window);
 
 	module.exports = GlympseAdapter;
 });

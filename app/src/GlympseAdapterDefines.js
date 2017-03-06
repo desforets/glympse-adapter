@@ -183,24 +183,17 @@ define(function(require, exports, module)
 
 
 	// Global namespace registration
-	if (!window.glympse)
-	{
-		window.glympse = {};
-	}
+	(function(w) {
+		var g = w.glympse || {};
+		g.broadcastTypes || (g.broadcastTypes = {
+								DATA: 'DATA',
+								ETA: 'ETA',
+								INVITE_STATUS: 'INVITE_STATUS'
+							});
+		g.GlympseAdapterDefines || (g.GlympseAdapterDefines = Defines);
 
-	if (!window.glympse.broadcastTypes)
-	{
-		window.glympse.broadcastTypes = {
-			DATA: 'DATA',
-			ETA: 'ETA',
-			INVITE_STATUS: 'INVITE_STATUS'
-		};
-	}
-
-	if (!window.glympse.GlympseAdapterDefines)
-	{
-		window.glympse.GlympseAdapterDefines = Defines;
-	}
+		w.glympse = g;
+	})(window);
 
 
 	module.exports = Defines;
