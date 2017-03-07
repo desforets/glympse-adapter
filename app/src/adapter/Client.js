@@ -219,8 +219,9 @@ define(function(require, exports, module)
 
 			var targetCards = mapCardTicketInvites[invite] || [];
 			var info, i;
+			var targetCardsLength = targetCards.length;
 			// send event for each card (same user can share same inviteCode to different cards)
-			for (i = targetCards.length - 1; i >= 0; i--)
+			for (i = (!!targetCardsLength) ? targetCardsLength - 1 : 0; i >= 0; i--)
 			{
 				info = {
 					id: id
@@ -231,8 +232,7 @@ define(function(require, exports, module)
 					, val: val
 				};
 
-				notifyApp(mStateUpdate, info, false);
-				sendOasisMessage(mStateUpdate, info);
+				sendEvent(mStateUpdate, info, false);
 			}
 		};
 
@@ -619,10 +619,10 @@ define(function(require, exports, module)
 			app.notify(msg, args);
 		}
 
-		function sendEvent(msg, args)
+		function sendEvent(msg, args, evtMsg)
 		{
 			sendOasisMessage(msg, args);
-			notifyApp(msg, args, true);
+			notifyApp(msg, args, (evtMsg || true));
 		}
 
 
