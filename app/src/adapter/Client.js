@@ -232,7 +232,8 @@ define(function(require, exports, module)
 					, val: val
 				};
 
-				sendEvent(mStateUpdate, info, false);
+				notifyApp(mStateUpdate, info, false);
+				sendOasisMessage(mStateUpdate, info);
 			}
 		};
 
@@ -619,10 +620,10 @@ define(function(require, exports, module)
 			app.notify(msg, args);
 		}
 
-		function sendEvent(msg, args, evtMsg)
+		function sendEvent(msg, args)
 		{
 			sendOasisMessage(msg, args);
-			notifyApp(msg, args, (evtMsg || true));
+			notifyApp(msg, args, true);
 		}
 
 
