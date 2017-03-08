@@ -151,7 +151,7 @@ var cfg =
   - `card`, `t`, `g`, `twt`, `pg`: Standard Cards/Glympse invite types.
   - `loaderEnvironment`: Environment for the viewer's loader: "prod"|"sandbox".
   Automatically set based on _sandbox_ setting if this param is not specified.
-  - `loaderVersion`: Version of the viewer's loader. Default is "latest".
+  - `loaderVersion`: Version of the viewer's loader. Default is "stable".
   - `loaderPath`: Arbitrary URL to the loader (overrides `loaderEnvironment` and `loaderVersion`). Default is NULL.
   - `avatar` - configuration for Image processing for `core.setUserAvatar` API endpoint
     - `minSize`: Min size for avatar image scaling
