@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+2.1.2   | 2017/03/07 | Bug fix for ticket-only events
 2.1.0/1 | 2017/02/26 | Cleaned up support for `sandbox=1` setting. Removed `svcCards` setting (only `svcGlympse` is necessary now). Point to correct viewer base URL.
 2.0.2	| 2017/02/17 | Add `invitee` property on the Card model for proper handling of *card_request* invite types
 2.0.1	| 2017/02/15 | Updated to use LocalStorage instead of cookies, if available
