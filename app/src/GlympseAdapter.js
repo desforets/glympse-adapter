@@ -132,7 +132,7 @@ define(function(require, exports, module)
 								[ '//'
 								, ((cfgAdapter.loaderEnvironment === 'sandbox' || cfgAdapter.sandbox) ? 's-' : '')
 								, 'viewer.content.glympse.com/components/glympse-viewer/'
-								, (cfgAdapter.loaderVersion || 'latest')
+								, (cfgAdapter.loaderVersion || 'stable')
 								, '/jquery.glympser.min.js'
 								].join('');
 
