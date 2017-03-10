@@ -46,6 +46,9 @@ define(function(require, exports, module)
 
 		var connectedOasis = false;
 		var connectQueue = [];
+		var connectQueueMaxSize = (cfgAdapter.hostQueueMaxSize !== undefined) ? cfgAdapter.hostQueueMaxSize : -1;
+		var connectQueueEnabled = (connectQueueMaxSize !== 0);
+
 		var port;
 		var cardsMode = cfgAdapter.cardsMode;
 
@@ -662,7 +665,7 @@ define(function(require, exports, module)
 				//dbg('send "' + id + '" ', val);
 				port.send(id, (val && val.toJSON && val.toJSON()) || val);
 			}
-			else
+			else if (connectQueueEnabled && (connectQueueMaxSize < 0 || connectQueue.length < connectQueueMaxSize))
 			{
 				connectQueue.push({id: id, val: val});
 			}

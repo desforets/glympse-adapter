@@ -136,6 +136,10 @@ var cfg =
   except the `StateUpdate` message.
   - `hideUpdates`: Don't send `StateUpdate` messages back to the
   `viewer_handler_reference.notify()` method.
+  - `hostQueueMaxSize`: [int] Max events to hold for adapter connecting in host-mode. Options:
+    - 0: disable host message queue
+    - < 0: no limit *(default)*
+    - \> 0: limit to first `val` events
   - `initialize`: Method to call when the adapter has successully synced with a host
   adapater via iframe interface. Can be null.
   - `interfaces`: Allows for local overrides/extensions of advertised Glympse viewer

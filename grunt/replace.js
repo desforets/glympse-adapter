@@ -14,7 +14,7 @@ module.exports =
 			}
 			,{
 				from: /buildDate: \'.*?\'/,
-				to: 'buildDate: \'<%= grunt.template.today("isoUtcDateTime") %>\''
+				to: 'buildDate: \'<%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss \'UTC\'") %>\''
 			}
 		]
 	}
