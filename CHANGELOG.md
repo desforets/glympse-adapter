@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+2.3.0   | 2017/03/10 | `hostQueueMaxSize` option: 0 = disable host message queue, <0 = no limit, >0 = limit to first N events
 2.2.0   | 2017/03/07 | Change default viewer version to "stable"
 2.1.2   | 2017/03/07 | Bug fix for ticket-only events
 2.1.0/1 | 2017/02/26 | Cleaned up support for `sandbox=1` setting. Removed `svcCards` setting (only `svcGlympse` is necessary now). Point to correct viewer base URL.
