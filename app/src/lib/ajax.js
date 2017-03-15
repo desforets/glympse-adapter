@@ -65,7 +65,7 @@ define(function(require, exports, module)
 			if (result)
 			{
 				// in case of token error try to get new token & re-run action
-				if (result.error === 'oauth_token')
+				if (result.error === 'oauth_token' || result.error === 'token_expired')
 				{
 					if (account) {
 						account.generateToken(function(authResult) {
