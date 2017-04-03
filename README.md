@@ -149,7 +149,7 @@ var cfg =
   - `sandbox`: Force usage of the sandbox environment for Cards/Glympses. Note that
   this setting, if set, will change some defaults of other params to fully align to
   the sandbox environment: `loaderEnvironment` and `svcGlympse`
-  - `svcGlympse`: Override the default Glympse API datacenter. Default is
+  - `svcGlympse`: Override the default Glympse API environment. Default is
   `//api.glympse.com/v2/`, or `//api.sandbox.glympse.com/v2/`, if `sandbox` is set.
   - `dbg`: Enable debugging state. Defaults to `false`.
   - `card`, `t`, `g`, `twt`, `pg`: Standard Cards/Glympse invite types.
@@ -642,7 +642,7 @@ Access to these endpoints can be made via the `map` property of the adapter inst
   containers used to host the Glympse Viewer.
 - `removeInvites(invites)`: Comma-delimited string of Glympse invite codes to remove
   from the map.
-- `setApiServices(url)`: Specifies the Glympse API datacenter to use
+- `setApiServices(url)`: Specifies the Glympse API environment URL to use
 - `setPadding(padding)`: Used to offset the map "center" when determining map zoom
   based on active Glympses and destinations/POI. Effectively makes the centering
   view-port smaller than the map. The `padding` parameter is a 4-integer array,

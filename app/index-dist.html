@@ -8,10 +8,10 @@
 			#output { border: 1px solid #cdcdcd; width: 580px; padding: 10px; overflow: auto; }
 			input[type="button"] { font-size: 16px; }
 		</style>
-		
+
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script type="text/javascript" src="http://sandbox.glympse.com/stable/js/ViewHostAdapter/ViewHostAdapter-0.3.0.min.js"></script>
-		
+
 		<script>
 		$(window).ready(function()
 		{
@@ -27,17 +27,17 @@
 				outputText.append(div);
 				outputText.stop().animate({ scrollTop: outputText[0].scrollHeight }, 250);
 			}
-			
+
 			function clientInitialized(name)
 			{
 				logEvent('** INITIALIZED (' + name + ') **');
 			}
-			
+
 			function clientConnected(data)
 			{
 				logEvent('** Connected ** ', data);
 			}
-			
+
 			var cntEta = 0;
 			function stateUpdate(data)
 			{
@@ -45,23 +45,23 @@
 				{
 					return;
 				}
-				
+
 				if (data.id !== 'Eta' || (cntEta++ % 30) === 0)
 				{
 					logEvent('[StateUpdate]', data);
 				}
 			}
-			
+
 			function viewerInit(data)
 			{
 				logEvent('[ViewerInit]', data);
 			}
-			
+
 			function viewerReady(data)
 			{
 				logEvent('[ViewerReady]', data);
 			}
-			
+
 			function init()
 			{
 				//if (!urlParams.partnerid)
@@ -69,11 +69,11 @@
 				//	logEvent('[Init]: ** ERROR **  Need non-null partnerid param!');
 				//	return;
 				//}
-				
+
 				// Set up the adapter
 				var viewer = new glympse.ViewHostAdapter();
 				var el = viewer.init({
-					//url: 'http://' + ((urlParams.datacenter) ? (urlParams.datacenter + '.') : '') + 'glympse.com/' + (urlParams.t || 'bot002') + '?partnerid=' + urlParams.partnerid,
+					//url: 'http://' + ((urlParams.env) ? (urlParams.env + '.') : '') + 'glympse.com/' + (urlParams.t || 'bot002') + '?partnerid=' + urlParams.partnerid,
 					url: 'http://test.localhost:' + window.location.port + '/app/index-test.html?t=' + (urlParams.t || 'bot002'),
 					initialize: clientInitialized,
 					connect: clientConnected,
@@ -87,7 +87,7 @@
 
 				$(el).css({ width: '100%', height: '100%' });
 				$('#divSandbox1').append(el);
-		
+
 				var input = $('#txtInput');
 
 				// Get values
@@ -107,20 +107,20 @@
 				$('#getExpired').click(function() { doGetValue('Expired', 'Expired'); });
 				$('#getName').click(function() { doGetValue('Name', 'Name'); });
 				$('#getPhase').click(function() { doGetValue('Phase', 'Phase'); });
-		
-		
+
+
 				// Commands
 				$('#sendRefresh').click(function()
 				{
 					viewer.refreshView().then(function(data) { logEvent('[Refresh]', data); });
 				});
-				
+
 				$('#customMethod').click(function()
 				{
 					viewer.customMethodExample({ some: 'data', v: 3.14 }).then(function(data) { logEvent('[CustomMethod]', data); });
 				});
-		
-		
+
+
 				// Inputs
 				function doInput(method, output)
 				{
@@ -164,8 +164,8 @@
 						logEvent(tag + ' ERROR: Need input - integer or 4 integer array')
 					}
 				});
-				
-				
+
+
 				$('#btnOutputClear').click(function()
 				{
 					$('#outputText').empty();
@@ -175,7 +175,7 @@
 			// Start it up!
 			init();
 		});
-		
+
 		</script>
   </head>
   <body>
