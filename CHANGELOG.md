@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+2.3.1   | 2017/04/06 | Additional handling for expired/invalided auth tokens
 2.3.0   | 2017/03/10 | `hostQueueMaxSize` option: 0 = disable host message queue, <0 = no limit, >0 = limit to first N events
 2.2.0   | 2017/03/07 | Change default viewer version to "stable"
 2.1.2   | 2017/03/07 | Bug fix for ticket-only events
