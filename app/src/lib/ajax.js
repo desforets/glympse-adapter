@@ -10,24 +10,18 @@ define(function(require, exports, module)
 
 	var MAX_ATTEMPTS = 3;
 	var DEFAULT_OPTIONS = {
-		ALL: {
-			dataType: 'json'
-		},
-
-		POST: {
-			contentType: 'application/json'
-		}
+		ALL: { dataType: 'json' },
+		POST: { contentType: 'application/json' }
 	};
 
-	function parseResponse(data) {
+	function parseResponse(data)
+	{
 		var result = null;
 
 		if (data && data.response)
 		{
-			result = {
-				status: false,
-				response: {}
-			};
+			result = { status: false, response: {} };
+
 			if (data.result === 'ok')
 			{
 				result.status = true;
@@ -65,10 +59,13 @@ define(function(require, exports, module)
 			if (result)
 			{
 				// in case of token error try to get new token & re-run action
-				if (result.error === 'oauth_token')
+				if (result.error === 'oauth_token' || result.error === 'token_expired' || result.error === 'access_denied')
 				{
-					if (account) {
-						account.generateToken(function(authResult) {
+					if (account)
+					{
+						console.warn('[ajax] token error for authorized API request');
+						account.generateToken(function(authResult)
+						{
 							if (authResult.status)
 							{
 								if (that.retry)
@@ -79,7 +76,6 @@ define(function(require, exports, module)
 							else
 							{
 								result.authResult = authResult;
-
 								that.request.resolve(result);
 							}
 						});
@@ -88,8 +84,7 @@ define(function(require, exports, module)
 					}
 					else
 					{
-						// should never happen
-						console.warn('[ajax] invalid token for not authorized request!');
+						console.warn('[ajax] token error for public API request');
 						result.invalidToken = true;
 					}
 				}
@@ -99,9 +94,7 @@ define(function(require, exports, module)
 				return;
 			}
 
-			result = {
-				status: false
-			};
+			result = { status: false };
 
 			if (that.retry && that.attempts > 0)
 			{
@@ -144,12 +137,9 @@ define(function(require, exports, module)
 		 */
 		makeRequest: function makeRequest(jqOptions, auth, retryOnError)
 		{
-			var options = $.extend(
-				{},
-				DEFAULT_OPTIONS.ALL,
-				jqOptions
-			);
 			var account;
+			var options = $.extend({}, DEFAULT_OPTIONS.ALL, jqOptions);
+
 			if (auth)
 			{
 				var useBearer = true;
@@ -162,6 +152,7 @@ define(function(require, exports, module)
 				{
 					account = auth;
 				}
+
 				if (useBearer)
 				{
 					options.beforeSend = function(request)
@@ -195,15 +186,7 @@ define(function(require, exports, module)
 		 */
 		get: function reqGet(url, data, auth, jqOptions, retryOnError)
 		{
-			var options = $.extend(
-				{
-					url: url,
-					type: 'GET',
-					data: data
-				},
-				jqOptions
-			);
-			return api.makeRequest(options, auth, retryOnError);
+			return api.makeRequest($.extend({ url: url, type: 'GET', data: data }, jqOptions), auth, retryOnError);
 		},
 
 		/**
@@ -211,14 +194,7 @@ define(function(require, exports, module)
 		 */
 		post: function reqPost(url, data, auth, jqOptions, retryOnError)
 		{
-			var options = $.extend(
-				{
-					url: url,
-					type: 'POST'
-				},
-				DEFAULT_OPTIONS.POST,
-				jqOptions
-			);
+			var options = $.extend({ url: url, type: 'POST' }, DEFAULT_OPTIONS.POST, jqOptions);
 
 			if (data)
 			{
@@ -226,6 +202,7 @@ define(function(require, exports, module)
 				{
 					data = JSON.stringify(data);
 				}
+
 				options.data = data;
 			}
 
@@ -237,15 +214,7 @@ define(function(require, exports, module)
 		 */
 		delete: function reqDelete(url, auth, jqOptions, retryOnError)
 		{
-			var options = $.extend(
-				{
-					url: url,
-					type: 'DELETE'
-				},
-				DEFAULT_OPTIONS.POST,
-				jqOptions
-			);
-			return api.makeRequest(options, auth, retryOnError);
+			return api.makeRequest($.extend({ url: url, type: 'DELETE'}, DEFAULT_OPTIONS.POST, jqOptions), auth, retryOnError);
 		},
 
 		/**
@@ -254,8 +223,11 @@ define(function(require, exports, module)
 		batch: function reqBatch(batchEndpoint, batchRequests, auth, jqOptions, retryOnError)
 		{
 			return api.post(batchEndpoint, batchRequests, auth, jqOptions, retryOnError)
-				.then(function(batchResponse) {
-					var responses = [], i, len, response;
+				.then(function(batchResponse)
+				{
+					var i, len, response;
+					var responses = [];
+
 					if (batchResponse.status)
 					{
 						var results = batchResponse.response.items || [];
@@ -270,7 +242,8 @@ define(function(require, exports, module)
 							});
 						}
 					}
-					else {
+					else
+					{
 						for (i = 0, len = batchRequests.length; i < len; i++)
 						{
 							var req = batchRequests[i];
@@ -280,6 +253,7 @@ define(function(require, exports, module)
 							});
 						}
 					}
+
 					return responses;
 				});
 		}
@@ -287,5 +261,4 @@ define(function(require, exports, module)
 	};
 
 	module.exports = api;
-
 });
