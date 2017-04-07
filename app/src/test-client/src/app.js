@@ -33,6 +33,13 @@ define(function(require, exports, module)
 		cfg.app = cfgApp;
 		cfg.viewer = cfgViewer;
 
+		// Add custom settings to advertise to connecting host
+		cfg.published = {
+			viewer: {
+				customSetting: 'visible_to_host',
+				hostCanSeeThis: true
+			}
+		};
 
 		vm = new ViewManager(cfgApp);
 		main = new Main(vm, cfg);

@@ -87,13 +87,22 @@ define(function(require, exports, module)
 
 		function logEvent(tag, data)
 		{
-			var div = $(document.createElement('div'));
-			div.text(tag + ((!data) ? '' : (': ' + ((typeof data === 'string') ? data : JSON.stringify(data)))));
+			var div = $(document.createElement('pre'));
+			div.html((tag + ((!data) ? '' : ('\n' + ((typeof data === 'string') ? data : JSON.stringify(data, null, '  '))))).replace(/(,:)/g , '$1&#8203;') + '\n ');
 			outputText.append(div);
 			outputText.stop().animate({ scrollTop: outputText[0].scrollHeight }, 250);
 		}
 
-		function doGetValue(param, output)
+		function getAppConfig()
+		{
+			console.log('adapter:', cfg.adapter);
+			cfg.adapter.app.getConfig().then(function(data)
+			{
+				logEvent('[appConfig]', data);
+			});
+		}
+
+		function doGetValue(param, output, idInterface)
 		{
 			//cfg.adapter.getValue(param).then(function(data)
 			cfg.adapter.map.getInviteProperty({ idProperty: param }).then(function(data)
@@ -200,6 +209,7 @@ define(function(require, exports, module)
 
 		$('#getArrived').click(generateClick(s.Arrived, 'Arrived'));
 		$('#getAvatar').click(generateClick(s.Avatar, 'Avatar'));
+		$('#getConfig').click(getAppConfig);
 		$('#getDestination').click(generateClick(s.Destination, 'Destination'));
 		$('#getEta').click(generateClick(s.Eta, 'ETA'));
 		$('#getExpired').click(generateClick(s.Expired, 'Expired'));

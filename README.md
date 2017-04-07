@@ -382,8 +382,10 @@ except to monitor initialization and loading progress.
   (*string*)
   - `version`: *(string)* Connected client GA version (*string*)
   - `map`: *(array)* Available map-based APIs
-  - `cards`: *(array)* Available cards-based APIs
+  - `cards`: *(array)* Available Glympse card-based APIs
   - `ext`: *(array)* Available custom APIs
+  - `core`: *(array)* Available Glympse ticket-based APIs
+  - `app`: *(array)* Available well-known application APIs
 
 
 
@@ -588,9 +590,10 @@ environment.
 
 Endpoints are broken out on the following components:
   - `map`: Glympse Viewer endpoints accessiable via `adapter_instance.map.*`
-  - `core`: Glympse Core endpoints accessiable via `adapter_instance.core.*`
+  - `core`: Glympse Ticket endpoints accessiable via `adapter_instance.core.*`
   - `card`: Glympse Card endpoints accessiable via `adapter_instance.card.*`
   - `ext`: Custom client-app-included endpoints accessiable via `adapter_instance.ext.*`
+  - `app`: Custom default-app endpoints accessiable via `adapter_instance.app.*`
 
 ### GlympseAdapter.map.* endpoints (host/client-mode):
 
@@ -750,6 +753,17 @@ Access to these endpoints can be made via the `ext` property of the adapter inst
 (i.e. `var val = myAdapter.ext.someCustomMethod(some_val)`).
 
 - By default, no custom endpoints are provided by the GA
+
+
+### GlympseAdapter.app.* endpoints (host/client-mode):
+Below is a list of all of the exposed GA APIs with respect to always available
+app-based APIs. They generally pertain to the overall app configuration and structure:
+
+- `getConfig()`: Returns the current `viewer` config object, along with the available
+object/value under the `published` property of the main config used by the client.
+Note that the `published` property is optional. Also, the `apiKey` value is removed
+from the `viewer` config object if it is present.
+
 
 
 
