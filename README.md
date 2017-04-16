@@ -247,15 +247,6 @@ And for reference, the test app pair of `index-test.html` and `test/app.js` show
 example custom endpoint of `customMethodExample`. This can be easily extended and/or
 enhanced for your needs.
 
-### Examples
-An example of setting up a GA client-mode-based application can be found in
-`app/src/test-client/index-client.html`. This test app demonstrates various GA actions
-when a Glympse or Card invite is loaded.
-
-This example should be used as a reference of how to invoke and interact with the GA
-in client-mode.
-
-
 
 ## Host-Mode
 Below descibes how to utilize the GA in "host-mode", with limited access to Viewer
@@ -405,21 +396,34 @@ var htmlElement = adapter.host(
 If you do not specify a handler for a particular GA event, it will not be raised by GA.
 
 
-### Examples
+## Examples
+### Client mode
+An example of setting up a GA client-mode-based application can be found in
+`app/src/test-client`. This test app demonstrates various GA actions when a
+Glympse ticket/card invite is loaded.
+
+This example should be used as a reference of how to invoke and interact with
+the GA in client-mode.
+
+### Host mode
 An example of setting up a GA host-mode-based application can be found in
-`app/src/test-host/index-host.html`. This test app demonstrates how to hook into a
-remote GA client-mode-based application and hook interesting events that are generated
-when a Glympse or Card invite is loaded. There are also examples of how to directly
-query the client-mode application to retreive data.
+`app/src/test-host`. This test app demonstrates how to hook into a
+remote GA client-mode-based application and leverage interesting events that
+are generated when a Glympse ticket/card invite is loaded. There are also
+examples of how to directly query the client-mode application to retrieve
+specific data.
 
 However, some setup is required to alias the local machine to point to the
 `app/src/test-client/index-client.html` application. To use the example out of the box
 (on an OSX-based system):
 
 - Open a shell in the synced root directory of this repo
-- Type: `cd app`
-- Type: `python -m SimpleHTTPServer 8000`
-- In a bowser, connect to: `app/src/test-host/index-host.html`
+  - `cd app`
+  - `python -m SimpleHTTPServer 8000`
+- In another shell:
+  - `cd app`
+  - `python -m SimpleHTTPServer 8080`
+- In a browser, connect to: `http://localhost:8080/src/test-host/index-host.html`
 
 If the above isn't feasible for you, make whatever settings necessary to point to the
 `app/src/test-client` directory to another port/domain and edit the `app.urlClient`
@@ -428,6 +432,19 @@ setting in `app/src/test-host/index-host.html` (on or around line 42).
 This example should be used as a reference of how to invoke and interact with the GA
 in host-mode.
 
+### Simultaneous Host/Client mode
+In some scenarios, it is useful to have an app utilizing the GA in both
+host and client modes. In such cases, multiple instances of the adapter need
+to be created to support this scenario, as the adapter is currently locked
+to a single mode once it is initialized.
+
+A simple example that leverages the code from the above host and client
+examples can be found in `app/src/test-host/client`. Check out `src/app.js`
+as the reference for instantiating two GAs simultaneously.
+
+As with the *Host mode* example, the same setup is required for running the
+host-mode portion of the demo, changing the path to load:
+`http://localhost:8080/src/test-host-client/index-host-client.html`
 
 
 ## Adapter Messages/Events

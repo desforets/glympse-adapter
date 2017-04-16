@@ -71,7 +71,7 @@ define(function(require, exports, module)
 			}
 		}*/
 
-		// Deep-copy and object, ensuring it is cloneable
+		// Deep-copy an object, ensuring it is cloneable
 		, generateClone: function(o)
 		{
 			if (!(o instanceof Object))
