@@ -397,7 +397,7 @@ define(function(require, exports, module)
 		function checkMemberInviteCode(member) {
 			var inviteCode = getMemberInviteCode(member);
 
-			if (inviteCode && typeof inviteCodesIndex[inviteCode] === 'undefined')
+			if (inviteCode && !isInviteCodeAdded(inviteCode))
 			{
 				return addInviteCode(inviteCode);
 			}
@@ -418,7 +418,7 @@ define(function(require, exports, module)
 		function removeMemberInviteCode(member) {
 			var inviteCode = getMemberInviteCode(member);
 
-			if (inviteCode && inviteCodesIndex[inviteCode])
+			if (inviteCode && isInviteCodeAdded(inviteCode))
 			{
 				return removeInviteCode(inviteCode);
 			}
@@ -427,7 +427,7 @@ define(function(require, exports, module)
 		function addInviteCode(inviteCode)
 		{
 			// Ensure an invite is specified only once for each card
-			if (inviteCodesIndex[inviteCode])
+			if (isInviteCodeAdded(inviteCode))
 			{
 				return inviteCode;
 			}
@@ -489,6 +489,11 @@ define(function(require, exports, module)
 			}
 
 			return removedInvite || null;
+		}
+
+		function isInviteCodeAdded(inviteCode)
+		{
+			return typeof inviteCodesIndex[inviteCode] !== 'undefined';
 		}
 
 		///////////////////////////////////////////////////////////////////////////////
