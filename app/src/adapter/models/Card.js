@@ -491,7 +491,8 @@ define(function(require, exports, module)
 			return removedInvite || null;
 		}
 
-		function isInviteCodeAdded(inviteCode) {
+		function isInviteCodeAdded(inviteCode)
+		{
 			return typeof inviteCodesIndex[inviteCode] !== 'undefined';
 		}
 
